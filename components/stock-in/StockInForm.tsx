@@ -9,9 +9,11 @@ import { toast } from 'sonner'
 import type { Resolver } from 'react-hook-form'
 import { createStockIn } from '@/actions/stock-in'
 import type { Product } from '@/types/database'
+import { InvoiceScanner } from '@/components/stock-in/InvoiceScanner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ProductCombobox } from '@/components/stock-in/ProductCombobox'
 
 const stockInSchema = z.object({
   product_id: z.string().min(1, 'Select a product'),
@@ -77,6 +79,26 @@ export default function StockInForm({ products }: StockInFormProps) {
     }
   }, [selectedProduct?.serial_required, selectedProduct?.id, quantity])
 
+  function handleInvoiceData(data: {
+    supplier_name?: string
+    supplier_gstin?: string
+    purchase_invoice_no?: string
+    purchase_date?: string
+    quantity: number
+    cost_price: number
+    notes?: string
+    matched_product_id?: string
+  }) {
+    if (data.supplier_name) setValue('supplier_name', data.supplier_name)
+    if (data.supplier_gstin) setValue('supplier_gstin', data.supplier_gstin)
+    if (data.purchase_invoice_no) setValue('purchase_invoice_no', data.purchase_invoice_no)
+    if (data.purchase_date) setValue('purchase_date', data.purchase_date)
+    if (data.quantity) setValue('quantity', data.quantity)
+    if (data.cost_price) setValue('cost_price', data.cost_price)
+    if (data.notes) setValue('notes', data.notes)
+    if (data.matched_product_id) setValue('product_id', data.matched_product_id, { shouldValidate: true })
+  }
+
   async function onSubmit(values: StockInFormValues) {
     if (selectedProduct?.serial_required) {
       const missing = serialInputs.some(s => !s.trim())
@@ -100,22 +122,18 @@ export default function StockInForm({ products }: StockInFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 max-w-2xl">
+    <div className="max-w-2xl space-y-5">
+      <InvoiceScanner products={products} onItemSelected={handleInvoiceData} />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {/* Product */}
       <div className="space-y-2">
-        <Label htmlFor="product_id">Product *</Label>
-        <select
-          id="product_id"
-          {...register('product_id')}
-          className="h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-        >
-          <option value="">— Select product —</option>
-          {products.map(p => (
-            <option key={p.id} value={p.id}>
-              {p.name} ({p.sku})
-            </option>
-          ))}
-        </select>
+        <Label>Product *</Label>
+        <ProductCombobox
+          products={products}
+          value={selectedProductId || ''}
+          onChange={(id) => setValue('product_id', id, { shouldValidate: true })}
+          error={!!errors.product_id}
+        />
         {errors.product_id && (
           <p className="text-xs text-destructive">{errors.product_id.message}</p>
         )}
@@ -238,5 +256,6 @@ export default function StockInForm({ products }: StockInFormProps) {
         </Button>
       </div>
     </form>
+    </div>
   )
 }

@@ -79,23 +79,25 @@ Rules:
     responseText = msg.content[0].type === 'text' ? msg.content[0].text : ''
   } else if (mimeType === 'application/pdf') {
     // Claude supports PDFs via the document content type
+    type BetaContent = Parameters<typeof client.beta.messages.create>[0]['messages'][0]['content']
+    const pdfContent: BetaContent = [
+      {
+        type: 'document',
+        source: {
+          type: 'base64',
+          media_type: 'application/pdf',
+          data: fileBase64,
+        },
+      } as BetaContent extends (infer U)[] ? U : never,
+      { type: 'text', text: extractionPrompt } as BetaContent extends (infer U)[] ? U : never,
+    ]
     const msg = await client.beta.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       betas: ['pdfs-2024-09-25'],
       messages: [{
         role: 'user',
-        content: [
-          {
-            type: 'document',
-            source: {
-              type: 'base64',
-              media_type: 'application/pdf',
-              data: fileBase64,
-            },
-          } as Parameters<typeof client.beta.messages.create>[0]['messages'][0]['content'][0],
-          { type: 'text', text: extractionPrompt },
-        ],
+        content: pdfContent,
       }],
     })
     responseText = msg.content[0].type === 'text' ? msg.content[0].text : ''
