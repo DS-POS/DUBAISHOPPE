@@ -53,6 +53,12 @@ Rules:
 - If a field is not found, omit it from JSON
 - Include ALL line items in the items array`
 
+  // ~4MB base64 limit (≈3MB raw file) — Claude API max is 5MB per image
+  const MAX_BASE64_BYTES = 4 * 1024 * 1024
+  if (fileBase64.length > MAX_BASE64_BYTES) {
+    throw new Error('File too large. Please use an image under 3MB or compress the PDF.')
+  }
+
   const imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
   let responseText: string

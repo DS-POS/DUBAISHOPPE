@@ -69,7 +69,10 @@ export function InvoiceScanner({ products, onItemSelected }: InvoiceScannerProps
     setProcessing(true)
     try {
       const base64 = await fileToBase64(file)
-      const data = await extractInvoiceData(base64, file.type)
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out. Please try again.')), 30_000)
+      )
+      const data = await Promise.race([extractInvoiceData(base64, file.type), timeout])
       setExtracted(data)
       if (!data.items || data.items.length === 0) {
         toast.warning('No line items found in invoice.')
