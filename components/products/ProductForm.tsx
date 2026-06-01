@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 
 import { createProduct, updateProduct } from '@/actions/products'
 import { createCategory } from '@/actions/categories'
@@ -67,7 +66,8 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
     watch,
     formState: { errors },
   } = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(productSchema) as any,
     defaultValues: {
       name: product?.name ?? '',
       sku: product?.sku ?? '',
