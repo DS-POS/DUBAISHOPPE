@@ -6,7 +6,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import type { Product } from '@/types/database'
+import type { Category, Product } from '@/types/database'
 
 export interface ProductFormData {
   name: string
@@ -19,6 +19,7 @@ export interface ProductFormData {
   gst_rate: number
   hsn_code?: string
   low_stock_alert: number
+  opening_stock?: number
   serial_required: boolean
   status: 'active' | 'inactive'
   image_url?: string
@@ -86,7 +87,7 @@ export async function createProduct(formData: ProductFormData): Promise<void> {
     serial_required: formData.serial_required,
     status: formData.status,
     image_url: formData.image_url || null,
-    current_stock: 0,
+    current_stock: formData.opening_stock ?? 0,
   })
   if (error) throw new Error(error.message)
 
@@ -124,6 +125,16 @@ export async function updateProduct(id: string, formData: ProductFormData): Prom
 
   revalidatePath('/products')
   redirect('/products')
+}
+
+export async function getCategories(): Promise<Category[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .order('name')
+  if (error) throw new Error(error.message)
+  return (data ?? []) as Category[]
 }
 
 export async function deleteProduct(id: string): Promise<void> {
