@@ -5,6 +5,8 @@ export type StockChangeType = 'stock_in' | 'sale' | 'adjustment' | 'return'
 export type InvoiceStatus = 'paid' | 'pending' | 'cancelled'
 export type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
 export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'expired' | 'rejected'
+export type SupplierPaymentMethod = 'cash' | 'cheque' | 'neft' | 'upi' | 'rtgs'
+export type SupplierPaymentStatus = 'pending' | 'partial' | 'paid'
 
 export interface User {
   id: string
@@ -61,9 +63,36 @@ export interface StockIn {
   purchase_invoice_no: string | null
   purchase_date: string
   notes: string | null
+  supplier_invoice_id: string | null
   created_by: string | null
   created_at: string
   products?: Product
+}
+
+export interface SupplierInvoice {
+  id: string
+  purchase_invoice_no: string | null
+  supplier_name: string | null
+  supplier_gstin: string | null
+  purchase_date: string
+  total_amount: number
+  payment_status: SupplierPaymentStatus
+  created_by: string | null
+  created_at: string
+  supplier_payments?: SupplierPayment[]
+  stock_in?: StockIn[]
+}
+
+export interface SupplierPayment {
+  id: string
+  supplier_invoice_id: string
+  amount: number
+  payment_date: string
+  payment_reference: string | null
+  payment_method: SupplierPaymentMethod | null
+  notes: string | null
+  created_by: string | null
+  created_at: string
 }
 
 export interface Customer {
