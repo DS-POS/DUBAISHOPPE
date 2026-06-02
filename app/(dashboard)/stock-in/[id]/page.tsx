@@ -5,7 +5,7 @@ import { getSupplierInvoice } from '@/actions/supplier-invoices'
 import { deleteSupplierPayment } from '@/actions/supplier-payments'
 import { AddPaymentDialog } from '@/components/stock-in/AddPaymentDialog'
 import { Button } from '@/components/ui/button'
-import type { SupplierPayment } from '@/types/database'
+import type { SupplierPayment, StockIn } from '@/types/database'
 
 const STATUS_STYLE: Record<string, string> = {
   pending: 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400',
@@ -99,7 +99,7 @@ export default async function SupplierInvoiceDetailPage({ params }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {stockItems.map((item: any) => (
+              {stockItems.map((item: StockIn) => (
                 <tr key={item.id}>
                   <td className="px-4 py-2">
                     <p className="font-medium text-xs">{item.products?.name ?? '—'}</p>

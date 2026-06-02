@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useTransition } from 'react'
-import { useForm } from 'react-hook-form'
+import React, { useRef, useState, useTransition } from 'react'
+import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import Barcode from 'react-barcode'
-import { Loader2Icon, RefreshCwIcon, ImageIcon, XIcon } from 'lucide-react'
+import { Loader2Icon, RefreshCwIcon, ImageIcon, XIcon, UploadIcon, ChevronDownIcon } from 'lucide-react'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,12 @@ import { createCategory } from '@/actions/categories'
 import type { Category, Product } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 
+const CAMERA_BRANDS = [
+  'Canon', 'Nikon', 'Sony', 'Fujifilm', 'Olympus', 'Panasonic',
+  'Leica', 'Pentax', 'Sigma', 'Tamron', 'Tokina', 'Godox',
+  'DJI', 'GoPro', 'Manfrotto', 'Joby', 'Peak Design',
+]
+
 const productSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
   sku: z.string().min(1, 'SKU is required'),
@@ -36,9 +42,10 @@ const productSchema = z.object({
   selling_price: z.coerce.number().min(0, 'Selling price must be 0 or more'),
   gst_rate: z.coerce.number(),
   hsn_code: z.string().optional(),
-  low_stock_alert: z.coerce.number().min(0).default(5),
-  serial_required: z.boolean().default(false),
-  status: z.enum(['active', 'inactive']).default('active'),
+  low_stock_alert: z.coerce.number().min(0),
+  opening_stock: z.coerce.number().min(0),
+  serial_required: z.boolean(),
+  status: z.enum(['active', 'inactive']),
 })
 
 type ProductFormValues = z.infer<typeof productSchema>
@@ -58,6 +65,9 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
   const [imageUrl, setImageUrl] = useState<string>(product?.image_url ?? '')
   const [imageUploading, setImageUploading] = useState(false)
   const [barcodePreview, setBarcodePreview] = useState<string>(product?.barcode ?? '')
+  const [brandInput, setBrandInput] = useState<string>(product?.brand ?? '')
+  const [showBrandList, setShowBrandList] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
     register,
@@ -67,7 +77,8 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
     formState: { errors },
   } = useForm<ProductFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(productSchema) as any,
+    resolver: zodResolver(productSchema) as Resolver<ProductFormValues>,
+    mode: 'onBlur',
     defaultValues: {
       name: product?.name ?? '',
       sku: product?.sku ?? '',
@@ -79,6 +90,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
       gst_rate: product?.gst_rate ?? 18,
       hsn_code: product?.hsn_code ?? '',
       low_stock_alert: product?.low_stock_alert ?? 5,
+      opening_stock: 0,
       serial_required: product?.serial_required ?? false,
       status: product?.status ?? 'active',
     },
@@ -116,24 +128,38 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
     setImageUploading(true)
     try {
       const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { toast.error('Not logged in'); setImageUploading(false); return }
+
       const ext = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
       const { error: uploadError } = await supabase.storage
-        .from('product-images')
+        .from('Product-images')
         .upload(fileName, file, { cacheControl: '3600', upsert: false })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        const code = uploadError.statusCode ?? uploadError.status ?? ''
+        const msg = uploadError.message ?? ''
+        if (msg.includes('not found') || msg.includes('does not exist') || code === '404' || code === 404) {
+          throw new Error('Bucket missing: Supabase → Storage → New Bucket → name: Product-images → Public ON')
+        }
+        if (code === '403' || code === 403 || msg.includes('policy') || msg.includes('permission') || msg.includes('violates')) {
+          throw new Error('Storage permission denied. Supabase → Storage → product-images → Policies → Add policy: allow authenticated users to INSERT')
+        }
+        throw new Error(`Upload failed (${code}): ${msg}`)
+      }
 
       const { data: urlData } = supabase.storage
-        .from('product-images')
+        .from('Product-images')
         .getPublicUrl(fileName)
 
       setImageUrl(urlData.publicUrl)
       toast.success('Image uploaded')
     } catch (err) {
-      toast.error('Image upload failed')
-      console.error(err)
+      const msg = err instanceof Error ? err.message : String(err)
+      toast.error(msg || 'Image upload failed')
+      console.error('Image upload error:', err)
     } finally {
       setImageUploading(false)
     }
@@ -161,11 +187,12 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
       try {
         const payload = {
           ...values,
+          brand: brandInput || undefined,
           image_url: imageUrl || undefined,
           category_id: values.category_id || undefined,
           barcode: values.barcode || undefined,
-          brand: values.brand || undefined,
           hsn_code: values.hsn_code || undefined,
+          opening_stock: mode === 'create' ? (values.opening_stock ?? 0) : undefined,
         }
 
         if (mode === 'edit' && product) {
@@ -203,7 +230,49 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
           {/* Brand */}
           <div className="space-y-2">
             <Label htmlFor="brand">Brand</Label>
-            <Input id="brand" {...register('brand')} placeholder="e.g. Canon" />
+            <div className="relative">
+              <Input
+                id="brand"
+                value={brandInput}
+                onChange={e => {
+                  setBrandInput(e.target.value)
+                  setValue('brand', e.target.value)
+                  setShowBrandList(true)
+                }}
+                onFocus={() => setShowBrandList(true)}
+                onBlur={() => setTimeout(() => setShowBrandList(false), 150)}
+                placeholder="e.g. Canon"
+                autoComplete="off"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                onClick={() => setShowBrandList(v => !v)}
+              >
+                <ChevronDownIcon className="size-4" />
+              </button>
+              {showBrandList && (
+                <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border bg-white shadow-lg">
+                  {CAMERA_BRANDS.filter(b =>
+                    b.toLowerCase().includes(brandInput.toLowerCase())
+                  ).map(b => (
+                    <button
+                      key={b}
+                      type="button"
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-slate-100"
+                      onMouseDown={() => {
+                        setBrandInput(b)
+                        setValue('brand', b)
+                        setShowBrandList(false)
+                      }}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* SKU */}
@@ -234,22 +303,17 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
           {/* Category */}
           <div className="space-y-2 md:col-span-2">
             <Label>Category</Label>
-            <div className="flex gap-2 flex-wrap">
-              <Select
+            <div className="flex gap-2 flex-wrap items-center">
+              <select
                 value={watch('category_id') ?? ''}
-                onValueChange={(val) => setValue('category_id', val as string)}
+                onChange={e => setValue('category_id', e.target.value)}
+                className="h-8 w-48 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring"
               >
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">Select category</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
 
               {!showAddCategory ? (
                 <Button
@@ -343,6 +407,14 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
           Inventory &amp; Status
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {mode === 'create' && (
+            <div className="space-y-2">
+              <Label htmlFor="opening_stock">Opening Stock Qty</Label>
+              <Input id="opening_stock" type="number" min="0" {...register('opening_stock')} />
+              <p className="text-xs text-muted-foreground">Stock on hand right now</p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="low_stock_alert">Low Stock Alert Threshold</Label>
             <Input id="low_stock_alert" type="number" min="0" {...register('low_stock_alert')} />
@@ -388,40 +460,55 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
         </h2>
         <div className="flex flex-col sm:flex-row gap-4 items-start">
           {/* Preview */}
-          <div className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-slate-50 shrink-0 overflow-hidden">
+          <div
+            className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-slate-50 shrink-0 overflow-hidden cursor-pointer hover:border-[#0369A1] transition-colors"
+            onClick={() => fileInputRef.current?.click()}
+          >
             {imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={imageUrl} alt="Product" className="w-full h-full object-cover rounded-lg" />
             ) : (
-              <ImageIcon className="size-8 text-muted-foreground" />
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="image_upload">Upload Image</Label>
-            <Input
-              id="image_upload"
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              disabled={imageUploading}
-              className="w-full"
-            />
-            <p className="text-xs text-muted-foreground">Max 5MB. JPG, PNG, WebP.</p>
-            {imageUploading && (
-              <div className="flex items-center gap-2 text-sm text-slate-500">
-                <Loader2Icon className="size-4 animate-spin" />
-                Uploading...
+              <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                <ImageIcon className="size-8" />
+                <span className="text-xs">Click to upload</span>
               </div>
             )}
+          </div>
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleImageUpload}
+            disabled={imageUploading}
+            className="hidden"
+          />
+
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={imageUploading}
+              className="gap-2"
+            >
+              {imageUploading ? (
+                <><Loader2Icon className="size-4 animate-spin" /> Uploading...</>
+              ) : (
+                <><UploadIcon className="size-4" /> Choose Image</>
+              )}
+            </Button>
+            <p className="text-xs text-muted-foreground">Max 5MB. JPG, PNG, WebP.</p>
             {imageUrl && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setImageUrl('')}
-                className="text-destructive"
+                className="text-destructive gap-1"
               >
-                Remove Image
+                <XIcon className="size-3" /> Remove Image
               </Button>
             )}
           </div>

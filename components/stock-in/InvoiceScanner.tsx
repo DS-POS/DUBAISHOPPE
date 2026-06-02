@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { extractInvoiceData, type ExtractedInvoiceData, type ExtractedItem } from '@/actions/extract-invoice'
+import { prepareFile } from '@/lib/compress-file'
 import type { Product } from '@/types/database'
 
 interface InvoiceScannerProps {
@@ -68,11 +69,19 @@ export function InvoiceScanner({ products, onItemSelected }: InvoiceScannerProps
     setFileName(file.name)
     setProcessing(true)
     try {
-      const base64 = await fileToBase64(file)
+      const prepared = await prepareFile(file)
+      if (prepared.warning) toast.warning(prepared.warning)
+      if (prepared.compressed) {
+        toast.info(
+          `Image compressed: ${prepared.originalKB} KB → ${prepared.compressedKB} KB`,
+          { duration: 3000 }
+        )
+      }
+      const base64 = await fileToBase64(prepared.file)
       const timeout = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Request timed out. Please try again.')), 30_000)
       )
-      const data = await Promise.race([extractInvoiceData(base64, file.type), timeout])
+      const data = await Promise.race([extractInvoiceData(base64, prepared.file.type), timeout])
       setExtracted(data)
       if (!data.items || data.items.length === 0) {
         toast.warning('No line items found in invoice.')
