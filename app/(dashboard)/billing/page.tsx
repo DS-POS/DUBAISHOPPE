@@ -1,3 +1,22 @@
-export default function BillingPage() {
-  return <div><h1 className="text-2xl font-bold text-[#0F172A]" style={{fontFamily:'Rubik,sans-serif'}}>New Sale</h1><p className="text-slate-500 mt-2">Coming soon...</p></div>
+import { getProducts } from '@/actions/products'
+import { getCustomers } from '@/actions/customers'
+import BillingForm from '@/components/billing/BillingForm'
+
+export default async function BillingPage() {
+  const [products, customers] = await Promise.all([
+    getProducts({ status: 'active' }),
+    getCustomers(),
+  ])
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-2xl font-bold text-[#0F172A]" style={{ fontFamily: 'Rubik, sans-serif' }}>
+          New Sale
+        </h1>
+        <p className="text-slate-500 text-sm mt-1">Scan or search products to build the cart</p>
+      </div>
+      <BillingForm products={products} customers={customers} />
+    </div>
+  )
 }
