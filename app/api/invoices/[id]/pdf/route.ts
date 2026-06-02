@@ -1,5 +1,7 @@
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createElement } from 'react'
+import type { DocumentProps } from '@react-pdf/renderer'
+import type { ReactElement } from 'react'
 import { getInvoice } from '@/actions/invoices'
 import { InvoicePDF } from '@/components/invoices/InvoicePDF'
 
@@ -9,15 +11,15 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     return new Response('Invoice not found', { status: 404 })
   }
 
-  const buffer = await renderToBuffer(
-    createElement(InvoicePDF, {
-      invoice,
-      items: invoice.invoice_items ?? [],
-      customer: invoice.customers ?? null,
-    })
-  )
+  const element = createElement(InvoicePDF, {
+    invoice,
+    items: invoice.invoice_items ?? [],
+    customer: invoice.customers ?? null,
+  }) as ReactElement<DocumentProps>
 
-  return new Response(buffer, {
+  const buffer = await renderToBuffer(element)
+
+  return new Response(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="${invoice.invoice_no}.pdf"`,

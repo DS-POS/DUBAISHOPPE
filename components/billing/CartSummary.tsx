@@ -13,7 +13,7 @@ interface CartSummaryProps {
 }
 
 export function CartSummary({
-  subtotal, discount, taxable_amount, cgst, sgst, igst, total_gst, grand_total, itemCount
+  subtotal, discount, taxable_amount, cgst, sgst, igst, grand_total, itemCount
 }: CartSummaryProps) {
   const isIGST = igst > 0
 
