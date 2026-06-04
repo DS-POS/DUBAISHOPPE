@@ -4,6 +4,8 @@ import { getInvoice } from '@/actions/invoices'
 import { getInvoicePayments } from '@/actions/invoice-payments'
 import { InvoiceShareButtons } from '@/components/invoices/InvoiceShareButtons'
 import { RecordPaymentDialog } from '@/components/invoices/RecordPaymentDialog'
+import { ThermalReceipt } from '@/components/invoice/ThermalReceipt'
+import { PrintReceiptButton } from '@/components/invoice/PrintReceiptButton'
 import { format } from 'date-fns'
 import { round2 } from '@/lib/gst'
 import { ArrowLeftIcon } from 'lucide-react'
@@ -33,13 +35,16 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
           </p>
         </div>
         <div className="flex flex-col gap-2 items-end">
-          <InvoiceShareButtons
-            invoiceId={invoice.id}
-            invoiceNo={invoice.invoice_no}
-            grandTotal={invoice.grand_total}
-            customerEmail={customer?.email ?? null}
-            customerPhone={customer?.phone ?? null}
-          />
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <PrintReceiptButton />
+            <InvoiceShareButtons
+              invoiceId={invoice.id}
+              invoiceNo={invoice.invoice_no}
+              grandTotal={invoice.grand_total}
+              customerEmail={customer?.email ?? null}
+              customerPhone={customer?.phone ?? null}
+            />
+          </div>
           {invoice.status !== 'cancelled' && (
             <Link
               href={`/invoices/${invoice.id}/return`}
@@ -209,6 +214,9 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
         payments={payments}
         invoiceStatus={invoice.status}
       />
+
+      {/* Thermal Receipt — hidden on screen, visible when printing */}
+      <ThermalReceipt invoice={invoice} />
     </div>
   )
 }
