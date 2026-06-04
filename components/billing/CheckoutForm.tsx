@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { type CartItem, cartTotals } from './types'
 import { getCustomers, createCustomerAndReturnId } from '@/actions/customers'
 import { createInvoice } from '@/actions/invoices'
+import { queueOfflineInvoice } from '@/lib/offline/cache-sync'
 import type { Customer } from '@/types/database'
 
 const INDIAN_STATES = [
@@ -138,7 +139,7 @@ export function CheckoutForm({ initialCart, initialCustomer }: CheckoutFormProps
         ? parseFloat(amountTendered) || totals.grand_total
         : totals.grand_total
 
-      const invoiceId = await createInvoice({
+      const invoicePayload = {
         customer_id: customerId,
         ...totals,
         payment_method: paymentMethod,
@@ -159,12 +160,27 @@ export function CheckoutForm({ initialCart, initialCustomer }: CheckoutFormProps
           igst: i.igst,
           total: i.total,
         })),
-      })
+      }
 
+      try {
+        const invoiceId = await createInvoice(invoicePayload)
+        sessionStorage.removeItem('pos_checkout_cart')
+        sessionStorage.removeItem('pos_checkout_customer')
+        toast.success('Invoice created!')
+        router.push(`/invoices/${invoiceId}`)
+        return
+      } catch (err) {
+        const isNetworkError =
+          err instanceof TypeError && err.message.toLowerCase().includes('fetch')
+        if (!isNetworkError) throw err
+        // Network offline — queue locally
+      }
+
+      const tempNo = await queueOfflineInvoice(invoicePayload)
       sessionStorage.removeItem('pos_checkout_cart')
       sessionStorage.removeItem('pos_checkout_customer')
-      toast.success('Invoice created!')
-      router.push(`/invoices/${invoiceId}`)
+      toast.success(`Offline: Invoice ${tempNo} saved locally. Will sync when online.`, { duration: 6000 })
+      router.push('/billing')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create invoice.')
     } finally {

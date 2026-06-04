@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import { Rubik, Nunito_Sans } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
+import { ServiceWorkerRegister } from '@/components/offline/ServiceWorkerRegister'
+import { OfflineBanner } from '@/components/offline/OfflineBanner'
 
 const rubik = Rubik({
   subsets: ['latin'],
@@ -37,6 +39,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body suppressHydrationWarning>
         {children}
         <Toaster richColors position="top-right" />
+        <OfflineBanner />
+        <ServiceWorkerRegister />
       </body>
     </html>
   )
