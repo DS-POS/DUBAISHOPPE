@@ -4,6 +4,7 @@ export type SerialStatus = 'available' | 'sold' | 'damaged' | 'returned'
 export type StockChangeType = 'stock_in' | 'sale' | 'adjustment' | 'return'
 export type StockAdjustmentType = 'damage' | 'return' | 'correction' | 'write_off' | 'found'
 export type ReturnRefundMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'store_credit' | 'no_refund'
+export type POStatus = 'draft' | 'sent' | 'received' | 'cancelled'
 export type InvoiceStatus = 'paid' | 'pending' | 'cancelled'
 export type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
 export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'expired' | 'rejected'
@@ -122,6 +123,33 @@ export interface SalesReturn {
   created_at: string
   invoices?: Pick<Invoice, 'id' | 'invoice_no' | 'grand_total'>
   sales_return_items?: SalesReturnItem[]
+}
+
+export interface PurchaseOrderItem {
+  id: string
+  po_id: string
+  product_id: string | null
+  product_name: string
+  sku: string | null
+  quantity_ordered: number
+  unit_cost: number
+  total_cost: number
+}
+
+export interface PurchaseOrder {
+  id: string
+  po_no: string
+  supplier_id: string | null
+  supplier_name: string | null
+  status: POStatus
+  expected_date: string | null
+  notes: string | null
+  total_amount: number
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  suppliers?: Pick<Supplier, 'id' | 'name' | 'phone' | 'email'>
+  purchase_order_items?: PurchaseOrderItem[]
 }
 
 export interface SupplierInvoice {

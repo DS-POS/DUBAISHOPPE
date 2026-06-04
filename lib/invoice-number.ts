@@ -9,3 +9,7 @@ export function formatQuotationNo(counter: number): string {
 export function formatReturnNo(counter: number): string {
   return `RET-${String(counter).padStart(6, '0')}`
 }
+
+export function formatPONo(counter: number): string {
+  return `PO-${String(counter).padStart(6, '0')}`
+}
