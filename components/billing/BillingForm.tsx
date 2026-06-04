@@ -43,6 +43,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
         discount_mode: 'percent',
         discount_raw: 0,
         serial_number: null,
+        is_taxable: product.is_taxable,
       }
       return [...prev, recalcItem(newItem, customerState)]
     })

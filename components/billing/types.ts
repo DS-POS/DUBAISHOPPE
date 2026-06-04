@@ -10,6 +10,7 @@ export interface CartItem {
   discount_raw: number
   discount: number
   serial_number: string | null
+  is_taxable: boolean
   taxable_amount: number
   cgst: number
   sgst: number
@@ -27,21 +28,40 @@ export function recalcItem(
       ? Number((item.rate * item.quantity * item.discount_raw / 100).toFixed(2))
       : item.discount_raw
   const gst = calculateLineGST(
-    { rate: item.rate, quantity: item.quantity, discount, gst_rate: item.product.gst_rate },
+    {
+      rate: item.rate,
+      quantity: item.quantity,
+      discount,
+      gst_rate: item.product.gst_rate,
+      is_taxable: item.is_taxable,
+    },
     customerState
   )
   return { ...item, discount, ...gst }
 }
 
+export interface NonTaxableLineItem {
+  name: string
+  qty: number
+  total: number
+}
+
 export function cartTotals(items: CartItem[]) {
+  const taxable = items.filter(i => i.is_taxable)
+  const nonTaxable = items.filter(i => !i.is_taxable)
   return {
     subtotal: items.reduce((s, i) => s + i.rate * i.quantity, 0),
     discount: items.reduce((s, i) => s + i.discount, 0),
-    taxable_amount: items.reduce((s, i) => s + i.taxable_amount, 0),
+    taxable_amount: taxable.reduce((s, i) => s + i.taxable_amount, 0),
     cgst: items.reduce((s, i) => s + i.cgst, 0),
     sgst: items.reduce((s, i) => s + i.sgst, 0),
     igst: items.reduce((s, i) => s + i.igst, 0),
     total_gst: items.reduce((s, i) => s + i.total_gst, 0),
     grand_total: items.reduce((s, i) => s + i.total, 0),
+    non_taxable_items: nonTaxable.map(i => ({
+      name: i.product.name,
+      qty: i.quantity,
+      total: i.total,
+    })),
   }
 }
