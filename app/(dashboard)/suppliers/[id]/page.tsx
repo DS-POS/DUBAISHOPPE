@@ -11,6 +11,7 @@ import {
   MapPinIcon,
   BuildingIcon,
   PackageIcon,
+  BookOpenIcon,
 } from 'lucide-react'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -61,12 +62,17 @@ export default async function SupplierDetailPage({ params }: PageProps) {
             )}
           </div>
         </div>
-        <Link href={`/suppliers/${id}/edit`}>
-          <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm font-semibold text-slate-700 shadow-sm transition-all cursor-pointer">
-            <PencilIcon className="size-3.5" />
-            Edit Supplier
-          </span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href={`/suppliers/${id}/ledger`} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+            <BookOpenIcon className="size-4" />Ledger
+          </Link>
+          <Link href={`/suppliers/${id}/edit`}>
+            <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm font-semibold text-slate-700 shadow-sm transition-all cursor-pointer">
+              <PencilIcon className="size-3.5" />
+              Edit Supplier
+            </span>
+          </Link>
+        </div>
       </div>
 
       {/* Stats row */}
