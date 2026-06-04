@@ -123,7 +123,9 @@ interface InvoicePDFProps {
 }
 
 export function InvoicePDF({ invoice, items, customer }: InvoicePDFProps) {
-  const isIGST = invoice.igst > 0
+  const taxableAmount = invoice.taxable_amount ?? 0
+  const nonTaxableItems = (invoice.invoice_items ?? []).filter(i => !i.is_taxable)
+  const isIGST = (invoice.igst ?? 0) > 0
   const isIntraState = !isIGST
   const balanceDue = round2(invoice.grand_total - invoice.amount_paid)
 
@@ -243,27 +245,37 @@ export function InvoicePDF({ invoice, items, customer }: InvoicePDFProps) {
                 <Text style={[s.totalValue, { color: GREEN }]}>−₹{round2(invoice.discount).toFixed(2)}</Text>
               </View>
             )}
-            <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Taxable Amount</Text>
-              <Text style={s.totalValue}>₹{round2(invoice.taxable_amount).toFixed(2)}</Text>
-            </View>
-            {isIntraState ? (
+            {taxableAmount > 0 && (
+              <View style={s.totalRow}>
+                <Text style={s.totalLabel}>Taxable Amount</Text>
+                <Text style={s.totalValue}>₹{round2(taxableAmount).toFixed(2)}</Text>
+              </View>
+            )}
+            {taxableAmount > 0 && (isIGST ? (
+              <View style={s.totalRow}>
+                <Text style={s.totalLabel}>IGST</Text>
+                <Text style={s.totalValue}>₹{round2(invoice.igst ?? 0).toFixed(2)}</Text>
+              </View>
+            ) : (
               <>
                 <View style={s.totalRow}>
                   <Text style={s.totalLabel}>CGST</Text>
-                  <Text style={s.totalValue}>₹{round2(invoice.cgst).toFixed(2)}</Text>
+                  <Text style={s.totalValue}>₹{round2(invoice.cgst ?? 0).toFixed(2)}</Text>
                 </View>
                 <View style={s.totalRow}>
                   <Text style={s.totalLabel}>SGST</Text>
-                  <Text style={s.totalValue}>₹{round2(invoice.sgst).toFixed(2)}</Text>
+                  <Text style={s.totalValue}>₹{round2(invoice.sgst ?? 0).toFixed(2)}</Text>
                 </View>
               </>
-            ) : (
-              <View style={s.totalRow}>
-                <Text style={s.totalLabel}>IGST</Text>
-                <Text style={s.totalValue}>₹{round2(invoice.igst).toFixed(2)}</Text>
+            ))}
+            {nonTaxableItems.map((item) => (
+              <View key={item.id} style={s.totalRow}>
+                <Text style={s.totalLabel}>
+                  {item.product_name}{item.quantity > 1 ? ` ×${item.quantity}` : ''}
+                </Text>
+                <Text style={s.totalValue}>₹{round2(item.total).toFixed(2)}</Text>
               </View>
-            )}
+            ))}
             <View style={s.grandTotalRow}>
               <Text style={s.grandTotalLabel}>Grand Total</Text>
               <Text style={s.grandTotalValue}>₹{round2(invoice.grand_total).toFixed(2)}</Text>
