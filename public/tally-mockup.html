@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TallyPrime — DS POS Import Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: #fff;
+    overflow-x: hidden;
+  }
+  .title-bar {
+    background: #003366;
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px solid #0055aa;
+  }
+  .title-bar-btns span {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    margin-left: 5px;
+    cursor: pointer;
+  }
+  .btn-close { background: #e74c3c; }
+  .btn-min   { background: #f39c12; }
+  .btn-max   { background: #27ae60; }
+  .menu-bar {
+    background: #003d82;
+    color: #cce5ff;
+    padding: 3px 8px;
+    font-size: 11px;
+    display: flex;
+    gap: 18px;
+    border-bottom: 1px solid #0055aa;
+  }
+  .menu-bar span { cursor: pointer; }
+  .menu-bar span:hover { color: #fff; text-decoration: underline; }
+  .gateway-bar {
+    background: #00234f;
+    color: #7fb3e8;
+    padding: 5px 12px;
+    font-size: 11px;
+    border-bottom: 1px solid #003d82;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .gateway-bar .company { color: #ffdd57; font-weight: bold; font-size: 12px; }
+  .import-banner {
+    background: #1a5c1a;
+    color: #4cff91;
+    padding: 6px 14px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #2d8c2d;
+  }
+  .tabs { display: flex; background: #002d6b; }
+  .tab {
+    padding: 6px 16px;
+    color: #7fb3e8;
+    font-size: 11px;
+    cursor: pointer;
+    border-right: 1px solid #003d82;
+  }
+  .tab.active { background: #fff; color: #003d82; font-weight: bold; }
+  .tally-main {
+    display: flex;
+    height: calc(100vh - 120px);
+  }
+  .left-panel {
+    width: 130px;
+    background: #001f44;
+    border-right: 1px solid #003d82;
+    padding-top: 6px;
+  }
+  .btn-key {
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    color: #aad4f5;
+    font-size: 11px;
+    cursor: pointer;
+    border-bottom: 1px solid #002a5e;
+    gap: 6px;
+  }
+  .btn-key:hover { background: #003d82; color: #fff; }
+  .btn-key .key {
+    background: #003d82;
+    border: 1px solid #0055aa;
+    color: #ffdd57;
+    font-size: 10px;
+    padding: 1px 4px;
+    min-width: 22px;
+    text-align: center;
+    border-radius: 2px;
+  }
+  .btn-key.active { background: #004e99; color: #fff; }
+  .center-panel {
+    flex: 1;
+    background: #fff;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-header {
+    background: #003d82;
+    color: #fff;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-sub-header {
+    background: #e8eef8;
+    color: #003d82;
+    padding: 4px 12px;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #b3cce6;
+  }
+  .voucher-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .voucher-table thead tr { background: #003d82; color: #fff; }
+  .voucher-table thead th {
+    padding: 5px 10px;
+    text-align: left;
+    font-weight: bold;
+    border-right: 1px solid #0055aa;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .voucher-table thead th.right { text-align: right; }
+  .voucher-table tbody tr { border-bottom: 1px solid #d6e4f0; cursor: pointer; }
+  .voucher-table tbody tr:hover { background: #d0e8ff; }
+  .voucher-table tbody tr.selected { background: #003d82; color: #fff; }
+  .voucher-table tbody tr.selected .badge-paid { background: #4cff91; color: #000; }
+  .voucher-table tbody td {
+    padding: 4px 10px;
+    border-right: 1px solid #e0ecf8;
+    font-size: 12px;
+  }
+  .voucher-table tbody td.right { text-align: right; }
+  .voucher-table tbody td.center { text-align: center; }
+  .voucher-table tfoot tr { background: #d0e8ff; font-weight: bold; }
+  .voucher-table tfoot td {
+    padding: 5px 10px;
+    font-size: 12px;
+    border-top: 2px solid #003d82;
+  }
+  .right-panel {
+    width: 360px;
+    background: #f0f6ff;
+    border-left: 1px solid #b3cce6;
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    color: #111;
+    overflow-y: auto;
+  }
+  .rp-header {
+    background: #003d82;
+    color: #fff;
+    padding: 6px 10px;
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .voucher-box {
+    padding: 10px 12px;
+    border-bottom: 1px solid #c6d9f0;
+  }
+  .voucher-box .row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+  .voucher-box .label { color: #555; font-size: 11px; }
+  .voucher-box .value { font-weight: bold; color: #003d82; }
+  .ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .ledger-table thead tr { background: #003d82; color: #fff; }
+  .ledger-table thead th { padding: 4px 8px; text-align: left; }
+  .ledger-table thead th.right { text-align: right; }
+  .ledger-table tbody td { padding: 3px 8px; border-bottom: 1px solid #ddeeff; }
+  .ledger-table tbody td.right { text-align: right; }
+  .ledger-table tbody tr:nth-child(even) { background: #e8f4ff; }
+  .ledger-table tfoot td { padding: 4px 8px; font-weight: bold; background: #d0e8ff; border-top: 1px solid #003d82; }
+  .ledger-table tfoot td.right { text-align: right; }
+  .status-bar {
+    background: #002255;
+    color: #7fb3e8;
+    padding: 3px 12px;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #003d82;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+  }
+  .status-ok { color: #4cff91; }
+  .hotkey { color: #ffdd57; }
+  .gst-tag {
+    display: inline-block;
+    background: #003d82;
+    color: #fff;
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-size: 10px;
+  }
+  .gst-igst { background: #6a0dad; }
+  .badge-paid {
+    display: inline-block;
+    background: #1a7a1a;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 10px;
+  }
+  .badge-pending {
+    display: inline-block;
+    background: #b85c00;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="title-bar">
+  <span>TallyPrime 3.0 &mdash; DS CAMERA STORE &mdash; 1-Jun-2025 to 4-Jun-2025</span>
+  <span class="title-bar-btns">
+    <span class="btn-min">&nbsp;</span>
+    <span class="btn-max">&nbsp;</span>
+    <span class="btn-close">&nbsp;</span>
+  </span>
+</div>
+
+<div class="menu-bar">
+  <span>Gateway of Tally</span>
+  <span>Accounts Info</span>
+  <span>Inventory Info</span>
+  <span>Accounting Vouchers</span>
+  <span>Inventory Vouchers</span>
+  <span><strong>Import Data</strong></span>
+  <span>Reports</span>
+  <span>Utilities</span>
+  <span>Help</span>
+</div>
+
+<div class="gateway-bar">
+  <span class="company">DS CAMERA STORE</span>
+  <span>&#128197; 1-Jun-2025 to 4-Jun-2025</span>
+  <span style="color:#4cff91">&#10004; XML Import Successful &mdash; 12 Vouchers Imported</span>
+  <span style="color:#aaa; font-size:11px; margin-left:auto;">F2: Date &nbsp; F3: Company &nbsp; F11: Features &nbsp; F12: Configure</span>
+</div>
+
+<div class="import-banner">
+  <span style="font-size:16px">&#10004;</span>
+  <strong>Import completed.</strong>
+  &nbsp; 12 Sales Vouchers + 8 Purchase Vouchers from DS_POS_Sales_01Jun2025.xml
+  &nbsp;|&nbsp; 0 errors &nbsp;|&nbsp; Ledgers auto-created: 4 new customers
+</div>
+
+<div class="tabs">
+  <div class="tab active">Sales Vouchers (12)</div>
+  <div class="tab">Purchase Vouchers (8)</div>
+  <div class="tab">Stock Masters</div>
+  <div class="tab">Ledger Masters</div>
+</div>
+
+<div class="tally-main">
+
+  <div class="left-panel">
+    <div class="btn-key active"><span class="key">F1</span> Detailed</div>
+    <div class="btn-key"><span class="key">F2</span> Date</div>
+    <div class="btn-key"><span class="key">F4</span> Contra</div>
+    <div class="btn-key"><span class="key">F5</span> Payment</div>
+    <div class="btn-key"><span class="key">F6</span> Receipt</div>
+    <div class="btn-key"><span class="key">F7</span> Journal</div>
+    <div class="btn-key"><span class="key">F8</span> Sales</div>
+    <div class="btn-key"><span class="key">F9</span> Purchase</div>
+    <div class="btn-key"><span class="key">F10</span> Other</div>
+    <div style="height:16px"></div>
+    <div class="btn-key"><span class="key">Alt+F7</span> Stock Jnl</div>
+    <div class="btn-key"><span class="key">Ctrl+N</span> Calculator</div>
+    <div class="btn-key"><span class="key">Ctrl+G</span> Go To</div>
+  </div>
+
+  <div class="center-panel">
+    <div class="panel-header">
+      <span>Day Book &mdash; Sales Vouchers &nbsp;<span style="font-size:10px;font-weight:normal;color:#aad4f5">(Imported from DS POS)</span></span>
+      <span style="font-size:11px;font-weight:normal">1-Jun-2025 to 4-Jun-2025</span>
+    </div>
+    <div class="panel-sub-header">
+      <span>Voucher Type: Sales &nbsp;|&nbsp; Ledger: Sales Account &nbsp;|&nbsp; GST: Regular</span>
+      <span>Amounts in &#8377; &nbsp;|&nbsp; <strong>12 vouchers</strong></span>
+    </div>
+    <div style="overflow-y:auto; flex:1;">
+      <table class="voucher-table">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th style="width:88px">Date</th>
+            <th style="width:112px">Vch No.</th>
+            <th>Party Name</th>
+            <th style="width:80px">GSTIN</th>
+            <th class="right" style="width:80px">Taxable &#8377;</th>
+            <th class="right" style="width:65px">GST &#8377;</th>
+            <th class="right" style="width:82px">Total &#8377;</th>
+            <th style="width:70px">GST Type</th>
+            <th style="width:55px">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="selected">
+            <td class="center">1</td>
+            <td>01-Jun-2025</td>
+            <td>INV-000021</td>
+            <td>Mohammed Al Rashid</td>
+            <td style="font-size:10px">36AABCS1234</td>
+            <td class="right">42,372</td>
+            <td class="right">7,628</td>
+            <td class="right">50,000</td>
+            <td><span class="gst-tag">CGST+SGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="center">2</td>
+            <td>01-Jun-2025</td>
+            <td>INV-000022</td>
+            <td>Priya Sharma</td>
+            <td style="font-size:10px">&mdash;</td>
+            <td class="right">16,949</td>
+            <td class="right">3,051</td>
+            <td class="right">20,000</td>
+            <td><span class="gst-tag">CGST+SGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="center">3</td>
+            <td>02-Jun-2025</td>
+            <td>INV-000023</td>
+            <td>Ravi Kumar (Maharashtra)</td>
+            <td style="font-size:10px">27AADCR5678</td>
+            <td class="right">25,424</td>
+            <td class="right">4,576</td>
+            <td class="right">30,000</td>
+            <td><span class="gst-tag gst-igst">IGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="center">4</td>
+            <td>02-Jun-2025</td>
+            <td>INV-000024</td>
+            <td>Walk-in Customer</td>
+            <td style="font-size:10px">&mdash;</td>
+            <td class="right">8,475</td>
+            <td class="right">1,525</td>
+            <td class="right">10,000</td>
+            <td><span class="gst-tag">CGST+SGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="center">5</td>
+            <td>02-Jun-2025</td>
+            <td>INV-000025</td>
+            <td>Akram Photography</td>
+            <td style="font-size:10px">36BBBCA9999</td>
+            <td class="right">63,559</td>
+            <td class="right">11,441</td>
+            <td class="right">75,000</td>
+            <td><span class="gst-tag">CGST+SGST</span></td>
+            <td><span class="badge-pending">Pending</span></td>
+          </tr>
+          <tr>
+            <td class="center">6</td>
+            <td>03-Jun-2025</td>
+            <td>INV-000026</td>
+            <td>Sunita Reddy</td>
+            <td style="font-size:10px">&mdash;</td>
+            <td class="right">21,186</td>
+            <td class="right">3,814</td>
+            <td class="right">25,000</td>
+            <td><span class="gst-tag">CGST+SGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="center">7</td>
+            <td>03-Jun-2025</td>
+            <td>INV-000027</td>
+            <td>Naved Sheikh (Gujarat)</td>
+            <td style="font-size:10px">24AACCS8765</td>
+            <td class="right">33,898</td>
+            <td class="right">6,102</td>
+            <td class="right">40,000</td>
+            <td><span class="gst-tag gst-igst">IGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="center">8</td>
+            <td>03-Jun-2025</td>
+            <td>INV-000028</td>
+            <td>Kiran Studios</td>
+            <td style="font-size:10px">36BBBKK2345</td>
+            <td class="right">84,746</td>
+            <td class="right">15,254</td>
+            <td class="right">1,00,000</td>
+            <td><span class="gst-tag">CGST+SGST</span></td>
+            <td><span class="badge-pending">Pending</span></td>
+          </tr>
+          <tr>
+            <td class="center">9</td>
+            <td>04-Jun-2025</td>
+            <td>INV-000029</td>
+            <td>Walk-in Customer</td>
+            <td style="font-size:10px">&mdash;</td>
+            <td class="right">12,712</td>
+            <td class="right">2,288</td>
+            <td class="right">15,000</td>
+            <td><span class="gst-tag">CGST+SGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="center">10</td>
+            <td>04-Jun-2025</td>
+            <td>INV-000030</td>
+            <td>Fatima Designs (Chennai)</td>
+            <td style="font-size:10px">33AADCF1122</td>
+            <td class="right">50,847</td>
+            <td class="right">9,153</td>
+            <td class="right">60,000</td>
+            <td><span class="gst-tag gst-igst">IGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="center">11</td>
+            <td>04-Jun-2025</td>
+            <td>INV-000031</td>
+            <td>Rajesh Iyer</td>
+            <td style="font-size:10px">&mdash;</td>
+            <td class="right">6,780</td>
+            <td class="right">1,220</td>
+            <td class="right">8,000</td>
+            <td><span class="gst-tag">CGST+SGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+          <tr>
+            <td class="center">12</td>
+            <td>04-Jun-2025</td>
+            <td>INV-000032</td>
+            <td>Studio 99 Hyderabad</td>
+            <td style="font-size:10px">36AABCS5577</td>
+            <td class="right">1,05,932</td>
+            <td class="right">19,068</td>
+            <td class="right">1,25,000</td>
+            <td><span class="gst-tag">CGST+SGST</span></td>
+            <td><span class="badge-paid">Paid</span></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5"><strong>TOTAL &mdash; 12 Vouchers</strong></td>
+            <td class="right"><strong>4,72,881</strong></td>
+            <td class="right"><strong>85,119</strong></td>
+            <td class="right"><strong>5,58,000</strong></td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="rp-header">
+      <span>Voucher Detail &mdash; INV-000021</span>
+      <span style="font-size:10px;color:#aad4f5">Sales</span>
+    </div>
+
+    <div class="voucher-box">
+      <div class="row"><span class="label">Voucher No.</span><span class="value">INV-000021</span></div>
+      <div class="row"><span class="label">Date</span><span class="value">01-Jun-2025</span></div>
+      <div class="row"><span class="label">Party</span><span class="value">Mohammed Al Rashid</span></div>
+      <div class="row"><span class="label">GSTIN</span><span class="value" style="font-size:11px">36AABCS1234A1Z5</span></div>
+      <div class="row"><span class="label">State</span><span class="value">Telangana</span></div>
+      <div class="row"><span class="label">GST Type</span><span class="value">CGST + SGST (Intra-state)</span></div>
+      <div class="row"><span class="label">Payment Mode</span><span class="value">Cash</span></div>
+    </div>
+
+    <div style="padding: 6px 0; border-bottom:1px solid #c6d9f0;">
+      <div style="padding:0 10px 4px; font-size:11px; color:#003d82; font-weight:bold;">Stock Items</div>
+      <table class="ledger-table">
+        <thead>
+          <tr>
+            <th>Item (HSN)</th>
+            <th>Qty</th>
+            <th class="right">Rate</th>
+            <th class="right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Sony Alpha A7 IV<br><span style="color:#888;font-size:10px">HSN: 85258090</span></td>
+            <td>1</td>
+            <td class="right">2,54,237</td>
+            <td class="right">2,54,237</td>
+          </tr>
+          <tr>
+            <td>Sony FE 50mm f/1.4<br><span style="color:#888;font-size:10px">HSN: 90021190</span></td>
+            <td>1</td>
+            <td class="right">84,746</td>
+            <td class="right">84,746</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr><td colspan="3">Taxable Value</td><td class="right">3,38,983</td></tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div style="padding: 6px 0; border-bottom:1px solid #c6d9f0;">
+      <div style="padding:0 10px 4px; font-size:11px; color:#003d82; font-weight:bold;">GST Ledger Entries</div>
+      <table class="ledger-table">
+        <thead>
+          <tr>
+            <th>Ledger</th>
+            <th class="right">Rate</th>
+            <th class="right">Amount &#8377;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Output CGST</td>
+            <td class="right">9%</td>
+            <td class="right">30,508</td>
+          </tr>
+          <tr>
+            <td>Output SGST</td>
+            <td class="right">9%</td>
+            <td class="right">30,509</td>
+          </tr>
+          <tr>
+            <td>Cash-in-Hand (Dr)</td>
+            <td class="right">&mdash;</td>
+            <td class="right">4,00,000</td>
+          </tr>
+          <tr>
+            <td>Sales Account (Cr)</td>
+            <td class="right">&mdash;</td>
+            <td class="right">3,38,983</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr><td colspan="2"><strong>Total GST</strong></td><td class="right"><strong>61,017</strong></td></tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="voucher-box">
+      <div class="row"><span class="label">Grand Total</span><span class="value" style="font-size:14px; color:#1a7a1a">&#8377; 4,00,000.00</span></div>
+      <div class="row"><span class="label">Amount Paid</span><span class="value" style="color:#1a7a1a">&#8377; 4,00,000.00</span></div>
+      <div class="row"><span class="label">Balance Due</span><span class="value" style="color:#888">&#8377; 0.00</span></div>
+    </div>
+
+    <div style="padding:8px 10px; font-size:10px; color:#555; background:#e8f4ff; border-top:1px solid #c6d9f0; line-height:1.7;">
+      <div><strong>Narration:</strong> Sale via DS POS &mdash; INV-000021</div>
+      <div style="color:#003d82; font-weight:bold; margin-top:4px;">&#10004; HSN/SAC codes present &mdash; GSTR-1 ready</div>
+      <div style="color:#1a7a1a;">&#10004; Stock deducted: Sony A7 IV (-1), Sony 50mm (-1)</div>
+      <div style="color:#1a7a1a;">&#10004; Ledgers auto-matched: Output CGST, Output SGST, Sales A/c</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="status-bar">
+  <span>
+    <span class="hotkey">F1</span>: Help &nbsp;
+    <span class="hotkey">F2</span>: Date &nbsp;
+    <span class="hotkey">F8</span>: Sales &nbsp;
+    <span class="hotkey">F9</span>: Purchase &nbsp;
+    <span class="hotkey">Enter</span>: Open Voucher &nbsp;
+    <span class="hotkey">Esc</span>: Back
+  </span>
+  <span class="status-ok">&#10004; DS POS XML &mdash; GSTR-1 Ready &nbsp;|&nbsp; TallyPrime 3.0</span>
+</div>
+
+</body>
+</html>

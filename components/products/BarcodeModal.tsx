@@ -63,7 +63,7 @@ export function BarcodeModal({
 
         <div className="flex flex-col items-center gap-3 py-2">
           <div ref={printRef} className="barcode-print text-center">
-            <h3 className="font-semibold text-sm text-[#0F172A] truncate max-w-[250px]">
+            <h3 className="font-semibold text-sm text-[#111827] truncate max-w-[250px]">
               {productName}
             </h3>
             <p className="text-xs text-slate-500">SKU: {sku}</p>
@@ -76,7 +76,7 @@ export function BarcodeModal({
                 displayValue={true}
               />
             </div>
-            <p className="text-sm font-semibold text-[#0369A1]">
+            <p className="text-sm font-semibold text-[#4B5563]">
               ₹{sellingPrice.toFixed(2)}
             </p>
           </div>
@@ -91,7 +91,7 @@ export function BarcodeModal({
           </Button>
           <Button
             onClick={handlePrint}
-            className="bg-[#0369A1] hover:bg-[#0369A1]/90 text-white"
+            className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white"
           >
             <PrinterIcon className="size-4 mr-1" />
             Print

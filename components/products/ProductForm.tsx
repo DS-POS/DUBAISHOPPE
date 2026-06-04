@@ -336,7 +336,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
                   <Button
                     type="button"
                     size="sm"
-                    className="bg-[#0369A1] text-white hover:bg-[#0369A1]/90"
+                    className="bg-[#111827] text-white hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200"
                     onClick={handleAddCategory}
                     disabled={isAddingCategory}
                   >
@@ -443,7 +443,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
                 id="serial_required"
                 type="checkbox"
                 {...register('serial_required')}
-                className="h-4 w-4 rounded border-border accent-[#0369A1]"
+                className="h-4 w-4 rounded border-border accent-[#111827]"
               />
               <label htmlFor="serial_required" className="text-sm text-slate-600">
                 Track individual serial numbers
@@ -461,7 +461,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
         <div className="flex flex-col sm:flex-row gap-4 items-start">
           {/* Preview */}
           <div
-            className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-slate-50 shrink-0 overflow-hidden cursor-pointer hover:border-[#0369A1] transition-colors"
+            className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-slate-50 shrink-0 overflow-hidden cursor-pointer hover:border-[#111827] transition-colors"
             onClick={() => fileInputRef.current?.click()}
           >
             {imageUrl ? (
@@ -537,7 +537,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
         <Button
           type="submit"
           disabled={isPending || imageUploading}
-          className="bg-[#0369A1] text-white hover:bg-[#0369A1]/90 min-w-[120px]"
+          className="bg-[#111827] text-white hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 min-w-[120px]"
         >
           {isPending ? (
             <><Loader2Icon className="size-4 animate-spin mr-2" /> Saving...</>

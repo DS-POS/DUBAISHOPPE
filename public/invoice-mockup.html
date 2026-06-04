@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice Mockup — Dubai Shoppe</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #E0D1B8; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; font-family: 'Helvetica Neue', Arial, sans-serif; }
+  .page {
+    background: #FAF7F2;
+    width: 794px;
+    min-height: 1123px;
+    box-shadow: 0 8px 40px rgba(92,74,58,0.18);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .border-top { height: 8px; background: #C8B39A; }
+  .border-bottom {
+    background: #FAF7F2;
+    border-top: 1.5px solid #C8B39A;
+    margin-top: auto;
+    padding: 7px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .border-bottom .bb-label { font-size: 8px; color: #5C4A3A; font-weight: 700; }
+  .border-bottom .bb-sep { font-size: 8px; color: #1e293b; margin: 0 8px; font-weight: 700; }
+  .content { padding: 28px 36px; flex: 1; display: flex; flex-direction: column; }
+
+  /* Header */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .logo-block { display: flex; gap: 0; align-items: center; }
+  .vdivider { width: 1px; background: #C8B39A; margin: 0 14px; align-self: stretch; }
+  .logo-block img { width: 90px; height: 90px; object-fit: contain; }
+  .store-name { font-size: 17px; font-weight: 800; color: #5C4A3A; letter-spacing: -0.3px; }
+  .store-tagline { font-size: 8px; color: #64748b; margin-top: 2px; }
+  .store-detail { font-size: 9px; color: #374151; margin-top: 3px; line-height: 1.5; }
+  .gstin-badge {
+    display: inline-block; background: #F6F0E6; border: 1px solid #E0D1B8;
+    padding: 3px 8px; border-radius: 4px; margin-top: 6px;
+    font-size: 8px; font-weight: 700; color: #5C4A3A;
+  }
+  .invoice-right { text-align: right; }
+  .invoice-title { font-size: 26px; font-weight: 800; color: #9A8472; letter-spacing: 1px; }
+  .invoice-detail { font-size: 9px; color: #64748b; margin-top: 4px; line-height: 1.8; }
+
+  /* Divider */
+  .green-divider { border: none; border-top: 1.5px solid #9A8472; margin: 12px 0; }
+  .divider { border: none; border-top: 1px solid #E0D1B8; margin: 10px 0; }
+
+  /* Bill To */
+  .bill-section { margin-bottom: 14px; }
+  .bill-label { font-size: 8px; font-weight: 700; color: #9A8472; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+  .bill-name { font-size: 10px; font-weight: 700; color: #0f172a; }
+  .bill-sub { font-size: 9px; color: #475569; margin-top: 3px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 8.5px; }
+  thead tr { background: #F6F0E6; }
+  thead th { padding: 6px 5px; text-align: right; font-size: 7.5px; font-weight: 700; color: #5C4A3A; text-transform: uppercase; letter-spacing: 0.4px; }
+  thead th:first-child, thead th:nth-child(2) { text-align: left; }
+  tbody tr { border-bottom: 1px solid #f1f5f9; }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  td { padding: 6px 5px; text-align: right; vertical-align: top; }
+  td:first-child, td:nth-child(2) { text-align: left; }
+  .prod-name { font-weight: 700; color: #0f172a; }
+  .prod-sub { font-size: 7px; color: #94a3b8; margin-top: 2px; }
+  .td-total { font-weight: 700; }
+
+  /* Totals */
+  .totals-section { display: flex; justify-content: flex-end; margin-top: 12px; }
+  .totals-box { width: 220px; }
+  .total-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 8.5px; }
+  .total-label { color: #64748b; }
+  .total-value { color: #1e293b; }
+  .grand-total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 10px; background: #F6F0E6;
+    border: 1px solid #E0D1B8; border-radius: 5px; margin-top: 6px;
+  }
+  .grand-label { font-size: 11px; font-weight: 800; color: #5C4A3A; }
+  .grand-value { font-size: 11px; font-weight: 800; color: #9A8472; }
+  .paid-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 8.5px; margin-top: 3px; }
+  .discount-value { color: #9A8472; }
+
+  /* Footer */
+  .footer { display: flex; justify-content: space-between; padding: 10px 0; margin-top: 24px; border-top: 1px solid #e2e8f0; }
+  .footer-text { font-size: 7.5px; color: #94a3b8; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="border-top"></div>
+  <div class="content">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-block">
+        <img src="/DUBAI LOGO BR.png" alt="Dubai Shoppe Logo" />
+        <div class="vdivider"></div>
+        <div>
+          <div class="store-name">DUBAI SHOPPE</div>
+          <div class="store-tagline">A Professional Camera Store</div>
+          <div class="store-detail">5-1-750/2, Haridas Market Bank Street, Koti</div>
+          <div class="store-detail">Hyderabad - 500095</div>
+          <div class="store-detail">Ph: +91 9885878645 / +91 9866141485</div>
+          <div class="store-detail">Email: Dubaishoppe_hyd@yahoo.com</div>
+          <div class="gstin-badge">GSTIN: 36ALBPM0907C1ZO &nbsp;|&nbsp; State: Telangana (36)</div>
+        </div>
+      </div>
+      <div class="invoice-right">
+        <div class="invoice-title">TAX INVOICE</div>
+        <div class="invoice-detail">
+          Invoice No: <strong>INV-000042</strong><br>
+          Date: 04/06/2026<br>
+          Payment: CASH
+        </div>
+      </div>
+    </div>
+
+    <hr class="green-divider">
+
+    <!-- Bill To -->
+    <div class="bill-section">
+      <div class="bill-label">Bill To</div>
+      <div class="bill-name">Mohammed Farhan</div>
+      <div class="bill-sub">Ph: +91 9876543210</div>
+      <div class="bill-sub">123, Banjara Hills, Road No. 12, Hyderabad - 500034</div>
+      <div class="bill-sub">GSTIN: 36ABCDE1234F1Z5 &nbsp;|&nbsp; State: Telangana</div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Items Table -->
+    <table>
+      <thead>
+        <tr>
+          <th style="width:22px">#</th>
+          <th>Description</th>
+          <th style="width:54px">HSN</th>
+          <th style="width:28px">Qty</th>
+          <th style="width:60px">Rate</th>
+          <th style="width:46px">Disc.</th>
+          <th style="width:62px">Taxable</th>
+          <th style="width:32px">GST%</th>
+          <th style="width:50px">CGST</th>
+          <th style="width:50px">SGST</th>
+          <th style="width:62px">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>
+            <div class="prod-name">Sony Alpha A7 IV Body</div>
+            <div class="prod-sub">SKU: SNY-A7IV-BODY</div>
+            <div class="prod-sub">S/N: SN123456789</div>
+          </td>
+          <td>85258090</td>
+          <td>1</td>
+          <td>₹2,00,000</td>
+          <td>₹5,000</td>
+          <td>₹1,65,254</td>
+          <td>18%</td>
+          <td>₹14,873</td>
+          <td>₹14,873</td>
+          <td class="td-total">₹1,95,000</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>
+            <div class="prod-name">Sony FE 24-70mm f/2.8 GM II</div>
+            <div class="prod-sub">SKU: SNY-SEL2470GM2</div>
+          </td>
+          <td>90015000</td>
+          <td>1</td>
+          <td>₹1,60,000</td>
+          <td>₹0</td>
+          <td>₹1,35,593</td>
+          <td>18%</td>
+          <td>₹12,203</td>
+          <td>₹12,203</td>
+          <td class="td-total">₹1,60,000</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>
+            <div class="prod-name">Sony NP-FZ100 Battery Pack</div>
+            <div class="prod-sub">SKU: SNY-NPFZ100</div>
+          </td>
+          <td>85076000</td>
+          <td>2</td>
+          <td>₹4,500</td>
+          <td>₹0</td>
+          <td>₹7,627</td>
+          <td>18%</td>
+          <td>₹687</td>
+          <td>₹687</td>
+          <td class="td-total">₹9,000</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div class="totals-section">
+      <div class="totals-box">
+        <div class="total-row">
+          <span class="total-label">Subtotal</span>
+          <span class="total-value">₹3,64,000.00</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Discount</span>
+          <span class="total-value discount-value">−₹5,000.00</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Taxable Amount</span>
+          <span class="total-value">₹3,08,474.58</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">CGST</span>
+          <span class="total-value">₹27,762.71</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">SGST</span>
+          <span class="total-value">₹27,762.71</span>
+        </div>
+        <div class="grand-total-row">
+          <span class="grand-label">Grand Total</span>
+          <span class="grand-value">₹3,59,000.00</span>
+        </div>
+        <div class="paid-row">
+          <span class="total-label">Amount Paid</span>
+          <span style="color:#9A8472;font-weight:600">₹3,59,000.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span class="footer-text">This is a computer-generated invoice. No signature required.</span>
+      <span class="footer-text">Dubai Shoppe &nbsp;·&nbsp; GSTIN: 36ALBPM0907C1ZO &nbsp;·&nbsp; +91 9885878645 / +91 9866141485</span>
+    </div>
+
+  </div>
+  <div class="border-bottom">
+    <span class="bb-label">Dubaishoppe_hyd@yahoo.com</span>
+    <span class="bb-sep">|</span>
+    <span class="bb-label">+91 9885878645 / +91 9866141485</span>
+    <span class="bb-sep">|</span>
+    <span class="bb-label">DUBAI SHOPPE — GSTIN: 36ALBPM0907C1ZO</span>
+  </div>
+</div>
+</body>
+</html>

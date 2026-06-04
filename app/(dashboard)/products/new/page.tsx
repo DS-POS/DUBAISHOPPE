@@ -20,7 +20,7 @@ export default async function NewProductPage() {
 
       <div>
         <h1
-          className="text-2xl font-bold text-[#0F172A]"
+          className="text-2xl font-bold text-[#111827]"
           style={{ fontFamily: 'Rubik, sans-serif' }}
         >
           Add Product

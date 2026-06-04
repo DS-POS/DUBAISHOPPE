@@ -24,6 +24,7 @@ const INDIAN_STATES = [
 
 const schema = z.object({
   name: z.string().min(1, 'Name required'),
+  business_name: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   gstin: z.string().optional(),
@@ -43,6 +44,7 @@ export default function CustomerForm({ customer }: Props) {
     resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       name: customer?.name ?? '',
+      business_name: customer?.business_name ?? '',
       phone: customer?.phone ?? '',
       email: customer?.email ?? '',
       gstin: customer?.gstin ?? '',
@@ -71,6 +73,10 @@ export default function CustomerForm({ customer }: Props) {
         <Label>Name *</Label>
         <Input placeholder="e.g. Rahul Sharma" {...register('name')} />
         {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+      </div>
+      <div className="space-y-1">
+        <Label>Business Name</Label>
+        <Input placeholder="Business / company name" {...register('business_name')} />
       </div>
       <div className="space-y-2">
         <Label>Phone</Label>

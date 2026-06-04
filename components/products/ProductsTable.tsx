@@ -8,19 +8,7 @@ import {
   BarcodeIcon,
   Trash2Icon,
   PackageIcon,
-  AlertTriangleIcon,
 } from 'lucide-react'
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 
 import { deleteProduct } from '@/actions/products'
 import { BarcodeModal } from './BarcodeModal'
@@ -77,7 +65,7 @@ export function ProductsTable({ products, categories, userRole }: ProductsTableP
   const isAdmin = userRole === 'admin'
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <ProductSearch
         categories={categories}
         onSearchChange={setSearch}
@@ -88,159 +76,168 @@ export function ProductsTable({ products, categories, userRole }: ProductsTableP
         statusValue={statusFilter}
       />
 
-      <div className="rounded-xl border border-border overflow-hidden bg-white">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-slate-50">
-              <TableHead className="w-14">Image</TableHead>
-              <TableHead>Name / SKU</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right">Stock</TableHead>
-              <TableHead className="text-right">Price (₹)</TableHead>
-              <TableHead className="text-center">GST</TableHead>
-              <TableHead className="text-center">Status</TableHead>
-              <TableHead className="text-right w-32">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-16">
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                    <PackageIcon className="size-10 opacity-30" />
-                    <p className="font-medium">No products found</p>
-                    <p className="text-sm">
-                      {search || categoryFilter !== 'all' || statusFilter !== 'all'
-                        ? 'Try adjusting your filters'
-                        : 'Add your first product to get started'}
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              filtered.map(product => {
-                const isLowStock = product.current_stock <= product.low_stock_alert
-                return (
-                  <TableRow key={product.id} className="hover:bg-slate-50/50">
-                    {/* Image */}
-                    <TableCell>
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center shrink-0">
-                        {product.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <PackageIcon className="size-5 text-slate-400" />
-                        )}
+      {/* Table card */}
+      <div className="rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-100">
+              <tr>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-14">
+                  Image
+                </th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Name / SKU
+                </th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Stock
+                </th>
+                <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Price (₹)
+                </th>
+                <th className="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  GST
+                </th>
+                <th className="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider w-32">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-5 py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                        <PackageIcon className="size-6 text-slate-400" />
                       </div>
-                    </TableCell>
-
-                    {/* Name / SKU */}
-                    <TableCell>
                       <div>
-                        <p className="font-medium text-[#0F172A] text-sm">{product.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{product.sku}</p>
+                        <p className="font-semibold text-slate-700 text-sm">No products found</p>
+                        <p className="text-sm text-slate-400 mt-0.5">
+                          {search || categoryFilter !== 'all' || statusFilter !== 'all'
+                            ? 'Try adjusting your filters'
+                            : 'Add your first product to get started'}
+                        </p>
                       </div>
-                    </TableCell>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map(product => {
+                  const isLowStock = product.current_stock <= product.low_stock_alert
+                  return (
+                    <tr key={product.id} className="hover:bg-slate-50/70 transition-colors">
+                      {/* Image */}
+                      <td className="px-5 py-3.5">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 flex items-center justify-center shrink-0">
+                          {product.image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={product.image_url}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <PackageIcon className="size-5 text-slate-400" />
+                          )}
+                        </div>
+                      </td>
 
-                    {/* Category */}
-                    <TableCell>
-                      <span className="text-sm text-slate-600">
-                        {product.categories?.name ?? '—'}
-                      </span>
-                    </TableCell>
+                      {/* Name / SKU */}
+                      <td className="px-5 py-3.5 text-sm">
+                        <div>
+                          <p className="font-semibold text-slate-900 text-sm">{product.name}</p>
+                          <p className="text-xs text-slate-400 font-mono mt-0.5">{product.sku}</p>
+                        </div>
+                      </td>
 
-                    {/* Stock */}
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {isLowStock && product.status === 'active' && (
-                          <AlertTriangleIcon className="size-3.5 text-amber-500 shrink-0" />
-                        )}
-                        <span
-                          className={
-                            isLowStock && product.status === 'active'
-                              ? 'font-semibold text-amber-600'
-                              : 'text-sm text-slate-700'
-                          }
-                        >
-                          {product.current_stock}
+                      {/* Category */}
+                      <td className="px-5 py-3.5 text-sm">
+                        <span className="text-sm text-slate-600">
+                          {product.categories?.name ?? '—'}
                         </span>
-                      </div>
-                      {isLowStock && product.status === 'active' && (
-                        <p className="text-xs text-amber-500 text-right">Low stock</p>
-                      )}
-                    </TableCell>
+                      </td>
 
-                    {/* Price */}
-                    <TableCell className="text-right">
-                      <span className="font-medium text-sm">
-                        ₹{product.selling_price.toFixed(2)}
-                      </span>
-                    </TableCell>
-
-                    {/* GST */}
-                    <TableCell className="text-center">
-                      <span className="text-sm text-slate-600">{product.gst_rate}%</span>
-                    </TableCell>
-
-                    {/* Status */}
-                    <TableCell className="text-center">
-                      <Badge
-                        variant={product.status === 'active' ? 'default' : 'secondary'}
-                        className={
-                          product.status === 'active'
-                            ? 'bg-[#16A34A]/10 text-[#16A34A] border-[#16A34A]/20'
-                            : ''
-                        }
-                      >
-                        {product.status}
-                      </Badge>
-                    </TableCell>
-
-                    {/* Actions */}
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {/* Barcode */}
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          title="View barcode"
-                          onClick={() => setBarcodeModal({ open: true, product })}
-                        >
-                          <BarcodeIcon className="size-4" />
-                        </Button>
-
-                        {/* Edit */}
-                        <Link href={`/products/${product.id}/edit`}>
-                          <Button variant="ghost" size="icon-sm" title="Edit product">
-                            <EditIcon className="size-4" />
-                          </Button>
-                        </Link>
-
-                        {/* Delete (admin only) */}
-                        {isAdmin && (
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            title="Deactivate product"
-                            onClick={() => handleDelete(product.id, product.name)}
-                            disabled={deleting === product.id || product.status === 'inactive'}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2Icon className="size-4" />
-                          </Button>
+                      {/* Stock */}
+                      <td className="px-5 py-3.5 text-sm text-right">
+                        {isLowStock && product.status === 'active' ? (
+                          <span className="bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-full text-xs">
+                            {product.current_stock}
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-slate-700">{product.current_stock}</span>
                         )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            )}
-          </TableBody>
-        </Table>
+                      </td>
+
+                      {/* Price */}
+                      <td className="px-5 py-3.5 text-sm text-right">
+                        <span className="font-bold text-slate-900">
+                          ₹{product.selling_price.toFixed(2)}
+                        </span>
+                      </td>
+
+                      {/* GST */}
+                      <td className="px-5 py-3.5 text-sm text-center">
+                        <span className="text-sm text-slate-500">{product.gst_rate}%</span>
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-5 py-3.5 text-sm text-center">
+                        {product.status === 'active' ? (
+                          <span className="bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-full text-xs">
+                            Active
+                          </span>
+                        ) : (
+                          <span className="bg-slate-100 text-slate-500 font-semibold px-2.5 py-0.5 rounded-full text-xs">
+                            Inactive
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-5 py-3.5 text-sm text-right">
+                        <div className="flex items-center justify-end gap-0.5">
+                          {/* Barcode */}
+                          <button
+                            title="View barcode"
+                            onClick={() => setBarcodeModal({ open: true, product })}
+                            className="hover:bg-slate-100 p-1.5 rounded-lg transition-colors text-slate-500 hover:text-slate-700"
+                          >
+                            <BarcodeIcon className="size-4" />
+                          </button>
+
+                          {/* Edit */}
+                          <Link href={`/products/${product.id}/edit`}>
+                            <span className="hover:bg-slate-100 p-1.5 rounded-lg transition-colors text-slate-500 hover:text-slate-700 inline-flex">
+                              <EditIcon className="size-4" />
+                            </span>
+                          </Link>
+
+                          {/* Delete (admin only) */}
+                          {isAdmin && (
+                            <button
+                              title="Deactivate product"
+                              onClick={() => handleDelete(product.id, product.name)}
+                              disabled={deleting === product.id || product.status === 'inactive'}
+                              className="hover:bg-red-50 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-red-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              <Trash2Icon className="size-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Barcode Modal */}

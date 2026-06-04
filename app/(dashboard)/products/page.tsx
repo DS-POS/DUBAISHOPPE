@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { PlusIcon, PackageIcon, CheckCircleIcon, AlertTriangleIcon } from 'lucide-react'
+import { PlusIcon, PackageIcon, CheckCircleIcon, AlertTriangleIcon, UploadIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -35,41 +35,49 @@ export default async function ProductsPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1
-            className="text-2xl font-bold text-[#0F172A]"
+            className="text-2xl font-bold text-[#111827]"
             style={{ fontFamily: 'Rubik, sans-serif' }}
           >
-            Products
+            Product Inventory
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Manage your camera store inventory
+            Manage your product catalog and inventory
           </p>
         </div>
-        <Link href="/products/new">
-          <Button className="bg-[#0369A1] text-white hover:bg-[#0369A1]/90 gap-1.5">
-            <PlusIcon className="size-4" />
-            Add Product
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/products/import">
+            <Button variant="outline" className="gap-1.5">
+              <UploadIcon className="size-4" />
+              Import Products
+            </Button>
+          </Link>
+          <Link href="/products/new">
+            <Button className="bg-[#111827] text-white hover:bg-[#1F2937] gap-1.5">
+              <PlusIcon className="size-4" />
+              Add Product
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#0369A1]/10">
-            <PackageIcon className="size-5 text-[#0369A1]" />
+          <div className="p-2 rounded-lg bg-[#111827]/10">
+            <PackageIcon className="size-5 text-[#4B5563]" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-[#0F172A]">{products.length}</p>
+            <p className="text-2xl font-bold text-[#111827]">{products.length}</p>
             <p className="text-xs text-muted-foreground">Total Products</p>
           </div>
         </Card>
 
         <Card className="p-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#16A34A]/10">
-            <CheckCircleIcon className="size-5 text-[#16A34A]" />
+          <div className="p-2 rounded-lg bg-[#111827]/10">
+            <CheckCircleIcon className="size-5 text-[#4B5563]" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-[#0F172A]">{activeCount}</p>
+            <p className="text-2xl font-bold text-[#111827]">{activeCount}</p>
             <p className="text-xs text-muted-foreground">Active Products</p>
           </div>
         </Card>
@@ -79,7 +87,7 @@ export default async function ProductsPage() {
             <AlertTriangleIcon className="size-5 text-amber-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-[#0F172A]">{lowStockCount}</p>
+            <p className="text-2xl font-bold text-[#111827]">{lowStockCount}</p>
             <p className="text-xs text-muted-foreground">Low Stock Items</p>
           </div>
         </Card>

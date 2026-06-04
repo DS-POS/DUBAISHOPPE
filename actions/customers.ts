@@ -37,6 +37,7 @@ export async function getCustomerById(id: string): Promise<Customer | null> {
 
 export interface CustomerFormData {
   name: string
+  business_name?: string
   phone?: string
   email?: string
   gstin?: string
@@ -51,6 +52,7 @@ export async function createCustomer(formData: CustomerFormData): Promise<void> 
 
   const { error } = await supabase.from('customers').insert({
     name: formData.name.trim(),
+    business_name: formData.business_name?.trim() || null,
     phone: formData.phone?.trim() || null,
     email: formData.email?.trim() || null,
     gstin: formData.gstin?.trim().toUpperCase() || null,
@@ -71,6 +73,7 @@ export async function updateCustomer(id: string, formData: CustomerFormData): Pr
     .from('customers')
     .update({
       name: formData.name.trim(),
+      business_name: formData.business_name?.trim() || null,
       phone: formData.phone?.trim() || null,
       email: formData.email?.trim() || null,
       gstin: formData.gstin?.trim().toUpperCase() || null,
@@ -81,4 +84,52 @@ export async function updateCustomer(id: string, formData: CustomerFormData): Pr
   if (error) throw new Error(error.message)
   revalidatePath('/customers')
   redirect('/customers')
+}
+
+export async function deleteCustomer(id: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { error } = await supabase.from('customers').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/customers')
+}
+
+export async function createCustomerAndReturnId(formData: CustomerFormData): Promise<string> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data, error } = await supabase
+    .from('customers')
+    .insert({
+      name: formData.name.trim(),
+      business_name: formData.business_name?.trim() || null,
+      phone: formData.phone?.trim() || null,
+      email: formData.email?.trim() || null,
+      gstin: formData.gstin?.trim().toUpperCase() || null,
+      address: formData.address?.trim() || null,
+      state: formData.state || 'Telangana',
+    })
+    .select('id')
+    .single()
+  if (error) throw new Error(error.message)
+  revalidatePath('/customers')
+  return data.id
+}
+
+export async function getCustomerInvoices(customerId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('id, invoice_no, grand_total, status, payment_method, created_at')
+    .eq('customer_id', customerId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+  if (error) throw new Error(error.message)
+  return data ?? []
 }
