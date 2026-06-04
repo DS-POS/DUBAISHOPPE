@@ -5,5 +5,6 @@ export const STORE = {
   gstin: '36ALBPM0907C1ZO',
   state: 'Telangana',
   state_code: '36',
-  phone: '9849436070 / 9885878645',
+  phone: '+91 9885878645 / +91 9866141485',
+  email: 'Dubaishoppe_hyd@yahoo.com',
 } as const

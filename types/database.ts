@@ -98,6 +98,7 @@ export interface SupplierPayment {
 export interface Customer {
   id: string
   name: string
+  business_name: string | null
   phone: string | null
   email: string | null
   gstin: string | null
@@ -118,12 +119,41 @@ export interface Invoice {
   igst: number
   total_gst: number
   grand_total: number
+  amount_paid: number
   payment_method: PaymentMethod | null
   status: InvoiceStatus
   created_by: string | null
   created_at: string
   customers?: Customer
   invoice_items?: InvoiceItem[]
+  invoice_payments?: InvoicePayment[]
+}
+
+export interface InvoicePayment {
+  id: string
+  invoice_id: string
+  amount: number
+  payment_date: string
+  payment_method: PaymentMethod | null
+  payment_reference: string | null
+  notes: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface Supplier {
+  id: string
+  name: string
+  business_name: string | null
+  phone: string | null
+  email: string | null
+  gstin: string | null
+  address: string | null
+  state: string
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface InvoiceItem {
@@ -161,6 +191,7 @@ export interface Quotation {
   status: QuotationStatus
   converted_invoice_id: string | null
   notes: string | null
+  selected_bank_index: number | null
   created_by: string | null
   created_at: string
   customers?: Customer

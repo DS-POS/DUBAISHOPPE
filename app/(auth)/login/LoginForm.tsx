@@ -38,7 +38,7 @@ export default function LoginForm() {
         <Label htmlFor="password">Password</Label>
         <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required className="mt-1" />
       </div>
-      <Button type="submit" disabled={loading} className="w-full bg-[#0369A1] hover:bg-[#0284C7] text-white font-semibold py-2.5">
+      <Button type="submit" disabled={loading} className="w-full bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white font-semibold py-2.5">
         {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Signing in...</> : 'Sign In'}
       </Button>
     </form>
