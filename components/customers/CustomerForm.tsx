@@ -30,6 +30,7 @@ const schema = z.object({
   gstin: z.string().optional(),
   address: z.string().optional(),
   state: z.string().min(1, 'State required'),
+  credit_limit: z.number().min(0).default(0),
 })
 type FormValues = z.infer<typeof schema>
 
@@ -50,6 +51,7 @@ export default function CustomerForm({ customer }: Props) {
       gstin: customer?.gstin ?? '',
       address: customer?.address ?? '',
       state: customer?.state ?? 'Telangana',
+      credit_limit: customer?.credit_limit ?? 0,
     },
   })
 
@@ -106,6 +108,19 @@ export default function CustomerForm({ customer }: Props) {
           ))}
         </select>
         {errors.state && <p className="text-xs text-destructive">{errors.state.message}</p>}
+      </div>
+      <div className="space-y-1.5">
+        <Label>Credit Limit (₹)</Label>
+        <input
+          type="number"
+          min={0}
+          step={500}
+          {...register('credit_limit', { valueAsNumber: true })}
+          placeholder="0 = cash only"
+          className="h-9 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-transparent"
+        />
+        {errors.credit_limit && <p className="text-xs text-destructive">{errors.credit_limit.message}</p>}
+        <p className="text-xs text-slate-400">Set 0 for cash-only customers. Billing warns when exceeded.</p>
       </div>
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="outline" onClick={() => router.push('/customers')} disabled={pending}>

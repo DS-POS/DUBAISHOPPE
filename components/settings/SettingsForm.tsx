@@ -100,12 +100,10 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
   const [isSavingTerms, startSavingTerms] = useTransition()
 
   const [stampUrl, setStampUrl] = useState(initialSettings.stamp_image_url)
-  const [signatureUrl, setSignatureUrl] = useState(initialSettings.signature_image_url)
   const [isUploadingStamp, startUploadingStamp] = useTransition()
-  const [isUploadingSignature, startUploadingSignature] = useTransition()
-
+  const [isDeletingStamp, startDeletingStamp] = useTransition()
   const stampInputRef = useRef<HTMLInputElement>(null)
-  const signatureInputRef = useRef<HTMLInputElement>(null)
+
 
   function handleBankChange(i: number, field: keyof BankAccount, val: string) {
     setBanks(prev => prev.map((b, idx) => idx === i ? { ...b, [field]: val } : b))
@@ -156,17 +154,14 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
     })
   }
 
-  function handleUploadSignature(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const fd = new FormData(); fd.append('file', file)
-    startUploadingSignature(async () => {
+  function handleDeleteStamp() {
+    startDeletingStamp(async () => {
       try {
-        const url = await uploadStoreAsset('signature_image_url', fd)
-        setSignatureUrl(url)
-        toast.success('Signature uploaded')
+        await updateSettings({ stamp_image_url: '' })
+        setStampUrl('')
+        toast.success('Stamp removed')
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Upload failed')
+        toast.error(err instanceof Error ? err.message : 'Failed to remove stamp')
       }
     })
   }
@@ -257,46 +252,34 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
         </CardContent>
       </Card>
 
-      {/* Authorized Signature */}
+      {/* Company Stamp */}
       <Card className="border border-[#E5E7EB] bg-[#F3F4F6]">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold text-[#111827]" style={{ fontFamily: 'Rubik, sans-serif' }}>
-            Authorized Signature
+            Company Stamp
           </CardTitle>
-          <p className="text-xs text-[#4B5563]">Stamp and signature shown on quotation PDFs</p>
+          <p className="text-xs text-[#4B5563]">Stamp shown on quotation PDFs</p>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <Label className="text-[#111827] text-sm font-medium">Company Stamp (PNG/JPG)</Label>
+        <CardContent className="space-y-3">
+          {stampUrl && (
+            <div className="border border-[#E5E7EB] rounded-md p-2 bg-white inline-block">
+              <Image src={stampUrl} alt="Stamp" width={100} height={100} className="object-contain" unoptimized />
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <input ref={stampInputRef} type="file" accept="image/*" className="hidden" onChange={handleUploadStamp} />
+            <Button variant="outline" size="sm" onClick={() => stampInputRef.current?.click()}
+              disabled={isUploadingStamp} className="border-[#D1D5DB] text-[#111827] hover:bg-[#E5E7EB]">
+              {isUploadingStamp ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+              {stampUrl ? 'Replace Stamp' : 'Upload Stamp'}
+            </Button>
             {stampUrl && (
-              <div className="border border-[#E5E7EB] rounded-md p-2 bg-white inline-block">
-                <Image src={stampUrl} alt="Stamp" width={100} height={100} className="object-contain" unoptimized />
-              </div>
-            )}
-            <div>
-              <input ref={stampInputRef} type="file" accept="image/*" className="hidden" onChange={handleUploadStamp} />
-              <Button variant="outline" size="sm" onClick={() => stampInputRef.current?.click()}
-                disabled={isUploadingStamp} className="border-[#D1D5DB] text-[#111827] hover:bg-[#E5E7EB]">
-                {isUploadingStamp ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                {stampUrl ? 'Replace Stamp' : 'Upload Stamp'}
+              <Button variant="outline" size="sm" onClick={handleDeleteStamp}
+                disabled={isDeletingStamp} className="border-red-200 text-red-600 hover:bg-red-50">
+                {isDeletingStamp ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                Delete
               </Button>
-            </div>
-          </div>
-          <div className="space-y-3">
-            <Label className="text-[#111827] text-sm font-medium">Authorized Signature (PNG/JPG)</Label>
-            {signatureUrl && (
-              <div className="border border-[#E5E7EB] rounded-md p-2 bg-white inline-block">
-                <Image src={signatureUrl} alt="Signature" width={160} height={64} className="object-contain" unoptimized />
-              </div>
             )}
-            <div>
-              <input ref={signatureInputRef} type="file" accept="image/*" className="hidden" onChange={handleUploadSignature} />
-              <Button variant="outline" size="sm" onClick={() => signatureInputRef.current?.click()}
-                disabled={isUploadingSignature} className="border-[#D1D5DB] text-[#111827] hover:bg-[#E5E7EB]">
-                {isUploadingSignature ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                {signatureUrl ? 'Replace Signature' : 'Upload Signature'}
-              </Button>
-            </div>
           </div>
         </CardContent>
       </Card>

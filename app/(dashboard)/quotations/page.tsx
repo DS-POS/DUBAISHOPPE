@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { PlusIcon, FileTextIcon } from 'lucide-react'
 import { round2 } from '@/lib/gst'
 import type { QuotationStatus } from '@/types/database'
+import { QuotationRowActions } from '@/components/quotations/QuotationRowActions'
 
 const STATUS_LABELS: Record<QuotationStatus, string> = {
   draft: 'Draft',
@@ -120,7 +121,7 @@ export default async function QuotationsPage({
                   <th className="px-4 py-3 text-center font-semibold text-slate-300 whitespace-nowrap text-xs uppercase tracking-wider">Valid Until</th>
                   <th className="px-4 py-3 text-center font-semibold text-slate-300 text-xs uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-center font-semibold text-slate-300 whitespace-nowrap text-xs uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 w-16" />
+                  <th className="px-4 py-3 w-32 text-right" />
                 </tr>
               </thead>
               <tbody>
@@ -155,15 +156,10 @@ export default async function QuotationsPage({
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center text-slate-500 whitespace-nowrap">
-                      {format(new Date(q.created_at), 'dd MMM yyyy')}
+                      {format(new Date(q.quotation_date ?? q.created_at), 'dd MMM yyyy')}
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <Link
-                        href={`/quotations/${q.id}`}
-                        className="text-[#4B5563] hover:text-[#111827] font-semibold text-xs hover:underline transition-colors"
-                      >
-                        View
-                      </Link>
+                    <td className="px-4 py-3">
+                      <QuotationRowActions quotationId={q.id} status={q.status} />
                     </td>
                   </tr>
                 ))}

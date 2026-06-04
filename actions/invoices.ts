@@ -31,7 +31,7 @@ export interface CreateInvoiceData {
   igst: number
   total_gst: number
   grand_total: number
-  payment_method: 'cash' | 'upi' | 'card'
+  payment_method: 'cash' | 'upi' | 'card' | 'credit'
   amount_paid?: number
   items: CreateInvoiceItem[]
 }

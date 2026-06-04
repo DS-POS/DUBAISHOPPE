@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
-import { getCustomerById, getCustomerInvoices } from '@/actions/customers'
+import { getCustomerById, getCustomerInvoices, getCustomerCreditSummary } from '@/actions/customers'
 import { Button } from '@/components/ui/button'
 import type { InvoiceStatus } from '@/types/database'
 
@@ -22,6 +22,10 @@ export default async function CustomerDetailPage({ params }: Props) {
   ])
 
   if (!customer) notFound()
+
+  const creditSummary = (customer.credit_limit ?? 0) > 0
+    ? await getCustomerCreditSummary(customer.id)
+    : null
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -80,6 +84,45 @@ export default async function CustomerDetailPage({ params }: Props) {
           <p className="font-medium">{format(parseISO(customer.created_at), 'dd MMM yyyy')}</p>
         </div>
       </div>
+
+      {/* Credit Account */}
+      {creditSummary && (
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <h3 className="font-semibold text-slate-700 mb-3 text-sm uppercase tracking-wide">Credit Account</h3>
+          <div className="grid grid-cols-3 gap-4 mb-3">
+            <div>
+              <p className="text-xs text-slate-500">Credit Limit</p>
+              <p className="text-lg font-bold text-slate-900">₹{creditSummary.credit_limit.toLocaleString('en-IN')}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Outstanding</p>
+              <p className={`text-lg font-bold ${creditSummary.outstanding > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                ₹{creditSummary.outstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Available</p>
+              <p className={`text-lg font-bold ${creditSummary.available_credit <= 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                ₹{creditSummary.available_credit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+          </div>
+          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                creditSummary.outstanding >= creditSummary.credit_limit ? 'bg-red-500' :
+                creditSummary.outstanding > creditSummary.credit_limit * 0.8 ? 'bg-amber-500' : 'bg-emerald-500'
+              }`}
+              style={{ width: `${Math.min(100, creditSummary.credit_limit > 0 ? (creditSummary.outstanding / creditSummary.credit_limit) * 100 : 0)}%` }}
+            />
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            {creditSummary.credit_limit > 0
+              ? `${((creditSummary.outstanding / creditSummary.credit_limit) * 100).toFixed(0)}% of credit limit used`
+              : 'No credit limit set'}
+          </p>
+        </div>
+      )}
 
       {/* Invoice History */}
       <div className="space-y-3">

@@ -9,8 +9,9 @@ import { ProductSearch } from '@/components/billing/ProductSearch'
 import { CartItemRow } from '@/components/billing/CartItemRow'
 import { CustomerSelector } from '@/components/billing/CustomerSelector'
 import { CartSummary } from '@/components/billing/CartSummary'
-import { createQuotation } from '@/actions/quotations'
+import { createQuotation, updateQuotation } from '@/actions/quotations'
 import type { CreateQuotationData } from '@/actions/quotations'
+import type { QuotationItem } from '@/types/database'
 import { createCustomerAndReturnId } from '@/actions/customers'
 import type { StoreSettings } from '@/actions/settings'
 import { FileTextIcon, SaveIcon, XIcon, BuildingIcon, UserPlusIcon } from 'lucide-react'
@@ -26,25 +27,70 @@ const INDIAN_STATES = [
 
 const emptyNewCust = { name: '', business_name: '', phone: '', email: '', gstin: '', address: '', state: 'Telangana' }
 
+interface InitialQuotation {
+  id: string
+  customer_id: string | null
+  customer: Customer | null
+  quotation_date: string | null
+  valid_until: string | null
+  notes: string | null
+  selected_bank_index: number | null
+  items: QuotationItem[]
+}
+
 interface QuotationFormProps {
   products: Product[]
   customers: Customer[]
   settings: StoreSettings
+  initialQuotation?: InitialQuotation
 }
 
-export default function QuotationForm({ products, customers, settings }: QuotationFormProps) {
+function buildInitialCart(items: QuotationItem[], products: Product[], customerState: string): CartItem[] {
+  return items.map(item => {
+    const product = products.find(p => p.id === item.product_id) ?? {
+      id: item.product_id ?? '',
+      name: item.product_name,
+      sku: item.sku ?? '',
+      barcode: null,
+      category_id: null,
+      brand: null,
+      cost_price: item.rate,
+      selling_price: item.rate,
+      gst_rate: item.gst_rate,
+      hsn_code: item.hsn_code,
+      current_stock: 0,
+      low_stock_alert: 0,
+      serial_required: false,
+      image_url: null,
+      status: 'active' as const,
+      created_at: '',
+      updated_at: '',
+    }
+    return recalcItem({ _id: crypto.randomUUID(), product, quantity: item.quantity, rate: item.rate, discount_mode: 'flat', discount_raw: item.discount, serial_number: null }, customerState)
+  })
+}
+
+export default function QuotationForm({ products, customers, settings, initialQuotation }: QuotationFormProps) {
   const router = useRouter()
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [customer, setCustomer] = useState<Customer | null>(null)
+  const isEdit = !!initialQuotation
+  const initCustomerState = initialQuotation?.customer?.state ?? 'Telangana'
+  const [cart, setCart] = useState<CartItem[]>(() =>
+    initialQuotation ? buildInitialCart(initialQuotation.items, products, initCustomerState) : []
+  )
+  const [customer, setCustomer] = useState<Customer | null>(initialQuotation?.customer ?? null)
   const [localCustomers, setLocalCustomers] = useState<Customer[]>(customers)
   const [addingCustomer, setAddingCustomer] = useState(false)
   const [newCust, setNewCust] = useState({ ...emptyNewCust })
   const [savingCust, setSavingCust] = useState(false)
   const [selectedBankIndex, setSelectedBankIndex] = useState<number | null>(
-    settings.bank_accounts.length > 0 ? 0 : null
+    initialQuotation?.selected_bank_index ?? (settings.bank_accounts.length > 0 ? 0 : null)
   )
-  const [validUntil, setValidUntil] = useState('')
-  const [notes, setNotes] = useState('')
+  const [quotationDate, setQuotationDate] = useState(
+    initialQuotation?.quotation_date ?? new Date().toISOString().slice(0, 10)
+  )
+
+  const [validUntil, setValidUntil] = useState(initialQuotation?.valid_until ?? '')
+  const [notes, setNotes] = useState(initialQuotation?.notes ?? '')
   const [saving, setSaving] = useState(false)
 
   const customerState = customer?.state ?? 'Telangana'
@@ -116,6 +162,7 @@ export default function QuotationForm({ products, customers, settings }: Quotati
         gstin: newCust.gstin.trim().toUpperCase() || null,
         address: newCust.address.trim() || null,
         state: newCust.state,
+        credit_limit: 0,
         created_at: new Date().toISOString(),
       }
       setLocalCustomers(prev => [created, ...prev])
@@ -138,6 +185,7 @@ export default function QuotationForm({ products, customers, settings }: Quotati
       const data: CreateQuotationData = {
         customer_id: customer?.id ?? null,
         ...totals,
+        quotation_date: quotationDate || null,
         valid_until: validUntil || null,
         notes: notes || null,
         selected_bank_index: selectedBankIndex,
@@ -157,9 +205,15 @@ export default function QuotationForm({ products, customers, settings }: Quotati
           total: i.total,
         })),
       }
-      const id = await createQuotation(data)
-      toast.success('Quotation saved!')
-      router.push(`/quotations/${id}`)
+      if (isEdit) {
+        await updateQuotation(initialQuotation!.id, data)
+        toast.success('Quotation updated!')
+        router.push(`/quotations/${initialQuotation!.id}`)
+      } else {
+        const id = await createQuotation(data)
+        toast.success('Quotation saved!')
+        router.push(`/quotations/${id}`)
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to save quotation')
     } finally {
@@ -353,6 +407,15 @@ export default function QuotationForm({ products, customers, settings }: Quotati
         {/* Right: Sidebar */}
         <div className="w-full lg:w-[280px] shrink-0 space-y-4">
           <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Quotation Date</p>
+            <input
+              type="date"
+              value={quotationDate}
+              onChange={e => setQuotationDate(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] transition-all"
+            />
+          </div>
+          <div className="space-y-1.5">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Valid Until</p>
             <input
               type="date"
@@ -379,7 +442,7 @@ export default function QuotationForm({ products, customers, settings }: Quotati
             className="w-full h-12 bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed text-white text-base font-bold rounded-xl shadow-sm flex items-center justify-center gap-2"
           >
             <SaveIcon className="size-5" />
-            {saving ? 'Saving…' : 'Save Quotation'}
+            {saving ? (isEdit ? 'Updating…' : 'Saving…') : (isEdit ? 'Update Quotation' : 'Save Quotation')}
           </button>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { SearchIcon, BanknoteIcon, SmartphoneIcon, CreditCardIcon } from 'lucide-react'
+import { SearchIcon, BanknoteIcon, SmartphoneIcon, CreditCardIcon, WalletIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { type CartItem, cartTotals } from './types'
 import { getCustomers, createCustomerAndReturnId } from '@/actions/customers'
@@ -25,14 +25,16 @@ const INDIAN_STATES = [
   'Other',
 ]
 
-type PaymentMethod = 'cash' | 'upi' | 'card'
+type PaymentMethod = 'cash' | 'upi' | 'card' | 'credit'
 
 interface CheckoutFormProps {
   initialCart: CartItem[]
   initialCustomer: Customer | null
+  creditLimit?: number
+  creditAvailable?: number
 }
 
-export function CheckoutForm({ initialCart, initialCustomer }: CheckoutFormProps) {
+export function CheckoutForm({ initialCart, initialCustomer, creditLimit, creditAvailable }: CheckoutFormProps) {
   const router = useRouter()
   const cart = initialCart
   const totals = cartTotals(cart)
@@ -385,11 +387,12 @@ export function CheckoutForm({ initialCart, initialCustomer }: CheckoutFormProps
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Payment Method</p>
         </div>
         <div className="p-4 space-y-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {([
               { value: 'cash' as const, label: 'Cash', icon: <BanknoteIcon className="size-5" /> },
               { value: 'upi' as const, label: 'UPI', icon: <SmartphoneIcon className="size-5" /> },
               { value: 'card' as const, label: 'Card', icon: <CreditCardIcon className="size-5" /> },
+              { value: 'credit' as const, label: 'Credit', icon: <WalletIcon className="size-5" /> },
             ]).map(m => (
               <button
                 key={m.value}
@@ -407,6 +410,16 @@ export function CheckoutForm({ initialCart, initialCustomer }: CheckoutFormProps
               </button>
             ))}
           </div>
+
+          {paymentMethod === 'credit' && creditAvailable !== undefined && totals.grand_total > creditAvailable && (
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800 flex items-start gap-2">
+              <span className="text-amber-500 mt-0.5">⚠️</span>
+              <div>
+                <p className="font-semibold">Credit limit exceeded</p>
+                <p>Order ₹{totals.grand_total.toFixed(2)} exceeds available credit of ₹{creditAvailable.toFixed(2)}.</p>
+              </div>
+            </div>
+          )}
 
           {paymentMethod === 'cash' && (
             <div className="space-y-2">

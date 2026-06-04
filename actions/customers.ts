@@ -43,6 +43,7 @@ export interface CustomerFormData {
   gstin?: string
   address?: string
   state: string
+  credit_limit?: number
 }
 
 export async function createCustomer(formData: CustomerFormData): Promise<void> {
@@ -58,6 +59,7 @@ export async function createCustomer(formData: CustomerFormData): Promise<void> 
     gstin: formData.gstin?.trim().toUpperCase() || null,
     address: formData.address?.trim() || null,
     state: formData.state || 'Telangana',
+    credit_limit: formData.credit_limit ?? 0,
   })
   if (error) throw new Error(error.message)
   revalidatePath('/customers')
@@ -79,6 +81,7 @@ export async function updateCustomer(id: string, formData: CustomerFormData): Pr
       gstin: formData.gstin?.trim().toUpperCase() || null,
       address: formData.address?.trim() || null,
       state: formData.state || 'Telangana',
+      credit_limit: formData.credit_limit ?? 0,
     })
     .eq('id', id)
   if (error) throw new Error(error.message)
@@ -111,6 +114,7 @@ export async function createCustomerAndReturnId(formData: CustomerFormData): Pro
       gstin: formData.gstin?.trim().toUpperCase() || null,
       address: formData.address?.trim() || null,
       state: formData.state || 'Telangana',
+      credit_limit: formData.credit_limit ?? 0,
     })
     .select('id')
     .single()
@@ -132,4 +136,41 @@ export async function getCustomerInvoices(customerId: string) {
     .limit(50)
   if (error) throw new Error(error.message)
   return data ?? []
+}
+
+export interface CustomerCreditSummary {
+  customer_id: string
+  credit_limit: number
+  outstanding: number
+  available_credit: number
+}
+
+export async function getCustomerCreditSummary(customerId: string): Promise<CustomerCreditSummary> {
+  const supabase = await createClient()
+
+  const { data: customer, error: cErr } = await supabase
+    .from('customers')
+    .select('id, credit_limit')
+    .eq('id', customerId)
+    .single()
+  if (cErr || !customer) throw new Error('Customer not found')
+
+  const { data: invoices, error: iErr } = await supabase
+    .from('invoices')
+    .select('grand_total, amount_paid')
+    .eq('customer_id', customerId)
+    .eq('status', 'pending')
+  if (iErr) throw new Error(iErr.message)
+
+  const outstanding = (invoices ?? []).reduce(
+    (sum, inv) => sum + (inv.grand_total - inv.amount_paid),
+    0
+  )
+
+  return {
+    customer_id: customerId,
+    credit_limit: customer.credit_limit,
+    outstanding: Math.max(0, outstanding),
+    available_credit: Math.max(0, customer.credit_limit - outstanding),
+  }
 }

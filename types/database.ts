@@ -2,6 +2,7 @@ export type UserRole = 'admin' | 'staff'
 export type ProductStatus = 'active' | 'inactive'
 export type SerialStatus = 'available' | 'sold' | 'damaged' | 'returned'
 export type StockChangeType = 'stock_in' | 'sale' | 'adjustment' | 'return'
+export type StockAdjustmentType = 'damage' | 'return' | 'correction' | 'write_off' | 'found'
 export type InvoiceStatus = 'paid' | 'pending' | 'cancelled'
 export type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
 export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'expired' | 'rejected'
@@ -13,6 +14,15 @@ export interface User {
   name: string
   email: string
   role: UserRole
+  created_at: string
+}
+
+export interface Profile {
+  id: string
+  name: string
+  email: string | null
+  role: UserRole
+  is_active: boolean
   created_at: string
 }
 
@@ -69,6 +79,17 @@ export interface StockIn {
   products?: Product
 }
 
+export interface StockAdjustment {
+  id: string
+  product_id: string
+  adjustment_type: StockAdjustmentType
+  quantity: number
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  products?: Pick<Product, 'id' | 'name' | 'sku' | 'current_stock'>
+}
+
 export interface SupplierInvoice {
   id: string
   purchase_invoice_no: string | null
@@ -104,6 +125,7 @@ export interface Customer {
   gstin: string | null
   address: string | null
   state: string
+  credit_limit: number
   created_at: string
 }
 
@@ -188,6 +210,7 @@ export interface Quotation {
   total_gst: number
   grand_total: number
   valid_until: string | null
+  quotation_date: string | null
   status: QuotationStatus
   converted_invoice_id: string | null
   notes: string | null
