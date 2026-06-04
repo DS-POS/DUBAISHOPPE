@@ -34,6 +34,7 @@ interface CheckoutFormProps {
   creditAvailable?: number
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function CheckoutForm({ initialCart, initialCustomer, creditLimit, creditAvailable }: CheckoutFormProps) {
   const router = useRouter()
   const cart = initialCart

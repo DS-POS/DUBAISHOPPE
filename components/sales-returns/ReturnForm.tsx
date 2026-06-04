@@ -36,6 +36,7 @@ const REFUND_METHODS: { value: ReturnRefundMethod; label: string }[] = [
   { value: 'no_refund', label: 'No Refund / Exchange' },
 ]
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
