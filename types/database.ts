@@ -48,6 +48,7 @@ export interface Product {
   current_stock: number
   low_stock_alert: number
   serial_required: boolean
+  is_taxable: boolean
   image_url: string | null
   status: ProductStatus
   created_at: string
@@ -252,6 +253,7 @@ export interface InvoiceItem {
   rate: number
   discount: number
   gst_rate: number
+  is_taxable: boolean
   taxable_amount: number
   cgst: number
   sgst: number
