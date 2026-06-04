@@ -150,6 +150,7 @@ export async function convertQuotationToInvoice(quotationId: string): Promise<st
     rate: item.rate,
     discount: item.discount,
     gst_rate: item.gst_rate,
+    is_taxable: (item as unknown as { is_taxable?: boolean }).is_taxable ?? true,
     taxable_amount: item.taxable_amount,
     cgst: item.cgst,
     sgst: item.sgst,

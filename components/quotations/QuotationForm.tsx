@@ -61,12 +61,13 @@ function buildInitialCart(items: QuotationItem[], products: Product[], customerS
       current_stock: 0,
       low_stock_alert: 0,
       serial_required: false,
+      is_taxable: true,
       image_url: null,
       status: 'active' as const,
       created_at: '',
       updated_at: '',
     }
-    return recalcItem({ _id: crypto.randomUUID(), product, quantity: item.quantity, rate: item.rate, discount_mode: 'flat', discount_raw: item.discount, serial_number: null }, customerState)
+    return recalcItem({ _id: crypto.randomUUID(), product, quantity: item.quantity, rate: item.rate, discount_mode: 'flat', discount_raw: item.discount, serial_number: null, is_taxable: (item as unknown as { is_taxable?: boolean }).is_taxable ?? true }, customerState)
   })
 }
 
@@ -113,6 +114,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
         discount_mode: 'percent',
         discount_raw: 0,
         serial_number: null,
+        is_taxable: product.is_taxable,
       }
       return [...prev, recalcItem(newItem, customerState)]
     })
