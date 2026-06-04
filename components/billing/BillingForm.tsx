@@ -164,7 +164,17 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
           )}
         </div>
 
-        <CartSummary {...totals} itemCount={cart.length} />
+        <CartSummary
+          taxable_amount={totals.taxable_amount}
+          cgst={totals.cgst}
+          sgst={totals.sgst}
+          igst={totals.igst}
+          total_gst={totals.total_gst}
+          grand_total={totals.grand_total}
+          itemCount={cart.length}
+          discount={totals.discount}
+          non_taxable_items={totals.non_taxable_items}
+        />
 
         <button
           type="button"

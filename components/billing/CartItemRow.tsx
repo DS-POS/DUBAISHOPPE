@@ -110,11 +110,13 @@ export function CartItemRow({
         )}
       </td>
       <td className="px-4 py-3 w-20 text-right text-xs text-slate-400 font-medium">
-        {item.product.gst_rate}%
+        {item.is_taxable ? `${item.product.gst_rate}%` : '—'}
       </td>
       <td className="px-4 py-3 w-24 text-right">
         <p className="text-sm font-bold text-slate-900">₹{item.total.toFixed(2)}</p>
-        <p className="text-xs text-slate-400">GST: ₹{item.total_gst.toFixed(2)}</p>
+        {item.is_taxable && (
+          <p className="text-xs text-slate-400">GST: ₹{item.total_gst.toFixed(2)}</p>
+        )}
       </td>
       <td className="px-4 py-3 w-10">
         <button
