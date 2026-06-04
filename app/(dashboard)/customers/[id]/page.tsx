@@ -43,6 +43,9 @@ export default async function CustomerDetailPage({ params }: Props) {
           <Link href="/customers">
             <Button variant="outline" size="sm">← Back</Button>
           </Link>
+          <Link href={`/customers/${customer.id}/statement`}>
+            <Button variant="outline" size="sm">Statement</Button>
+          </Link>
           <Link href={`/customers/${customer.id}/edit`}>
             <Button size="sm">Edit</Button>
           </Link>

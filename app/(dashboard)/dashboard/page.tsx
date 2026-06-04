@@ -8,8 +8,10 @@ import {
   FileText,
   CheckCircle2,
 } from 'lucide-react'
-import { getInvoiceStats, getRecentDueInvoices, getRecentInvoices } from '@/actions/invoices'
+import { getInvoiceStats, getRecentDueInvoices, getRecentInvoices, getDashboardRevenueChart } from '@/actions/invoices'
 import { getSupplierDueStats, getRecentDueSupplierInvoices } from '@/actions/supplier-invoices'
+import { LowStockWidget } from '@/components/dashboard/LowStockWidget'
+import { RevenueChart } from '@/components/dashboard/RevenueChart'
 
 function formatINR(amount: number) {
   return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -28,12 +30,13 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 export default async function DashboardPage() {
-  const [stats, dueInvoices, recentInvoices, supplierDueStats, dueSupplierInvoices] = await Promise.all([
+  const [stats, dueInvoices, recentInvoices, supplierDueStats, dueSupplierInvoices, chartData] = await Promise.all([
     getInvoiceStats(),
     getRecentDueInvoices(),
     getRecentInvoices(),
     getSupplierDueStats(),
     getRecentDueSupplierInvoices(),
+    getDashboardRevenueChart(30),
   ])
 
   return (
@@ -152,6 +155,16 @@ export default async function DashboardPage() {
         </div>
 
       </div>
+
+      {/* Revenue Trend Chart */}
+      <RevenueChart
+        data={chartData}
+        totalRevenue={chartData.reduce((s, d) => s + d.revenue, 0)}
+        days={30}
+      />
+
+      {/* Low Stock Alerts */}
+      <LowStockWidget />
 
       {/* Outstanding Customer Dues */}
       {dueInvoices.length > 0 && (

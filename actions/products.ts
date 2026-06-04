@@ -151,3 +151,27 @@ export async function deleteProduct(id: string): Promise<void> {
 
   revalidatePath('/products')
 }
+
+export async function getLowStockProducts(): Promise<Array<{
+  id: string
+  name: string
+  sku: string
+  current_stock: number
+  low_stock_alert: number
+  categories: { name: string } | null
+}>> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('products')
+    .select('id, name, sku, current_stock, low_stock_alert, categories(name)')
+    .eq('status', 'active')
+    .gt('low_stock_alert', 0)
+    .order('current_stock', { ascending: true })
+
+  if (error) throw new Error(error.message)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((data ?? []) as unknown as Array<{
+    id: string; name: string; sku: string; current_stock: number
+    low_stock_alert: number; categories: { name: string } | null
+  }>).filter(p => p.current_stock < p.low_stock_alert)
+}

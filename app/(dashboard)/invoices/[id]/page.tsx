@@ -32,13 +32,23 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
             {format(new Date(invoice.created_at), 'dd MMM yyyy, hh:mm a')}
           </p>
         </div>
-        <InvoiceShareButtons
-          invoiceId={invoice.id}
-          invoiceNo={invoice.invoice_no}
-          grandTotal={invoice.grand_total}
-          customerEmail={customer?.email ?? null}
-          customerPhone={customer?.phone ?? null}
-        />
+        <div className="flex flex-col gap-2 items-end">
+          <InvoiceShareButtons
+            invoiceId={invoice.id}
+            invoiceNo={invoice.invoice_no}
+            grandTotal={invoice.grand_total}
+            customerEmail={customer?.email ?? null}
+            customerPhone={customer?.phone ?? null}
+          />
+          {invoice.status !== 'cancelled' && (
+            <Link
+              href={`/invoices/${invoice.id}/return`}
+              className="inline-flex items-center gap-1.5 border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+            >
+              ↩ Return
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Customer Card */}

@@ -274,3 +274,49 @@ export async function getRecentInvoices() {
     customers: { name: string } | null
   }>
 }
+
+export interface DailyRevenuePoint {
+  date: string
+  revenue: number
+  invoices: number
+}
+
+export async function getDashboardRevenueChart(days = 30): Promise<DailyRevenuePoint[]> {
+  const supabase = await createClient()
+
+  const from = new Date()
+  from.setDate(from.getDate() - (days - 1))
+  from.setHours(0, 0, 0, 0)
+
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('grand_total, created_at')
+    .gte('created_at', from.toISOString())
+    .neq('status', 'cancelled')
+    .order('created_at', { ascending: true })
+
+  if (error) throw new Error(error.message)
+
+  const map = new Map<string, { revenue: number; invoices: number }>()
+  for (let i = 0; i < days; i++) {
+    const d = new Date(from)
+    d.setDate(from.getDate() + i)
+    map.set(d.toISOString().split('T')[0], { revenue: 0, invoices: 0 })
+  }
+
+  for (const inv of data ?? []) {
+    const key = inv.created_at.split('T')[0]
+    const existing = map.get(key)
+    if (existing) {
+      existing.revenue += Number(inv.grand_total)
+      existing.invoices += 1
+    }
+  }
+
+  return Array.from(map.entries()).map(([dateKey, vals]) => {
+    const d = new Date(dateKey + 'T00:00:00')
+    const day = String(d.getDate()).padStart(2, '0')
+    const month = d.toLocaleString('en-IN', { month: 'short' })
+    return { date: `${day} ${month}`, revenue: Math.round(vals.revenue * 100) / 100, invoices: vals.invoices }
+  })
+}

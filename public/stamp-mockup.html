@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stamp Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0f2f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
+  .page {
+    background: #fff;
+    width: 595px;
+    padding: 32px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    border-radius: 4px;
+  }
+  h3 { font-size: 11px; color: #6B7280; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; border-bottom: 1px solid #E5E7EB; padding-bottom: 6px; }
+  .sig-section { display: flex; justify-content: flex-end; }
+  .sig-box {
+    width: 180px;
+    border: 0.4px solid #E9EAEC;
+    border-radius: 3px;
+    padding: 8px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .sig-box img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    margin-bottom: 6px;
+  }
+  .sig-line { border-top: 0.4px solid #E9EAEC; width: 100%; margin-bottom: 4px; }
+  .sig-label { font-size: 7px; font-weight: bold; color: #111827; text-align: center; letter-spacing: 0.5px; }
+
+  .comparison { display: flex; gap: 24px; margin-top: 24px; }
+  .col { flex: 1; text-align: center; }
+  .col label { font-size: 11px; color: #6B7280; display: block; margin-bottom: 8px; }
+  .col img { max-width: 140px; border: 1px dashed #D1D5DB; border-radius: 4px; padding: 8px; }
+  .bg-dark { background: #1a1a2e; padding: 16px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div>
+  <div class="page">
+    <h3>Authorized Signature Box — Mockup</h3>
+    <div class="sig-section">
+      <div class="sig-box">
+        <img src="stamp_nobg.png" alt="Stamp" />
+        <div class="sig-line"></div>
+        <div class="sig-label">AUTHORIZED SIGNATURE</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison" style="margin-top:24px; max-width:595px;">
+    <div class="col">
+      <label>Before (grey bg)</label>
+      <img src="stamp.png" alt="Before" />
+    </div>
+    <div class="col">
+      <label>After (transparent)</label>
+      <img src="stamp_nobg.png" alt="After" />
+    </div>
+    <div class="col">
+      <label>On dark background</label>
+      <div class="bg-dark">
+        <img src="stamp_nobg.png" alt="On dark" style="border:none;background:transparent;" />
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

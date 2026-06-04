@@ -11,9 +11,10 @@ import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ProductsPage() {
+export default async function ProductsPage({ searchParams }: { searchParams?: { filter?: string } }) {
   const products = await getProducts()
   const categories = await getCategories()
+  const isLowStockFilter = searchParams?.filter === 'low-stock'
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -26,8 +27,11 @@ export default async function ProductsPage() {
   const userRole = profile?.role ?? 'staff'
   const activeCount = products.filter(p => p.status === 'active').length
   const lowStockCount = products.filter(
-    p => p.current_stock <= p.low_stock_alert && p.status === 'active'
+    p => p.current_stock <= p.low_stock_alert && p.status === 'active' && p.low_stock_alert > 0
   ).length
+  const displayProducts = isLowStockFilter
+    ? products.filter(p => p.low_stock_alert > 0 && p.current_stock < p.low_stock_alert)
+    : products
 
   return (
     <div className="space-y-6">
@@ -93,9 +97,25 @@ export default async function ProductsPage() {
         </Card>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex gap-2 flex-wrap">
+        <Link
+          href="/products"
+          className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${!isLowStockFilter ? 'bg-[#111827] text-white border-[#111827]' : 'border-slate-200 text-slate-600 hover:border-slate-400'}`}
+        >
+          All Products ({products.length})
+        </Link>
+        <Link
+          href="/products?filter=low-stock"
+          className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${isLowStockFilter ? 'bg-amber-500 text-white border-amber-500' : 'border-amber-200 text-amber-700 hover:bg-amber-50'}`}
+        >
+          ⚠ Low Stock ({lowStockCount})
+        </Link>
+      </div>
+
       {/* Products Table (Client Component) */}
       <ProductsTable
-        products={products}
+        products={displayProducts}
         categories={categories}
         userRole={userRole}
       />

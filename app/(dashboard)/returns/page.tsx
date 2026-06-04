@@ -1,0 +1,67 @@
+import Link from 'next/link'
+import { format } from 'date-fns'
+import { getSalesReturns } from '@/actions/sales-returns'
+
+const REFUND_LABELS: Record<string, string> = {
+  cash: 'Cash', upi: 'UPI', card: 'Card',
+  bank_transfer: 'Bank Transfer', store_credit: 'Store Credit', no_refund: 'No Refund',
+}
+
+function formatINR(n: number) {
+  return n.toLocaleString('en-IN', { minimumFractionDigits: 2 })
+}
+
+export default async function ReturnsPage() {
+  const returns = await getSalesReturns()
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-[#111827]">Sales Returns</h1>
+        <p className="text-slate-500 text-sm mt-1">{returns.length} return{returns.length !== 1 ? 's' : ''} processed</p>
+      </div>
+
+      {returns.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-slate-300 p-12 text-center">
+          <p className="text-slate-500 font-medium">No returns yet.</p>
+          <p className="text-slate-400 text-sm mt-1">Process a return from an invoice detail page.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl ring-1 ring-slate-200 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-[#111827]">
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Return No</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Invoice</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden sm:table-cell">Reason</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden md:table-cell">Refund</th>
+                <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Amount</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden sm:table-cell">Date</th>
+                <th className="px-5 py-3.5" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {returns.map(ret => (
+                <tr key={ret.id} className="hover:bg-slate-50">
+                  <td className="px-5 py-3.5 font-mono text-xs font-medium text-slate-900">{ret.return_no}</td>
+                  <td className="px-5 py-3.5 font-mono text-xs text-slate-600">{ret.invoices?.invoice_no ?? '—'}</td>
+                  <td className="px-5 py-3.5 text-slate-600 hidden sm:table-cell max-w-xs truncate">{ret.reason}</td>
+                  <td className="px-5 py-3.5 hidden md:table-cell">
+                    <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                      {REFUND_LABELS[ret.refund_method] ?? ret.refund_method}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5 text-right font-semibold text-slate-900">₹{formatINR(ret.total_refund)}</td>
+                  <td className="px-5 py-3.5 text-xs text-slate-500 hidden sm:table-cell">{format(new Date(ret.created_at), 'd MMM yyyy')}</td>
+                  <td className="px-5 py-3.5 text-right">
+                    <Link href={`/returns/${ret.id}`} className="text-xs text-blue-600 hover:underline font-medium">View</Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
