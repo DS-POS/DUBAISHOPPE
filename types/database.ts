@@ -309,3 +309,25 @@ export interface Setting {
   value: string | null
   updated_at: string
 }
+
+export type ExpensePaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'cheque'
+
+export interface ExpenseCategory {
+  id: string
+  name: string
+  created_at: string
+}
+
+export interface Expense {
+  id: string
+  date: string
+  category_id: string | null
+  amount: number
+  description: string
+  payment_method: ExpensePaymentMethod
+  reference_no: string | null
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  expense_categories?: ExpenseCategory
+}
