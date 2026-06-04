@@ -31,6 +31,7 @@ const schema = z.object({
   address: z.string().optional(),
   state: z.string().min(1, 'State required'),
   credit_limit: z.number().min(0).default(0),
+  credit_days: z.number().min(0).default(30),
 })
 type FormValues = z.infer<typeof schema>
 
@@ -52,6 +53,7 @@ export default function CustomerForm({ customer }: Props) {
       address: customer?.address ?? '',
       state: customer?.state ?? 'Telangana',
       credit_limit: customer?.credit_limit ?? 0,
+      credit_days: customer?.credit_days ?? 30,
     },
   })
 
@@ -109,18 +111,32 @@ export default function CustomerForm({ customer }: Props) {
         </select>
         {errors.state && <p className="text-xs text-destructive">{errors.state.message}</p>}
       </div>
-      <div className="space-y-1.5">
-        <Label>Credit Limit (₹)</Label>
-        <input
-          type="number"
-          min={0}
-          step={500}
-          {...register('credit_limit', { valueAsNumber: true })}
-          placeholder="0 = cash only"
-          className="h-9 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-transparent"
-        />
-        {errors.credit_limit && <p className="text-xs text-destructive">{errors.credit_limit.message}</p>}
-        <p className="text-xs text-slate-400">Set 0 for cash-only customers. Billing warns when exceeded.</p>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label>Credit Limit (₹)</Label>
+          <input
+            type="number"
+            min={0}
+            step={500}
+            {...register('credit_limit', { valueAsNumber: true })}
+            placeholder="0 = cash only"
+            className="h-9 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-transparent"
+          />
+          {errors.credit_limit && <p className="text-xs text-destructive">{errors.credit_limit.message}</p>}
+          <p className="text-xs text-slate-400">0 = no credit limit check</p>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Credit Days</Label>
+          <input
+            type="number"
+            {...register('credit_days', { valueAsNumber: true })}
+            min={0}
+            placeholder="30"
+            className="h-9 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-transparent"
+          />
+          {errors.credit_days && <p className="text-xs text-destructive">{errors.credit_days.message}</p>}
+          <p className="text-xs text-slate-400">Payment due within N days</p>
+        </div>
       </div>
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="outline" onClick={() => router.push('/customers')} disabled={pending}>

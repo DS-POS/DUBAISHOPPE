@@ -165,6 +165,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
         address: newCust.address.trim() || null,
         state: newCust.state,
         credit_limit: 0,
+        credit_days: 30,
         created_at: new Date().toISOString(),
       }
       setLocalCustomers(prev => [created, ...prev])
