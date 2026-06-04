@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useTransition, useCallback } from 'react'
+import Link from 'next/link'
 import { getReportData, type ReportData } from '@/actions/reports'
 import {
   TrendingUp,
@@ -307,7 +308,7 @@ export default function ReportsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-[#111827]">Reports</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Business performance & export</p>
+          <p className="text-sm text-slate-500 mt-0.5">Business performance &amp; export</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -326,6 +327,26 @@ export default function ReportsPage() {
             <Download className="size-4" />
             Export CSV
           </button>
+        </div>
+      </div>
+
+      {/* Financial Reports Navigation */}
+      <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm p-5">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Financial Reports</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {[
+            { href: '/reports/profit-loss', label: 'Profit & Loss', desc: 'Income statement' },
+            { href: '/reports/margins', label: 'Product Margins', desc: 'COGS & profitability' },
+            { href: '/reports/day-end', label: 'Day-End Summary', desc: 'Daily closing report' },
+            { href: '/reports/receivables', label: 'Accounts Receivable', desc: 'Customer aging' },
+            { href: '/reports/payables', label: 'Accounts Payable', desc: 'Supplier balances' },
+          ].map(r => (
+            <Link key={r.href} href={r.href}
+              className="flex flex-col gap-0.5 rounded-xl border border-slate-200 px-4 py-3 hover:bg-slate-50 hover:border-[#111827]/30 transition-colors">
+              <span className="text-sm font-semibold text-slate-900">{r.label}</span>
+              <span className="text-xs text-slate-400">{r.desc}</span>
+            </Link>
+          ))}
         </div>
       </div>
 
