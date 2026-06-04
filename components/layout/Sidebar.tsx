@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Package, PackagePlus, ShoppingCart,
   FileText, Users, Tag, BarChart3, FileDown, Settings,
-  ClipboardList, Menu, X, Truck, SlidersHorizontal, RotateCcw, ClipboardCheck
+  ClipboardList, Menu, X, Truck, SlidersHorizontal, RotateCcw, ClipboardCheck, Receipt
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -21,6 +21,7 @@ const navItems: NavItem[] = [
   { label: 'Stock Adjustments', href: '/stock-adjustments', icon: SlidersHorizontal },
   { label: 'Returns', href: '/returns', icon: RotateCcw },
   { label: 'Purchase Orders', href: '/purchase-orders', icon: ClipboardCheck },
+  { label: 'Expenses', href: '/expenses', icon: Receipt },
   { label: 'Customers', href: '/customers', icon: Users },
   { label: 'Suppliers', href: '/suppliers', icon: Truck },
   { label: 'Labels', href: '/labels', icon: Tag },

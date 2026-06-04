@@ -12,6 +12,7 @@ import { getInvoiceStats, getRecentDueInvoices, getRecentInvoices, getDashboardR
 import { getSupplierDueStats, getRecentDueSupplierInvoices } from '@/actions/supplier-invoices'
 import { LowStockWidget } from '@/components/dashboard/LowStockWidget'
 import { RevenueChart } from '@/components/dashboard/RevenueChart'
+import { ExpensesWidget } from '@/components/dashboard/ExpensesWidget'
 
 function formatINR(amount: number) {
   return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -165,6 +166,9 @@ export default async function DashboardPage() {
 
       {/* Low Stock Alerts */}
       <LowStockWidget />
+
+      {/* Expenses This Month */}
+      <ExpensesWidget />
 
       {/* Outstanding Customer Dues */}
       {dueInvoices.length > 0 && (
