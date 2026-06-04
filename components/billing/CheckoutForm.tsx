@@ -156,6 +156,7 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
           rate: i.rate,
           discount: i.discount,
           gst_rate: i.product.gst_rate,
+          is_taxable: i.is_taxable,
           taxable_amount: i.taxable_amount,
           cgst: i.cgst,
           sgst: i.sgst,

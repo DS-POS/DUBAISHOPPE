@@ -14,6 +14,7 @@ export interface CreateInvoiceItem {
   rate: number
   discount: number
   gst_rate: number
+  is_taxable: boolean
   taxable_amount: number
   cgst: number
   sgst: number
@@ -109,6 +110,7 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string> {
     rate: item.rate,
     discount: item.discount,
     gst_rate: item.gst_rate,
+    is_taxable: item.is_taxable,
     taxable_amount: item.taxable_amount,
     cgst: item.cgst,
     sgst: item.sgst,
