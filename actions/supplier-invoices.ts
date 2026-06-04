@@ -206,3 +206,134 @@ export async function deleteSupplierInvoice(id: string): Promise<void> {
   revalidatePath('/stock-in')
   revalidatePath('/products')
 }
+
+export interface LedgerTransaction {
+  id: string
+  date: string
+  type: 'invoice' | 'payment'
+  reference: string
+  description: string
+  debit: number
+  credit: number
+  balance: number
+}
+
+export interface SupplierLedger {
+  supplier_id: string
+  supplier_name: string
+  transactions: LedgerTransaction[]
+  total_invoiced: number
+  total_paid: number
+  closing_balance: number
+}
+
+export async function getSupplierLedger(supplierId: string): Promise<SupplierLedger> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: supplier } = await supabase
+    .from('suppliers')
+    .select('id, name')
+    .eq('id', supplierId)
+    .single()
+
+  const { data: invoices } = await supabase
+    .from('supplier_invoices')
+    .select('*, supplier_payments(*)')
+    .eq('supplier_id', supplierId)
+    .order('purchase_date', { ascending: true })
+
+  const rows: LedgerTransaction[] = []
+
+  for (const inv of (invoices ?? [])) {
+    rows.push({
+      id: inv.id,
+      date: inv.purchase_date,
+      type: 'invoice',
+      reference: inv.purchase_invoice_no ?? inv.id.slice(0, 8),
+      description: 'Invoice received',
+      debit: Number(inv.total_amount),
+      credit: 0,
+      balance: 0,
+    })
+    for (const pmt of (inv.supplier_payments ?? [])) {
+      rows.push({
+        id: pmt.id,
+        date: pmt.payment_date,
+        type: 'payment',
+        reference: pmt.payment_reference ?? '—',
+        description: `Payment (${pmt.payment_method ?? ''})`,
+        debit: 0,
+        credit: Number(pmt.amount),
+        balance: 0,
+      })
+    }
+  }
+
+  rows.sort((a, b) => a.date.localeCompare(b.date))
+
+  let runningBalance = 0
+  for (const row of rows) {
+    runningBalance += row.debit - row.credit
+    row.balance = runningBalance
+  }
+
+  const total_invoiced = rows.filter(r => r.type === 'invoice').reduce((s, r) => s + r.debit, 0)
+  const total_paid = rows.filter(r => r.type === 'payment').reduce((s, r) => s + r.credit, 0)
+
+  return {
+    supplier_id: supplierId,
+    supplier_name: supplier?.name ?? 'Unknown',
+    transactions: rows,
+    total_invoiced,
+    total_paid,
+    closing_balance: total_invoiced - total_paid,
+  }
+}
+
+export interface PayableAging {
+  supplier_id: string | null
+  supplier_name: string
+  current: number
+  days_31_60: number
+  days_61_90: number
+  over_90: number
+  total_due: number
+}
+
+export async function getPayablesAging(): Promise<PayableAging[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: invoices } = await supabase
+    .from('supplier_invoices')
+    .select('*, supplier_payments(*)')
+    .neq('payment_status', 'paid')
+    .order('purchase_date', { ascending: true })
+
+  const today = new Date()
+  const bySupplier: Record<string, PayableAging> = {}
+
+  for (const inv of (invoices ?? [])) {
+    const key = inv.supplier_name ?? 'Unknown'
+    if (!bySupplier[key]) {
+      bySupplier[key] = { supplier_id: inv.supplier_id ?? null, supplier_name: key, current: 0, days_31_60: 0, days_61_90: 0, over_90: 0, total_due: 0 }
+    }
+    const paid = ((inv.supplier_payments ?? []) as { amount: number }[]).reduce((s, p) => s + Number(p.amount), 0)
+    const outstanding = Number(inv.total_amount) - paid
+    if (outstanding <= 0) continue
+
+    const refDate = inv.due_date ? new Date(inv.due_date) : new Date(inv.purchase_date)
+    const ageDays = Math.floor((today.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24))
+    const entry = bySupplier[key]
+    if (ageDays <= 30) entry.current += outstanding
+    else if (ageDays <= 60) entry.days_31_60 += outstanding
+    else if (ageDays <= 90) entry.days_61_90 += outstanding
+    else entry.over_90 += outstanding
+    entry.total_due += outstanding
+  }
+
+  return Object.values(bySupplier).filter(s => s.total_due > 0).sort((a, b) => b.total_due - a.total_due)
+}
