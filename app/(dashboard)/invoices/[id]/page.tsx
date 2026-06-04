@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getInvoice } from '@/actions/invoices'
+import { getInvoicePayments } from '@/actions/invoice-payments'
 import { InvoiceShareButtons } from '@/components/invoices/InvoiceShareButtons'
+import { RecordPaymentDialog } from '@/components/invoices/RecordPaymentDialog'
 import { format } from 'date-fns'
 import { round2 } from '@/lib/gst'
 import { ArrowLeftIcon } from 'lucide-react'
@@ -9,6 +11,8 @@ import { ArrowLeftIcon } from 'lucide-react'
 export default async function InvoiceDetailPage({ params }: { params: { id: string } }) {
   const invoice = await getInvoice(params.id)
   if (!invoice) notFound()
+
+  const payments = await getInvoicePayments(invoice.id)
 
   const customer = invoice.customers
   const items = invoice.invoice_items ?? []
@@ -37,15 +41,62 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
         />
       </div>
 
-      <div className="rounded-xl border border-border p-4 text-sm space-y-1">
-        <p className="font-medium">{customer ? customer.name : 'Walk-in Customer'}</p>
-        {customer?.phone && <p className="text-muted-foreground">Ph: {customer.phone}</p>}
-        {customer?.address && <p className="text-muted-foreground">{customer.address}</p>}
-        {customer?.gstin && <p className="text-muted-foreground font-mono text-xs">GSTIN: {customer.gstin}</p>}
-        <p className="text-muted-foreground text-xs">
-          Payment: <span className="capitalize font-medium text-foreground">{invoice.payment_method}</span>
-          {' · '}Status: <span className={`font-medium ${invoice.status === 'paid' ? 'text-emerald-600' : 'text-red-600'}`}>{invoice.status}</span>
-        </p>
+      {/* Customer Card */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div>
+            <p className="font-bold text-base">{customer ? customer.name : 'Walk-in Customer'}</p>
+            {customer?.business_name && (
+              <p className="text-sm text-muted-foreground">{customer.business_name}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className={`px-2.5 py-1 rounded-full font-semibold ${
+              invoice.status === 'paid'
+                ? 'bg-emerald-100 text-emerald-700'
+                : invoice.status === 'cancelled'
+                ? 'bg-red-100 text-red-700'
+                : 'bg-amber-100 text-amber-700'
+            }`}>
+              {invoice.status === 'pending' ? 'Due' : invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+            </span>
+            <span className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full capitalize">
+              {invoice.payment_method ?? '—'}
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+          {customer?.phone && (
+            <div>
+              <p className="text-xs text-muted-foreground">Phone</p>
+              <p className="font-medium">{customer.phone}</p>
+            </div>
+          )}
+          {customer?.email && (
+            <div>
+              <p className="text-xs text-muted-foreground">Email</p>
+              <p className="font-medium break-all">{customer.email}</p>
+            </div>
+          )}
+          {customer?.gstin && (
+            <div>
+              <p className="text-xs text-muted-foreground">GSTIN</p>
+              <p className="font-medium font-mono text-xs">{customer.gstin}</p>
+            </div>
+          )}
+          {customer?.state && (
+            <div>
+              <p className="text-xs text-muted-foreground">State</p>
+              <p className="font-medium">{customer.state}</p>
+            </div>
+          )}
+          {customer?.address && (
+            <div className="col-span-2 sm:col-span-3">
+              <p className="text-xs text-muted-foreground">Address</p>
+              <p className="font-medium">{customer.address}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="rounded-xl border border-border overflow-hidden">
@@ -123,8 +174,31 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
           <div className="flex justify-between font-bold text-base border-t border-border pt-2">
             <span>Grand Total</span><span>₹{round2(invoice.grand_total).toFixed(2)}</span>
           </div>
+          {/* Payment breakdown */}
+          <div className="flex justify-between text-sm border-t border-border pt-2 mt-1">
+            <span className="text-muted-foreground">Amount Paid</span>
+            <span className="text-emerald-600 font-semibold">₹{round2(invoice.amount_paid).toFixed(2)}</span>
+          </div>
+          {(() => {
+            const due = round2(invoice.grand_total - invoice.amount_paid)
+            return due > 0 ? (
+              <div className="flex justify-between text-sm">
+                <span className="font-semibold text-red-600">Balance Due</span>
+                <span className="font-bold text-red-600 text-base">₹{due.toFixed(2)}</span>
+              </div>
+            ) : null
+          })()}
         </div>
       </div>
+
+      {/* Payment History + Record Payment */}
+      <RecordPaymentDialog
+        invoiceId={invoice.id}
+        grandTotal={invoice.grand_total}
+        amountPaid={invoice.amount_paid}
+        payments={payments}
+        invoiceStatus={invoice.status}
+      />
     </div>
   )
 }

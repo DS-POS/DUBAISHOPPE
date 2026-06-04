@@ -18,41 +18,42 @@ export function CartSummary({
   const isIGST = igst > 0
 
   return (
-    <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2 text-sm">
-      <div className="flex justify-between text-muted-foreground">
-        <span>Subtotal ({itemCount} item{itemCount !== 1 ? 's' : ''})</span>
-        <span>₹{round2(subtotal).toFixed(2)}</span>
+    <div className="rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-sm p-5 space-y-2.5 text-sm">
+      <div className="flex justify-between items-center">
+        <span className="text-slate-500">Subtotal ({itemCount} item{itemCount !== 1 ? 's' : ''})</span>
+        <span className="font-medium text-slate-700">₹{round2(subtotal).toFixed(2)}</span>
       </div>
       {discount > 0 && (
-        <div className="flex justify-between text-muted-foreground">
-          <span>Discount</span>
-          <span className="text-emerald-600">−₹{round2(discount).toFixed(2)}</span>
+        <div className="flex justify-between items-center">
+          <span className="text-slate-500">Discount</span>
+          <span className="font-semibold text-emerald-600">−₹{round2(discount).toFixed(2)}</span>
         </div>
       )}
-      <div className="flex justify-between text-muted-foreground">
-        <span>Taxable Amount</span>
-        <span>₹{round2(taxable_amount).toFixed(2)}</span>
+      <div className="flex justify-between items-center">
+        <span className="text-slate-500">Taxable Amount</span>
+        <span className="font-medium text-slate-700">₹{round2(taxable_amount).toFixed(2)}</span>
       </div>
       {isIGST ? (
-        <div className="flex justify-between text-muted-foreground">
-          <span>IGST</span>
-          <span>₹{round2(igst).toFixed(2)}</span>
+        <div className="flex justify-between items-center">
+          <span className="text-slate-500">IGST</span>
+          <span className="font-medium text-slate-700">₹{round2(igst).toFixed(2)}</span>
         </div>
       ) : (
         <>
-          <div className="flex justify-between text-muted-foreground">
-            <span>CGST</span>
-            <span>₹{round2(cgst).toFixed(2)}</span>
+          <div className="flex justify-between items-center">
+            <span className="text-slate-500">CGST</span>
+            <span className="font-medium text-slate-700">₹{round2(cgst).toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-muted-foreground">
-            <span>SGST</span>
-            <span>₹{round2(sgst).toFixed(2)}</span>
+          <div className="flex justify-between items-center">
+            <span className="text-slate-500">SGST</span>
+            <span className="font-medium text-slate-700">₹{round2(sgst).toFixed(2)}</span>
           </div>
         </>
       )}
-      <div className="border-t border-border pt-2 flex justify-between font-semibold text-base">
-        <span>Grand Total</span>
-        <span>₹{round2(grand_total).toFixed(2)}</span>
+      <div className="h-px bg-slate-100 my-1" />
+      <div className="flex justify-between items-center">
+        <span className="font-bold text-slate-900 text-base">Grand Total</span>
+        <span className="font-black text-[#111827] text-xl">₹{round2(grand_total).toFixed(2)}</span>
       </div>
     </div>
   )

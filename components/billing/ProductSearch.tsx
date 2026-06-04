@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { SearchIcon, CameraIcon, XIcon } from 'lucide-react'
+import { SearchIcon, CameraIcon, XIcon, PackageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Product } from '@/types/database'
 
@@ -65,32 +65,32 @@ export function ProductSearch({ products, onAdd }: ProductSearchProps) {
     <div className="relative">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search product by name, SKU or barcode…"
-            className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
+            className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-10 text-sm font-medium shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] placeholder:text-slate-400 transition-all"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
             >
-              <XIcon className="size-3.5" />
+              <XIcon className="size-4" />
             </button>
           )}
         </div>
         <button
           type="button"
           onClick={startScan}
-          className="h-10 w-10 flex items-center justify-center rounded-lg border border-input bg-background hover:bg-accent transition-colors"
+          className="h-12 w-12 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all"
           title="Scan barcode"
         >
-          <CameraIcon className="size-4 text-muted-foreground" />
+          <CameraIcon className="size-5 text-slate-500" />
         </button>
       </div>
 
@@ -113,19 +113,29 @@ export function ProductSearch({ products, onAdd }: ProductSearchProps) {
       )}
 
       {filtered.length > 0 && (
-        <div className="absolute z-30 mt-1 w-full rounded-xl border border-border bg-popover shadow-xl overflow-hidden">
+        <div className="absolute z-30 mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden ring-1 ring-black/[0.04]">
           {filtered.map(p => (
             <button
               key={p.id}
               type="button"
               onClick={() => handleSelect(p)}
-              className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-left hover:bg-accent transition-colors"
+              className="w-full flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0"
             >
-              <div className="min-w-0">
-                <p className="font-medium truncate">{p.name}</p>
-                <p className="text-xs text-muted-foreground">{p.sku} · Stock: {p.current_stock}</p>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                  <PackageIcon className="size-4 text-slate-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900 truncate">{p.name}</p>
+                  <p className="text-xs text-slate-500">{p.sku} · Stock: {p.current_stock}</p>
+                </div>
               </div>
-              <span className="shrink-0 ml-4 text-sm font-medium">₹{p.selling_price.toFixed(2)}</span>
+              <div className="shrink-0 ml-4 text-right">
+                <p className="text-sm font-bold text-slate-900">₹{p.selling_price.toFixed(2)}</p>
+                <p className={`text-xs font-medium ${p.current_stock <= 3 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                  {p.current_stock <= 0 ? 'Out of stock' : p.current_stock <= 3 ? 'Low stock' : 'In stock'}
+                </p>
+              </div>
             </button>
           ))}
         </div>

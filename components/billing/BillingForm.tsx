@@ -10,10 +10,7 @@ import { CartItemRow } from './CartItemRow'
 import { SerialPicker } from './SerialPicker'
 import { CustomerSelector } from './CustomerSelector'
 import { CartSummary } from './CartSummary'
-import { PaymentModal } from './PaymentModal'
-import { createInvoice } from '@/actions/invoices'
-import { ShoppingCartIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ShoppingCartIcon, ArrowRightIcon } from 'lucide-react'
 
 interface BillingFormProps {
   products: Product[]
@@ -25,8 +22,6 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [serialPickTarget, setSerialPickTarget] = useState<string | null>(null)
-  const [paymentOpen, setPaymentOpen] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
 
   const customerState = customer?.state ?? 'Telangana'
 
@@ -40,12 +35,13 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
             : i
         )
       }
-      const newItem: Omit<CartItem, 'taxable_amount' | 'cgst' | 'sgst' | 'igst' | 'total_gst' | 'total'> = {
+      const newItem: Omit<CartItem, 'taxable_amount' | 'cgst' | 'sgst' | 'igst' | 'total_gst' | 'total' | 'discount'> = {
         _id: crypto.randomUUID(),
         product,
         quantity: 1,
         rate: product.selling_price,
-        discount: 0,
+        discount_mode: 'percent',
+        discount_raw: 0,
         serial_number: null,
       }
       return [...prev, recalcItem(newItem, customerState)]
@@ -60,8 +56,12 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
     setCart(prev => prev.map(i => i._id === id ? recalcItem({ ...i, rate }, customerState) : i))
   }
 
-  function updateDiscount(id: string, discount: number) {
-    setCart(prev => prev.map(i => i._id === id ? recalcItem({ ...i, discount }, customerState) : i))
+  function updateDiscountRaw(id: string, raw: number) {
+    setCart(prev => prev.map(i => i._id === id ? recalcItem({ ...i, discount_raw: raw }, customerState) : i))
+  }
+
+  function updateDiscountMode(id: string, mode: 'percent' | 'flat') {
+    setCart(prev => prev.map(i => i._id === id ? recalcItem({ ...i, discount_mode: mode }, customerState) : i))
   }
 
   function removeItem(id: string) {
@@ -90,81 +90,53 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
     }
     const missing = cart.filter(i => i.product.serial_required && !i.serial_number)
     if (missing.length > 0) {
-      toast.error(`Select serial numbers for: ${missing.map(i => i.product.name).join(', ')}`)
+      toast.error(`Select serial for: ${missing.map(i => i.product.name).join(', ')}`)
       return
     }
-    setPaymentOpen(true)
-  }
-
-  async function handleConfirmPayment(method: 'cash' | 'upi' | 'card') {
-    const totals = cartTotals(cart)
-    setSubmitting(true)
-    try {
-      const invoiceId = await createInvoice({
-        customer_id: customer?.id ?? null,
-        ...totals,
-        payment_method: method,
-        items: cart.map(i => ({
-          product_id: i.product.id,
-          product_name: i.product.name,
-          sku: i.product.sku,
-          hsn_code: i.product.hsn_code,
-          serial_number: i.serial_number,
-          quantity: i.quantity,
-          rate: i.rate,
-          discount: i.discount,
-          gst_rate: i.product.gst_rate,
-          taxable_amount: i.taxable_amount,
-          cgst: i.cgst,
-          sgst: i.sgst,
-          igst: i.igst,
-          total: i.total,
-        })),
-      })
-      toast.success('Invoice saved!')
-      setPaymentOpen(false)
-      router.push(`/invoices/${invoiceId}`)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to save invoice.')
-    } finally {
-      setSubmitting(false)
-    }
+    sessionStorage.setItem('pos_checkout_cart', JSON.stringify(cart))
+    sessionStorage.setItem('pos_checkout_customer', customer ? JSON.stringify(customer) : '')
+    router.push('/billing/checkout')
   }
 
   const totals = cartTotals(cart)
 
   return (
-    <div className="flex flex-col lg:flex-row gap-5 h-full">
+    <div className="flex flex-col lg:flex-row gap-5 min-h-0">
+      {/* Left: Cart */}
       <div className="flex-1 min-w-0 space-y-4">
         <ProductSearch products={products} onAdd={addProduct} />
 
         {cart.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border p-12 text-center">
-            <ShoppingCartIcon className="size-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm">Cart is empty. Search for a product to start billing.</p>
+          <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-16 text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <ShoppingCartIcon className="size-8 text-slate-400" />
+            </div>
+            <p className="font-semibold text-slate-700">Cart is empty</p>
+            <p className="text-sm text-slate-500 mt-1">Search for a product above to start billing</p>
           </div>
         ) : (
-          <div className="rounded-xl border border-border overflow-x-auto">
+          <div className="rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50 border-b border-border">
+              <thead className="bg-[#111827] border-b border-[#1F2937]">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Product</th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Qty</th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Rate</th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Disc.</th>
-                  <th className="px-3 py-2 text-right font-medium text-muted-foreground">GST%</th>
-                  <th className="px-3 py-2 text-right font-medium text-muted-foreground">Total</th>
-                  <th className="px-3 py-2 w-10" />
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Product</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Qty</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Rate</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Disc.</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">GST%</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Total</th>
+                  <th className="px-4 py-3 w-10" />
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {cart.map(item => (
                   <CartItemRow
                     key={item._id}
                     item={item}
                     onQtyChange={updateQty}
                     onRateChange={updateRate}
-                    onDiscountChange={updateDiscount}
+                    onDiscountChange={updateDiscountRaw}
+                    onDiscountModeChange={updateDiscountMode}
                     onRemove={removeItem}
                     onPickSerial={pickSerial}
                   />
@@ -175,16 +147,17 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
         )}
       </div>
 
-      <div className="w-full lg:w-80 shrink-0 space-y-4">
+      {/* Right: Sidebar */}
+      <div className="w-full lg:w-[320px] shrink-0 space-y-4">
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Customer</p>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</p>
           <CustomerSelector
             customers={customers}
             selected={customer}
             onSelect={handleCustomerChange}
           />
           {customer && (
-            <p className="text-xs text-muted-foreground px-1">
+            <p className="text-xs text-slate-400 px-1">
               State: {customer.state} → GST: {customer.state === 'Telangana' ? 'CGST + SGST' : 'IGST'}
             </p>
           )}
@@ -192,13 +165,16 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
 
         <CartSummary {...totals} itemCount={cart.length} />
 
-        <Button
-          className="w-full h-12 text-base font-semibold"
+        <button
+          type="button"
           onClick={handleCheckout}
-          disabled={cart.length === 0 || submitting}
+          disabled={cart.length === 0}
+          className="w-full h-14 bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed text-white text-base font-bold rounded-2xl shadow-lg shadow-slate-900/25 transition-all duration-200 flex items-center justify-center gap-2.5 ring-1 ring-white/[0.08]"
         >
-          Proceed to Payment
-        </Button>
+          <ShoppingCartIcon className="size-5" />
+          Proceed to Checkout
+          <ArrowRightIcon className="size-4" />
+        </button>
       </div>
 
       {serialPickTarget && (() => {
@@ -211,15 +187,6 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
           />
         ) : null
       })()}
-
-      {paymentOpen && (
-        <PaymentModal
-          grandTotal={totals.grand_total}
-          onConfirm={handleConfirmPayment}
-          onClose={() => setPaymentOpen(false)}
-          submitting={submitting}
-        />
-      )}
     </div>
   )
 }

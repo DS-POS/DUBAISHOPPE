@@ -11,7 +11,7 @@ export default async function BillingPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-[#0F172A]" style={{ fontFamily: 'Rubik, sans-serif' }}>
+        <h1 className="text-2xl font-bold text-[#111827]" style={{ fontFamily: 'Rubik, sans-serif' }}>
           New Sale
         </h1>
         <p className="text-slate-500 text-sm mt-1">Scan or search products to build the cart</p>

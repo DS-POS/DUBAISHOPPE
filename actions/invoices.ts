@@ -32,6 +32,7 @@ export interface CreateInvoiceData {
   total_gst: number
   grand_total: number
   payment_method: 'cash' | 'upi' | 'card'
+  amount_paid?: number
   items: CreateInvoiceItem[]
 }
 
@@ -56,7 +57,8 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string> {
   // 2. Get next invoice number atomically
   const { data: invoiceNoRow, error: seqError } = await supabase.rpc('next_invoice_no')
   if (seqError) throw new Error(`Invoice number generation failed: ${seqError.message}`)
-  const invoice_no: string = invoiceNoRow
+  if (!invoiceNoRow) throw new Error('Invoice number generation returned empty value')
+  const invoice_no: string = String(invoiceNoRow)
 
   // 3. Insert invoice
   const { data: invoice, error: invoiceError } = await supabase
@@ -73,7 +75,8 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string> {
       total_gst: data.total_gst,
       grand_total: data.grand_total,
       payment_method: data.payment_method,
-      status: 'paid',
+      amount_paid: data.amount_paid ?? data.grand_total,
+      status: (data.amount_paid ?? data.grand_total) >= data.grand_total ? 'paid' : 'pending',
       created_by: user.id,
     })
     .select('id')
@@ -81,7 +84,20 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string> {
   if (invoiceError) throw new Error(invoiceError.message)
   const invoiceId = invoice.id
 
-  // 4. Insert invoice items
+  // 4. Record initial payment in invoice_payments (so recompute sums correctly)
+  const initialPaid = data.amount_paid ?? data.grand_total
+  if (initialPaid > 0) {
+    await supabase.from('invoice_payments').insert({
+      invoice_id: invoiceId,
+      amount: initialPaid,
+      payment_date: new Date().toISOString().split('T')[0],
+      payment_method: data.payment_method,
+      notes: 'Initial payment at invoice creation',
+      created_by: user.id,
+    })
+  }
+
+  // 5. Insert invoice items
   const itemRows = data.items.map(item => ({
     invoice_id: invoiceId,
     product_id: item.product_id,
@@ -102,7 +118,7 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string> {
   const { error: itemsError } = await supabase.from('invoice_items').insert(itemRows)
   if (itemsError) throw new Error(itemsError.message)
 
-  // 5. Deduct stock + log history + mark serials sold
+  // 6. Deduct stock + log history + mark serials sold
   for (const item of data.items) {
     const { data: prod } = await supabase
       .from('products')
@@ -136,6 +152,7 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string> {
   revalidatePath('/invoices')
   revalidatePath('/products')
   revalidatePath('/stock-in')
+  revalidatePath('/dashboard')
   return invoiceId
 }
 
@@ -159,6 +176,19 @@ export async function getInvoices(params?: {
   return (data ?? []) as (Invoice & { customers: { name: string } | null })[]
 }
 
+export async function getAllInvoices(): Promise<(Invoice & {
+  customers: { name: string; phone: string | null } | null
+})[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('*, customers(name, phone)')
+    .order('created_at', { ascending: false })
+    .limit(500)
+  if (error) throw new Error(error.message)
+  return (data ?? []) as never
+}
+
 export async function getInvoice(id: string): Promise<(Invoice & {
   customers: { name: string; phone: string | null; email: string | null; gstin: string | null; address: string | null; state: string } | null
   invoice_items: InvoiceItem[]
@@ -171,4 +201,76 @@ export async function getInvoice(id: string): Promise<(Invoice & {
     .single()
   if (error) return null
   return data as never
+}
+
+export async function getInvoiceStats() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('grand_total, amount_paid, status, created_at')
+    .neq('status', 'cancelled')
+
+  if (error) throw new Error(error.message)
+
+  const invoices = data ?? []
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+
+  const totalRevenue = invoices.reduce((sum, i) => sum + Number(i.grand_total), 0)
+  const totalPaid = invoices.reduce((sum, i) => sum + Number(i.amount_paid), 0)
+  const totalDue = totalRevenue - totalPaid
+  const dueInvoices = invoices.filter(i => i.status === 'pending')
+  const todayInvoices = invoices.filter(i => i.created_at.startsWith(todayStr))
+  const todayRevenue = todayInvoices.reduce((sum, i) => sum + Number(i.grand_total), 0)
+
+  return {
+    totalRevenue,
+    totalPaid,
+    totalDue,
+    dueCount: dueInvoices.length,
+    totalInvoices: invoices.length,
+    todayRevenue,
+    todayCount: todayInvoices.length,
+  }
+}
+
+export async function getRecentDueInvoices() {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('id, invoice_no, grand_total, amount_paid, created_at, customers(name, phone)')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+    .limit(10)
+  if (error) throw new Error(error.message)
+  return (data ?? []) as never as Array<{
+    id: string
+    invoice_no: string
+    grand_total: number
+    amount_paid: number
+    created_at: string
+    customers: { name: string; phone: string | null } | null
+  }>
+}
+
+export async function getRecentInvoices() {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('id, invoice_no, grand_total, amount_paid, status, created_at, customers(name)')
+    .order('created_at', { ascending: false })
+    .limit(8)
+  if (error) throw new Error(error.message)
+  return (data ?? []) as never as Array<{
+    id: string
+    invoice_no: string
+    grand_total: number
+    amount_paid: number
+    status: string
+    created_at: string
+    customers: { name: string } | null
+  }>
 }

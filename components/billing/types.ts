@@ -6,6 +6,8 @@ export interface CartItem {
   product: Product
   quantity: number
   rate: number
+  discount_mode: 'percent' | 'flat'
+  discount_raw: number
   discount: number
   serial_number: string | null
   taxable_amount: number
@@ -16,12 +18,19 @@ export interface CartItem {
   total: number
 }
 
-export function recalcItem(item: Omit<CartItem, 'taxable_amount' | 'cgst' | 'sgst' | 'igst' | 'total_gst' | 'total'>, customerState: string): CartItem {
+export function recalcItem(
+  item: Omit<CartItem, 'taxable_amount' | 'cgst' | 'sgst' | 'igst' | 'total_gst' | 'total' | 'discount'>,
+  customerState: string
+): CartItem {
+  const discount =
+    item.discount_mode === 'percent'
+      ? Number((item.rate * item.quantity * item.discount_raw / 100).toFixed(2))
+      : item.discount_raw
   const gst = calculateLineGST(
-    { rate: item.rate, quantity: item.quantity, discount: item.discount, gst_rate: item.product.gst_rate },
+    { rate: item.rate, quantity: item.quantity, discount, gst_rate: item.product.gst_rate },
     customerState
   )
-  return { ...item, ...gst }
+  return { ...item, discount, ...gst }
 }
 
 export function cartTotals(items: CartItem[]) {
