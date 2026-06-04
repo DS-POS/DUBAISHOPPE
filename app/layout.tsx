@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from 'next'
 import { Rubik, Nunito_Sans } from 'next/font/google'
+import dynamic from 'next/dynamic'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
-import { ServiceWorkerRegister } from '@/components/offline/ServiceWorkerRegister'
-import { OfflineBanner } from '@/components/offline/OfflineBanner'
+
+// Browser-only: IndexedDB + SW registration must never run server-side
+const OfflineBanner = dynamic(() => import('@/components/offline/OfflineBanner').then(m => m.OfflineBanner), { ssr: false })
+const ServiceWorkerRegister = dynamic(() => import('@/components/offline/ServiceWorkerRegister').then(m => m.ServiceWorkerRegister), { ssr: false })
 
 const rubik = Rubik({
   subsets: ['latin'],

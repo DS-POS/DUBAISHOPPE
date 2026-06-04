@@ -73,7 +73,7 @@ test.describe('Authenticated page smoke tests', () => {
   test('stock-in page loads', async ({ page }) => {
     await page.goto('/stock-in')
     // Heading is "Supplier Invoices" on the stock-in list page
-    await expect(page.getByRole('heading', { name: /supplier invoices/i })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /supplier invoices/i }).first()).toBeVisible({ timeout: 10000 })
   })
 
   // ── Suppliers ──────────────────────────────────────────────────────────────

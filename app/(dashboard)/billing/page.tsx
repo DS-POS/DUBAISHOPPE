@@ -1,7 +1,9 @@
 import { getProducts } from '@/actions/products'
 import { getCustomers } from '@/actions/customers'
 import BillingForm from '@/components/billing/BillingForm'
-import { CachePopulator } from '@/components/offline/CachePopulator'
+import dynamic from 'next/dynamic'
+
+const CachePopulator = dynamic(() => import('@/components/offline/CachePopulator').then(m => m.CachePopulator), { ssr: false })
 
 export default async function BillingPage() {
   const [products, customers] = await Promise.all([

@@ -36,7 +36,7 @@ test.describe('Billing — New Sale flow', () => {
     await searchInput.fill('a')
     await page.waitForTimeout(500)
 
-    const firstResult = page.locator('button').filter({ hasText: /₹/ }).first()
+    const firstResult = page.locator('button').filter({ hasText: /₹/ }).filter({ hasNot: page.getByText(/out of stock/i) }).first()
     if (await firstResult.isVisible()) {
       await firstResult.click()
       await expect(page.getByText(/1 item/)).toBeVisible({ timeout: 5000 })
@@ -58,7 +58,7 @@ test.describe('Billing — New Sale flow', () => {
     await searchInput.fill('a')
     await page.waitForTimeout(500)
 
-    const firstResult = page.locator('button').filter({ hasText: /₹/ }).first()
+    const firstResult = page.locator('button').filter({ hasText: /₹/ }).filter({ hasNot: page.getByText(/out of stock/i) }).first()
     if (await firstResult.isVisible()) {
       await firstResult.click()
       const checkoutBtn = page.getByRole('button', { name: /proceed to checkout/i })
@@ -73,7 +73,7 @@ test.describe('Billing — New Sale flow', () => {
     await searchInput.fill('a')
     await page.waitForTimeout(500)
 
-    const firstResult = page.locator('button').filter({ hasText: /₹/ }).first()
+    const firstResult = page.locator('button').filter({ hasText: /₹/ }).filter({ hasNot: page.getByText(/out of stock/i) }).first()
     if (await firstResult.isVisible()) {
       await firstResult.click()
       await expect(page.getByText(/1 item/)).toBeVisible({ timeout: 5000 })
