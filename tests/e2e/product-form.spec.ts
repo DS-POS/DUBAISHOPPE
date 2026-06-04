@@ -59,6 +59,6 @@ test.describe('Product Form', () => {
     await page.fill('#selling_price', '65000')
     await page.click('button[type="submit"]')
     await expect(page).toHaveURL(/\/products$/, { timeout: 15000 })
-    await expect(page.getByText('Canon EOS R50 E2E Test')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('Canon EOS R50 E2E Test').first()).toBeVisible({ timeout: 5000 })
   })
 })
