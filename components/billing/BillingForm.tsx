@@ -11,6 +11,7 @@ import { SerialPicker } from './SerialPicker'
 import { CustomerSelector } from './CustomerSelector'
 import { CartSummary } from './CartSummary'
 import { ShoppingCartIcon, ArrowRightIcon } from 'lucide-react'
+import { getCustomerCreditStatus, type CustomerCreditStatus } from '@/actions/customers'
 
 interface BillingFormProps {
   products: Product[]
@@ -22,6 +23,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [serialPickTarget, setSerialPickTarget] = useState<string | null>(null)
+  const [creditStatus, setCreditStatus] = useState<CustomerCreditStatus | null>(null)
 
   const customerState = customer?.state ?? 'Telangana'
 
@@ -78,13 +80,23 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
     setSerialPickTarget(null)
   }
 
-  const handleCustomerChange = useCallback((c: Customer | null) => {
+  const handleCustomerChange = useCallback(async (c: Customer | null) => {
     setCustomer(c)
     const state = c?.state ?? 'Telangana'
     setCart(prev => prev.map(i => recalcItem({ ...i }, state)))
+    if (c && c.credit_limit > 0) {
+      const status = await getCustomerCreditStatus(c.id)
+      setCreditStatus(status)
+    } else {
+      setCreditStatus(null)
+    }
   }, [])
 
   function handleCheckout() {
+    if (creditStatus?.over_limit && customer?.credit_limit && customer.credit_limit > 0) {
+      toast.error(`Credit limit exceeded. Outstanding: ₹${creditStatus.outstanding.toLocaleString('en-IN')}. Limit: ₹${customer.credit_limit.toLocaleString('en-IN')}`)
+      return
+    }
     if (cart.length === 0) {
       toast.error('Cart is empty.')
       return
@@ -161,6 +173,16 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
             <p className="text-xs text-slate-400 px-1">
               State: {customer.state} → GST: {customer.state === 'Telangana' ? 'CGST + SGST' : 'IGST'}
             </p>
+          )}
+          {creditStatus && creditStatus.credit_limit > 0 && (
+            <div className={`rounded-xl p-3 text-sm ${creditStatus.over_limit ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'}`}>
+              <p className={`font-semibold ${creditStatus.over_limit ? 'text-red-700' : 'text-amber-700'}`}>
+                {creditStatus.over_limit ? '⚠ Credit limit exceeded' : 'Credit info'}
+              </p>
+              <p className="text-xs mt-0.5 text-slate-600">
+                Outstanding: ₹{creditStatus.outstanding.toLocaleString('en-IN', { maximumFractionDigits: 0 })} / Limit: ₹{creditStatus.credit_limit.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </p>
+            </div>
           )}
         </div>
 
