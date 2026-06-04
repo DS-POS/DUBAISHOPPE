@@ -174,3 +174,126 @@ export async function getCustomerCreditSummary(customerId: string): Promise<Cust
     available_credit: Math.max(0, customer.credit_limit - outstanding),
   }
 }
+
+export interface StatementTransaction {
+  date: string           // ISO date string for sorting
+  date_display: string   // formatted 'dd MMM yyyy'
+  type: 'invoice' | 'payment'
+  reference: string      // invoice_no or 'Payment'
+  description: string    // product list snippet or payment method
+  debit: number          // invoice amount added to balance
+  credit: number         // payment reduces balance
+  balance: number        // running balance after this transaction
+}
+
+export interface CustomerStatement {
+  customer_id: string
+  customer_name: string
+  opening_balance: number
+  transactions: StatementTransaction[]
+  closing_balance: number
+  total_invoiced: number
+  total_paid: number
+}
+
+export async function getCustomerStatement(customerId: string): Promise<CustomerStatement> {
+  const supabase = await createClient()
+
+  const { data: customer, error: cErr } = await supabase
+    .from('customers')
+    .select('id, name')
+    .eq('id', customerId)
+    .single()
+  if (cErr || !customer) throw new Error('Customer not found')
+
+  // Fetch all non-cancelled invoices
+  const { data: invoices, error: iErr } = await supabase
+    .from('invoices')
+    .select('id, invoice_no, grand_total, created_at, invoice_items(product_name)')
+    .eq('customer_id', customerId)
+    .neq('status', 'cancelled')
+    .order('created_at', { ascending: true })
+  if (iErr) throw new Error(iErr.message)
+
+  const invoiceIds = (invoices ?? []).map(i => i.id)
+
+  // Fetch all payments for those invoices
+  let payments: Array<{ invoice_id: string; amount: number; payment_date: string; payment_method: string | null; invoice_no?: string }> = []
+  if (invoiceIds.length > 0) {
+    const { data: payRows, error: pErr } = await supabase
+      .from('invoice_payments')
+      .select('invoice_id, amount, payment_date, payment_method')
+      .in('invoice_id', invoiceIds)
+      .order('payment_date', { ascending: true })
+    if (pErr) throw new Error(pErr.message)
+
+    // Attach invoice_no for display
+    const invoiceNoMap = new Map((invoices ?? []).map(i => [i.id, i.invoice_no]))
+    payments = (payRows ?? []).map(p => ({
+      ...p,
+      invoice_no: invoiceNoMap.get(p.invoice_id),
+    }))
+  }
+
+  // Build unified transaction list
+  const rawTx: Array<{ date: string; tx: StatementTransaction }> = []
+
+  for (const inv of invoices ?? []) {
+    const items = (inv.invoice_items as Array<{ product_name: string }>) ?? []
+    const productSnippet = items.slice(0, 2).map(i => i.product_name).join(', ') +
+      (items.length > 2 ? ` +${items.length - 2} more` : '')
+    rawTx.push({
+      date: inv.created_at,
+      tx: {
+        date: inv.created_at,
+        date_display: new Date(inv.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        type: 'invoice',
+        reference: inv.invoice_no,
+        description: productSnippet || 'Sale',
+        debit: Number(inv.grand_total),
+        credit: 0,
+        balance: 0, // computed below
+      },
+    })
+  }
+
+  for (const pay of payments) {
+    const payDate = pay.payment_date + 'T00:00:00'
+    rawTx.push({
+      date: payDate,
+      tx: {
+        date: payDate,
+        date_display: new Date(payDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        type: 'payment',
+        reference: pay.invoice_no ?? 'Payment',
+        description: `${pay.payment_method ?? 'Payment'} against ${pay.invoice_no ?? 'invoice'}`,
+        debit: 0,
+        credit: Number(pay.amount),
+        balance: 0, // computed below
+      },
+    })
+  }
+
+  // Sort chronologically
+  rawTx.sort((a, b) => a.date.localeCompare(b.date))
+
+  // Compute running balance
+  let runningBalance = 0
+  const transactions: StatementTransaction[] = rawTx.map(({ tx }) => {
+    runningBalance += tx.debit - tx.credit
+    return { ...tx, balance: Math.round(runningBalance * 100) / 100 }
+  })
+
+  const total_invoiced = transactions.filter(t => t.type === 'invoice').reduce((s, t) => s + t.debit, 0)
+  const total_paid = transactions.filter(t => t.type === 'payment').reduce((s, t) => s + t.credit, 0)
+
+  return {
+    customer_id: customerId,
+    customer_name: customer.name,
+    opening_balance: 0,
+    transactions,
+    closing_balance: Math.round(runningBalance * 100) / 100,
+    total_invoiced,
+    total_paid,
+  }
+}
