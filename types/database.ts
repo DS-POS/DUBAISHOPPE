@@ -161,10 +161,14 @@ export interface SupplierInvoice {
   purchase_date: string
   total_amount: number
   payment_status: SupplierPaymentStatus
+  supplier_id: string | null
+  due_date: string | null
+  notes: string | null
   created_by: string | null
   created_at: string
   supplier_payments?: SupplierPayment[]
   stock_in?: StockIn[]
+  suppliers?: Pick<Supplier, 'id' | 'name' | 'phone' | 'gstin'>
 }
 
 export interface SupplierPayment {
