@@ -3,6 +3,7 @@ export type ProductStatus = 'active' | 'inactive'
 export type SerialStatus = 'available' | 'sold' | 'damaged' | 'returned'
 export type StockChangeType = 'stock_in' | 'sale' | 'adjustment' | 'return'
 export type StockAdjustmentType = 'damage' | 'return' | 'correction' | 'write_off' | 'found'
+export type ReturnRefundMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'store_credit' | 'no_refund'
 export type InvoiceStatus = 'paid' | 'pending' | 'cancelled'
 export type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
 export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'expired' | 'rejected'
@@ -88,6 +89,39 @@ export interface StockAdjustment {
   created_by: string | null
   created_at: string
   products?: Pick<Product, 'id' | 'name' | 'sku' | 'current_stock'>
+}
+
+export interface SalesReturnItem {
+  id: string
+  return_id: string
+  invoice_item_id: string
+  product_id: string | null
+  product_name: string
+  sku: string | null
+  serial_number: string | null
+  quantity_returned: number
+  rate: number
+  discount: number
+  gst_rate: number
+  taxable_amount: number
+  cgst: number
+  sgst: number
+  igst: number
+  total: number
+}
+
+export interface SalesReturn {
+  id: string
+  return_no: string
+  invoice_id: string
+  reason: string
+  refund_method: ReturnRefundMethod
+  total_refund: number
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  invoices?: Pick<Invoice, 'id' | 'invoice_no' | 'grand_total'>
+  sales_return_items?: SalesReturnItem[]
 }
 
 export interface SupplierInvoice {
