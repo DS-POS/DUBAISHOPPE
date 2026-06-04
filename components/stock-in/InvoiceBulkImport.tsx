@@ -27,6 +27,15 @@ interface ReviewItem {
   new_product_name: string
   new_product_category_id?: string
   new_product_gst_rate: number
+  selling_price_mode: 'percent' | 'flat'
+  selling_price_value: number
+}
+
+function computeSellingPrice(item: ReviewItem): number {
+  if (item.selling_price_mode === 'percent') {
+    return Number((item.unit_price * (1 + item.selling_price_value / 100)).toFixed(2))
+  }
+  return Number((item.unit_price + item.selling_price_value).toFixed(2))
 }
 
 interface InvoiceBulkImportProps {
@@ -101,6 +110,8 @@ export function InvoiceBulkImport({ products, categories }: InvoiceBulkImportPro
           new_product_name: item.description,
           new_product_category_id: categories[0]?.id,
           new_product_gst_rate: 18,
+          selling_price_mode: 'percent',
+          selling_price_value: 20,
         }
       })
 
@@ -153,6 +164,7 @@ export function InvoiceBulkImport({ products, categories }: InvoiceBulkImportPro
           hsn_code: item.hsn_code,
           quantity: item.quantity,
           unit_price: item.unit_price,
+          selling_price: item.action !== 'skip' ? computeSellingPrice(item) : undefined,
           action: item.action,
           product_id: item.product_id,
           new_product_name: item.new_product_name,
@@ -287,6 +299,33 @@ export function InvoiceBulkImport({ products, categories }: InvoiceBulkImportPro
 
             {item.action !== 'skip' && (
               <div className="space-y-2">
+                {/* Selling Price */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground shrink-0">Selling Price:</span>
+                  <button
+                    type="button"
+                    onClick={() => updateItem(i, {
+                      selling_price_mode: item.selling_price_mode === 'percent' ? 'flat' : 'percent',
+                      selling_price_value: item.selling_price_mode === 'percent' ? 0 : 20,
+                    })}
+                    className="px-2 py-0.5 text-xs rounded border border-input hover:bg-accent w-9 text-center shrink-0 font-mono"
+                    title="Toggle markup mode"
+                  >
+                    {item.selling_price_mode === 'percent' ? '%' : '+₹'}
+                  </button>
+                  <Input
+                    type="number"
+                    value={item.selling_price_value}
+                    onChange={e => updateItem(i, { selling_price_value: Number(e.target.value) })}
+                    className="h-7 text-xs w-20"
+                    min={0}
+                    step={item.selling_price_mode === 'percent' ? 1 : 100}
+                  />
+                  <span className="text-xs font-medium text-emerald-600 shrink-0">
+                    = ₹{computeSellingPrice(item).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+
                 {/* Action selector */}
                 <div className="flex gap-2">
                   <button type="button"

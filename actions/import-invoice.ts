@@ -8,6 +8,7 @@ export interface ImportItem {
   hsn_code?: string
   quantity: number
   unit_price: number
+  selling_price?: number       // computed by user; saved to products.selling_price
   action: 'use_existing' | 'create_new' | 'skip'
   product_id?: string          // when action === 'use_existing'
   new_product_name: string     // when action === 'create_new'
@@ -45,7 +46,7 @@ export async function importSupplierInvoice(payload: ImportInvoicePayload): Prom
 
     if (item.action === 'create_new') {
       const sku = `IMP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
-      const selling_price = Number((item.unit_price * 1.2).toFixed(2))
+      const selling_price = item.selling_price ?? Number((item.unit_price * 1.2).toFixed(2))
 
       const { data: newProduct, error: productError } = await supabase
         .from('products')
@@ -68,6 +69,47 @@ export async function importSupplierInvoice(payload: ImportInvoicePayload): Prom
 
       if (productError) throw new Error(`Failed to create product "${item.new_product_name}": ${productError.message}`)
       productIdMap.set(i, newProduct.id)
+    }
+
+    // update selling_price (and cost_price) for existing products
+    if (item.action === 'use_existing' && item.product_id && item.selling_price != null) {
+      await supabase
+        .from('products')
+        .update({ selling_price: item.selling_price, cost_price: item.unit_price })
+        .eq('id', item.product_id)
+    }
+  }
+
+  // 1.5 Upsert supplier record if name is provided
+  if (payload.supplier_name) {
+    const { data: existing } = await supabase
+      .from('suppliers')
+      .select('id')
+      .ilike('name', payload.supplier_name.trim())
+      .maybeSingle()
+
+    if (existing) {
+      // Update GSTIN if provided and not already set
+      if (payload.supplier_gstin) {
+        await supabase
+          .from('suppliers')
+          .update({
+            gstin: payload.supplier_gstin,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id)
+          .is('gstin', null)  // only update if GSTIN was null
+      }
+    } else {
+      // Create new supplier record
+      await supabase
+        .from('suppliers')
+        .insert({
+          name: payload.supplier_name.trim(),
+          gstin: payload.supplier_gstin ?? null,
+          state: 'Telangana',
+          created_by: user.id,
+        })
     }
   }
 
@@ -116,6 +158,7 @@ export async function importSupplierInvoice(payload: ImportInvoicePayload): Prom
 
   revalidatePath('/stock-in')
   revalidatePath('/products')
+  revalidatePath('/suppliers')
 
   return supplierInvoiceId
 }
