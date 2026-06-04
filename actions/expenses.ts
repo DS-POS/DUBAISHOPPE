@@ -98,7 +98,8 @@ export async function getExpenseSummary(year: number, month: number): Promise<Ex
   const byCategory: Record<string, number> = {}
   let total = 0
   for (const row of rows) {
-    const cat = (row.expense_categories as { name: string } | null)?.name ?? 'Uncategorised'
+    const catRaw = row.expense_categories as unknown as { name: string } | { name: string }[] | null
+    const cat = (Array.isArray(catRaw) ? catRaw[0]?.name : catRaw?.name) ?? 'Uncategorised'
     byCategory[cat] = (byCategory[cat] ?? 0) + Number(row.amount)
     total += Number(row.amount)
   }
