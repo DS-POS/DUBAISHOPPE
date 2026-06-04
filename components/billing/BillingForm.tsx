@@ -12,6 +12,7 @@ import { CustomerSelector } from './CustomerSelector'
 import { CartSummary } from './CartSummary'
 import { ShoppingCartIcon, ArrowRightIcon } from 'lucide-react'
 import { getCustomerCreditStatus, type CustomerCreditStatus } from '@/actions/customers'
+import { useBarcodeScanner } from './BarcodeScanner'
 
 interface BillingFormProps {
   products: Product[]
@@ -50,6 +51,26 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
       return [...prev, recalcItem(newItem, customerState)]
     })
   }
+
+  function handleBarcodeScan(barcode: string) {
+    const found = products.find(p => p.barcode === barcode || p.sku === barcode)
+    const el = document.getElementById('barcode-status')
+    if (found) {
+      addProduct(found)
+      if (el) {
+        el.textContent = `✓ ${found.name} added`
+        el.className = 'h-4 text-xs text-emerald-600 font-medium'
+        setTimeout(() => { el.textContent = ''; el.className = 'h-4 text-xs' }, 2000)
+      }
+    } else {
+      if (el) {
+        el.textContent = `Barcode not found: ${barcode}`
+        el.className = 'h-4 text-xs text-red-500 font-medium'
+        setTimeout(() => { el.textContent = ''; el.className = 'h-4 text-xs' }, 2000)
+      }
+    }
+  }
+  useBarcodeScanner({ onScan: handleBarcodeScan, enabled: true })
 
   function updateQty(id: string, qty: number) {
     setCart(prev => prev.map(i => i._id === id ? recalcItem({ ...i, quantity: qty }, customerState) : i))
@@ -118,6 +139,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
       {/* Left: Cart */}
       <div className="flex-1 min-w-0 space-y-4">
         <ProductSearch products={products} onAdd={addProduct} />
+        <div id="barcode-status" className="h-4 text-xs" />
 
         {cart.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-16 text-center">
