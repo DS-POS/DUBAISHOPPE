@@ -193,6 +193,7 @@ export interface Customer {
   address: string | null
   state: string
   credit_limit: number
+  credit_days: number
   created_at: string
 }
 
