@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { Search, Printer, X, Trash2, Plus, Minus, Tag } from 'lucide-react'
+import { Search, Printer, X, Trash2, Plus, Minus, Tag, CheckSquare, Square } from 'lucide-react'
 import type { Product } from '@/types/database'
 
 // react-barcode requires browser, load dynamically to avoid SSR issues
@@ -32,6 +32,24 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
   const [queue, setQueue] = useState<QueueItem[]>([])
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  function toggleSelect(id: string) {
+    setSelected(prev => {
+      const n = new Set(prev)
+      n.has(id) ? n.delete(id) : n.add(id)
+      return n
+    })
+  }
+
+  function selectAll() {
+    const activeIds = products.filter(p => p.status === 'active').map(p => p.id)
+    setSelected(new Set(activeIds))
+  }
+
+  function clearSelection() {
+    setSelected(new Set())
+  }
 
   const searchResults = useMemo(() => {
     if (!search.trim()) return []
@@ -92,33 +110,34 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
     setQueue([])
   }
 
-  function handlePrint() {
+  function handleBatchPrint() {
+    const selectedProducts = products.filter(p => selected.has(p.id))
+    if (selectedProducts.length === 0) return
     const labels: string[] = []
-
-    for (const item of queue) {
-      const barcodeValue = getBarcodeValue(item.product)
+    for (const product of selectedProducts) {
+      const barcodeValue = getBarcodeValue(product)
       const labelHtml = `
         <div class="label">
           <div class="store-name">DUBAI SHOPPE</div>
-          <div class="product-name">${escapeHtml(item.product.name)}</div>
-          <div class="price">${formatPrice(item.product.selling_price)}</div>
-          <div class="gst">GST: ${item.product.gst_rate}%${item.product.hsn_code ? ` &nbsp;|&nbsp; HSN: ${escapeHtml(item.product.hsn_code)}` : ''}</div>
+          <div class="product-name">${escapeHtml(product.name)}</div>
+          <div class="price">${formatPrice(product.selling_price)}</div>
+          <div class="gst">GST: ${product.gst_rate}%${product.hsn_code ? ` &nbsp;|&nbsp; HSN: ${escapeHtml(product.hsn_code)}` : ''}</div>
           <div class="barcode-wrap">
             <svg class="barcode" data-value="${escapeHtml(barcodeValue)}"></svg>
           </div>
-          <div class="sku">SKU: ${escapeHtml(item.product.sku)}</div>
+          <div class="sku">SKU: ${escapeHtml(product.sku)}</div>
         </div>`
-      for (let i = 0; i < item.quantity; i++) {
-        labels.push(labelHtml)
-      }
+      labels.push(labelHtml)
     }
+    openPrintWindow(labels)
+  }
 
+  function openPrintWindow(labels: string[]) {
     const printWindow = window.open('', '_blank', 'width=900,height=700')
     if (!printWindow) {
       alert('Please allow popups to print labels.')
       return
     }
-
     printWindow.document.write(`<!DOCTYPE html>
 <html>
 <head>
@@ -192,6 +211,28 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
     printWindow.document.close()
   }
 
+  function handlePrint() {
+    const labels: string[] = []
+    for (const item of queue) {
+      const barcodeValue = getBarcodeValue(item.product)
+      const labelHtml = `
+        <div class="label">
+          <div class="store-name">DUBAI SHOPPE</div>
+          <div class="product-name">${escapeHtml(item.product.name)}</div>
+          <div class="price">${formatPrice(item.product.selling_price)}</div>
+          <div class="gst">GST: ${item.product.gst_rate}%${item.product.hsn_code ? ` &nbsp;|&nbsp; HSN: ${escapeHtml(item.product.hsn_code)}` : ''}</div>
+          <div class="barcode-wrap">
+            <svg class="barcode" data-value="${escapeHtml(barcodeValue)}"></svg>
+          </div>
+          <div class="sku">SKU: ${escapeHtml(item.product.sku)}</div>
+        </div>`
+      for (let i = 0; i < item.quantity; i++) {
+        labels.push(labelHtml)
+      }
+    }
+    openPrintWindow(labels)
+  }
+
   function escapeHtml(str: string): string {
     return str
       .replace(/&/g, '&amp;')
@@ -209,13 +250,33 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
     >
       {/* Page Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#111827] flex items-center justify-center shadow-sm">
-            <Tag className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#111827] flex items-center justify-center shadow-sm">
+              <Tag className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-[#111827]">Label Generator</h1>
+              <p className="text-sm text-[#4B5563] mt-0.5">Print shelf labels with barcode for any product</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-[#111827]">Label Generator</h1>
-            <p className="text-sm text-[#4B5563] mt-0.5">Print shelf labels with barcode for any product</p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={selectAll}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E7EB] bg-white text-sm font-medium text-slate-700 hover:bg-[#E5E7EB] transition"
+            >
+              <CheckSquare className="w-4 h-4" />
+              Select All
+            </button>
+            {selected.size > 0 && (
+              <button
+                onClick={clearSelection}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E7EB] bg-white text-sm font-medium text-slate-500 hover:bg-[#E5E7EB] transition"
+              >
+                <Square className="w-4 h-4" />
+                Clear
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -490,6 +551,67 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
           </div>
         </div>
       </div>
+
+      {/* Batch Select Product Grid */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-[#111827]">
+            Batch Select
+            <span className="ml-2 text-xs font-normal text-[#4B5563]">— tick products to print one label each</span>
+          </h2>
+          {selected.size > 0 && (
+            <span className="text-xs text-slate-500">{selected.size} selected</span>
+          )}
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2">
+          {products.filter(p => p.status === 'active').map(product => {
+            const isSelected = selected.has(product.id)
+            return (
+              <button
+                key={product.id}
+                onClick={() => toggleSelect(product.id)}
+                className={`relative flex flex-col items-start p-3 rounded-xl border text-left transition ${
+                  isSelected
+                    ? 'border-[#111827] bg-[#111827] text-white'
+                    : 'border-[#E5E7EB] bg-white text-slate-800 hover:border-[#111827]/40'
+                }`}
+              >
+                <div className={`absolute top-2 right-2 ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                  {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                </div>
+                <p className={`text-xs font-semibold leading-snug pr-5 ${isSelected ? 'text-white' : 'text-slate-800'}`}>
+                  {product.name}
+                </p>
+                <p className={`text-xs font-mono mt-1 ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>
+                  {product.sku}
+                </p>
+                <p className={`text-sm font-bold mt-1 ${isSelected ? 'text-white' : 'text-[#111827]'}`}>
+                  {formatPrice(product.selling_price)}
+                </p>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Sticky Bottom Bar for Batch Print */}
+      {selected.size > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-[#111827] text-white rounded-2xl px-6 py-3 flex items-center gap-4 shadow-2xl">
+          <span className="text-sm font-medium">{selected.size} item{selected.size !== 1 ? 's' : ''} selected</span>
+          <button
+            onClick={handleBatchPrint}
+            className="px-4 py-1.5 bg-white text-[#111827] rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors"
+          >
+            Print {selected.size} Labels
+          </button>
+          <button
+            onClick={clearSelection}
+            className="text-slate-400 hover:text-white text-sm"
+          >
+            Clear
+          </button>
+        </div>
+      )}
     </div>
   )
 }
