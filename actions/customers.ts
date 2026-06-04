@@ -44,6 +44,7 @@ export interface CustomerFormData {
   address?: string
   state: string
   credit_limit?: number
+  credit_days?: number
 }
 
 export async function createCustomer(formData: CustomerFormData): Promise<void> {
@@ -60,6 +61,7 @@ export async function createCustomer(formData: CustomerFormData): Promise<void> 
     address: formData.address?.trim() || null,
     state: formData.state || 'Telangana',
     credit_limit: formData.credit_limit ?? 0,
+    credit_days: formData.credit_days ?? 30,
   })
   if (error) throw new Error(error.message)
   revalidatePath('/customers')
@@ -82,6 +84,7 @@ export async function updateCustomer(id: string, formData: CustomerFormData): Pr
       address: formData.address?.trim() || null,
       state: formData.state || 'Telangana',
       credit_limit: formData.credit_limit ?? 0,
+      credit_days: formData.credit_days ?? 30,
     })
     .eq('id', id)
   if (error) throw new Error(error.message)
@@ -115,6 +118,7 @@ export async function createCustomerAndReturnId(formData: CustomerFormData): Pro
       address: formData.address?.trim() || null,
       state: formData.state || 'Telangana',
       credit_limit: formData.credit_limit ?? 0,
+      credit_days: formData.credit_days ?? 30,
     })
     .select('id')
     .single()
@@ -295,5 +299,75 @@ export async function getCustomerStatement(customerId: string): Promise<Customer
     closing_balance: Math.round(runningBalance * 100) / 100,
     total_invoiced,
     total_paid,
+  }
+}
+
+export interface ReceivableAging {
+  customer_id: string
+  customer_name: string
+  phone: string | null
+  current: number
+  days_31_60: number
+  days_61_90: number
+  over_90: number
+  total_due: number
+}
+
+export async function getReceivablesAging(): Promise<ReceivableAging[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: invoices } = await supabase
+    .from('invoices')
+    .select('id, created_at, grand_total, customer_id, customers(id, name, phone, credit_days), invoice_payments(amount)')
+    .eq('status', 'pending')
+    .not('customer_id', 'is', null)
+
+  const today = new Date()
+  const byCustomer: Record<string, ReceivableAging> = {}
+
+  for (const inv of (invoices ?? [])) {
+    const cust = inv.customers as unknown as { id: string; name: string; phone: string | null; credit_days: number } | null
+    if (!cust) continue
+    const paid = ((inv.invoice_payments ?? []) as { amount: number }[]).reduce((s, p) => s + Number(p.amount), 0)
+    const outstanding = Number(inv.grand_total) - paid
+    if (outstanding <= 0) continue
+    const key = cust.id
+    if (!byCustomer[key]) byCustomer[key] = { customer_id: cust.id, customer_name: cust.name, phone: cust.phone, current: 0, days_31_60: 0, days_61_90: 0, over_90: 0, total_due: 0 }
+    const ageDays = Math.floor((today.getTime() - new Date(inv.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    const creditDays = cust.credit_days ?? 30
+    const e = byCustomer[key]
+    if (ageDays <= creditDays) e.current += outstanding
+    else if (ageDays <= creditDays + 30) e.days_31_60 += outstanding
+    else if (ageDays <= creditDays + 60) e.days_61_90 += outstanding
+    else e.over_90 += outstanding
+    e.total_due += outstanding
+  }
+  return Object.values(byCustomer).filter(c => c.total_due > 0).sort((a, b) => b.total_due - a.total_due)
+}
+
+export interface CustomerCreditStatus {
+  outstanding: number
+  credit_limit: number
+  over_limit: boolean
+  available_credit: number
+}
+
+export async function getCustomerCreditStatus(customerId: string): Promise<CustomerCreditStatus> {
+  const supabase = await createClient()
+  const { data: customer } = await supabase.from('customers').select('credit_limit').eq('id', customerId).single()
+  const { data: invoices } = await supabase
+    .from('invoices').select('grand_total, invoice_payments(amount)').eq('customer_id', customerId).eq('status', 'pending')
+  const outstanding = (invoices ?? []).reduce((sum, inv) => {
+    const paid = ((inv.invoice_payments ?? []) as { amount: number }[]).reduce((s, p) => s + Number(p.amount), 0)
+    return sum + (Number(inv.grand_total) - paid)
+  }, 0)
+  const credit_limit = Number(customer?.credit_limit ?? 0)
+  return {
+    outstanding,
+    credit_limit,
+    over_limit: credit_limit > 0 && outstanding >= credit_limit,
+    available_credit: credit_limit > 0 ? Math.max(0, credit_limit - outstanding) : Infinity,
   }
 }
