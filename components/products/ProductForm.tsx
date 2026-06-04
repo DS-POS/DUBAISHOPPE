@@ -45,6 +45,7 @@ const productSchema = z.object({
   low_stock_alert: z.coerce.number().min(0),
   opening_stock: z.coerce.number().min(0),
   serial_required: z.boolean(),
+  is_taxable: z.boolean().default(true),
   status: z.enum(['active', 'inactive']),
 })
 
@@ -92,6 +93,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
       low_stock_alert: product?.low_stock_alert ?? 5,
       opening_stock: 0,
       serial_required: product?.serial_required ?? false,
+      is_taxable: product?.is_taxable ?? true,
       status: product?.status ?? 'active',
     },
   })
@@ -375,6 +377,25 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
             {errors.selling_price && <p className="text-xs text-destructive">{errors.selling_price.message}</p>}
           </div>
 
+          <div className="space-y-2 md:col-span-2 lg:col-span-2">
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50">
+              <input
+                type="checkbox"
+                id="is_taxable"
+                checked={watch('is_taxable') ?? true}
+                onChange={e => setValue('is_taxable', e.target.checked)}
+                className="size-4 rounded"
+              />
+              <label htmlFor="is_taxable" className="text-sm font-medium text-slate-700 cursor-pointer">
+                Apply GST on this product
+              </label>
+              {!watch('is_taxable') && (
+                <span className="ml-auto text-xs text-amber-600 font-medium">No GST</span>
+              )}
+            </div>
+          </div>
+
+          {watch('is_taxable') !== false && (
           <div className="space-y-2">
             <Label>GST Rate <span className="text-destructive">*</span></Label>
             <Select
@@ -393,6 +414,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
               </SelectContent>
             </Select>
           </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="hsn_code">HSN Code</Label>

@@ -21,6 +21,7 @@ export interface ProductFormData {
   low_stock_alert: number
   opening_stock?: number
   serial_required: boolean
+  is_taxable: boolean
   status: 'active' | 'inactive'
   image_url?: string
 }
@@ -85,6 +86,7 @@ export async function createProduct(formData: ProductFormData): Promise<void> {
     hsn_code: formData.hsn_code || null,
     low_stock_alert: formData.low_stock_alert,
     serial_required: formData.serial_required,
+    is_taxable: formData.is_taxable,
     status: formData.status,
     image_url: formData.image_url || null,
     current_stock: formData.opening_stock ?? 0,
@@ -116,6 +118,7 @@ export async function updateProduct(id: string, formData: ProductFormData): Prom
       hsn_code: formData.hsn_code || null,
       low_stock_alert: formData.low_stock_alert,
       serial_required: formData.serial_required,
+      is_taxable: formData.is_taxable,
       status: formData.status,
       image_url: formData.image_url || null,
       updated_at: new Date().toISOString(),
