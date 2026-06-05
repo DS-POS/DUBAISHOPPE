@@ -7,37 +7,29 @@ import {
   Truck,
   FileText,
   CheckCircle2,
+  CalendarIcon,
+  ClockIcon,
 } from 'lucide-react'
-import { getInvoiceStats, getRecentDueInvoices, getRecentInvoices, getDashboardRevenueChart } from '@/actions/invoices'
+import { getInvoiceStats, getRecentDueInvoices, getDashboardRevenueChart } from '@/actions/invoices'
 import { getSupplierDueStats, getRecentDueSupplierInvoices } from '@/actions/supplier-invoices'
+import { getStoreLoanStats } from '@/actions/store-loans'
 import { LowStockWidget } from '@/components/dashboard/LowStockWidget'
 import { RevenueChart } from '@/components/dashboard/RevenueChart'
 import { ExpensesWidget } from '@/components/dashboard/ExpensesWidget'
+import { StoreLoansWidget } from '@/components/dashboard/StoreLoansWidget'
 
 function formatINR(amount: number) {
   return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  paid: 'bg-emerald-50 text-emerald-700',
-  pending: 'bg-amber-50 text-amber-700',
-  cancelled: 'bg-slate-100 text-slate-500',
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  paid: 'Paid',
-  pending: 'Due',
-  cancelled: 'Cancelled',
-}
-
 export default async function DashboardPage() {
-  const [stats, dueInvoices, recentInvoices, supplierDueStats, dueSupplierInvoices, chartData] = await Promise.all([
+  const [stats, dueInvoices, supplierDueStats, dueSupplierInvoices, chartData, loanStats] = await Promise.all([
     getInvoiceStats(),
     getRecentDueInvoices(),
-    getRecentInvoices(),
     getSupplierDueStats(),
     getRecentDueSupplierInvoices(),
     getDashboardRevenueChart(30),
+    getStoreLoanStats(),
   ])
 
   return (
@@ -156,6 +148,42 @@ export default async function DashboardPage() {
         </div>
 
       </div>
+
+      {/* Invoice Quick Access Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-white rounded-2xl p-5 ring-1 ring-slate-200 shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <CalendarIcon className="size-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Today&apos;s Invoices</p>
+              <p className="text-xs text-slate-500 mt-0.5">{stats.todayCount} invoices · ₹{formatINR(stats.todayRevenue)}</p>
+            </div>
+          </div>
+          <Link href="/invoices" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#111827] bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors">
+            View →
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-2xl p-5 ring-1 ring-rose-100 shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-rose-50 flex items-center justify-center flex-shrink-0">
+              <ClockIcon className="size-5 text-rose-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Pending Invoices</p>
+              <p className="text-xs text-slate-500 mt-0.5">{stats.dueCount} pending · ₹{formatINR(stats.totalDue)} due</p>
+            </div>
+          </div>
+          <Link href="/invoices?status=pending" className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors">
+            View →
+          </Link>
+        </div>
+      </div>
+
+      {/* Store Loans Widget */}
+      <StoreLoansWidget stats={loanStats} />
 
       {/* Revenue Trend Chart */}
       <RevenueChart
@@ -304,71 +332,6 @@ export default async function DashboardPage() {
                     <td className="px-5 py-3.5 text-right">
                       <Link href={`/stock-in/${inv.id}`} className="text-xs text-[#4B5563] hover:text-[#111827] hover:underline font-medium transition-colors">
                         Pay
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Recent Invoices */}
-      <div className="bg-white rounded-2xl ring-1 ring-slate-200 shadow-sm overflow-hidden card-hover">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <h2 className="font-semibold text-slate-900">Recent Invoices</h2>
-          <Link href="/invoices" className="text-xs text-[#4B5563] font-medium hover:text-[#111827] hover:underline transition-colors">
-            View all
-          </Link>
-        </div>
-
-        {recentInvoices.length === 0 ? (
-          <div className="px-5 py-8 text-center">
-            <FileText className="size-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-slate-500 text-sm font-medium">No invoices yet.</p>
-            <Link href="/billing" className="text-xs font-medium text-[#4B5563] hover:underline mt-2 inline-block">
-              Create your first invoice →
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-[#111827] border-b border-[#111827]">
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Invoice</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Customer</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden sm:table-cell">Date</th>
-                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Amount</th>
-                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Status</th>
-                  <th className="px-5 py-3.5" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {recentInvoices.map((inv) => (
-                  <tr key={inv.id} className="row-hover">
-                    <td className="px-5 py-3.5 font-mono text-xs font-medium text-slate-900">
-                      {inv.invoice_no}
-                    </td>
-                    <td className="px-5 py-3.5 font-medium text-slate-900 text-sm">
-                      {inv.customers?.name ?? 'Walk-in'}
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-500 hidden sm:table-cell">
-                      {format(parseISO(inv.created_at), 'd MMM yyyy')}
-                    </td>
-                    <td className="px-5 py-3.5 text-right text-sm font-semibold text-slate-900">
-                      ₹{formatINR(Number(inv.grand_total))}
-                    </td>
-                    <td className="px-5 py-3.5 text-center">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        STATUS_STYLES[inv.status] ?? 'bg-slate-100 text-slate-500'
-                      }`}>
-                        {STATUS_LABELS[inv.status] ?? inv.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <Link href={`/invoices/${inv.id}`} className="text-xs text-[#4B5563] hover:text-[#111827] hover:underline font-medium transition-colors">
-                        View
                       </Link>
                     </td>
                   </tr>
