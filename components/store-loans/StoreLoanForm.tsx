@@ -125,7 +125,10 @@ export function StoreLoanForm() {
             min={1}
             step={1}
             value={form.quantity}
-            onChange={e => setForm(f => ({ ...f, quantity: parseInt(e.target.value) || 1 }))}
+            onChange={e => {
+              const v = parseInt(e.target.value)
+              setForm(f => ({ ...f, quantity: isNaN(v) || v < 1 ? 1 : v }))
+            }}
             onFocus={e => e.target.select()}
             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
             required

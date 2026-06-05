@@ -29,8 +29,14 @@ export default async function StoreLoansPage({
 }: {
   searchParams: { direction?: string; status?: string }
 }) {
-  const direction = (searchParams.direction as StoreLoanDirection) || undefined
-  const status = (searchParams.status as StoreLoanStatus) || undefined
+  const VALID_DIRECTIONS: StoreLoanDirection[] = ['lent_out', 'borrowed_in']
+  const VALID_STATUSES: StoreLoanStatus[] = ['pending', 'returned', 'converted_to_invoice']
+  const direction = VALID_DIRECTIONS.includes(searchParams.direction as StoreLoanDirection)
+    ? (searchParams.direction as StoreLoanDirection)
+    : undefined
+  const status = VALID_STATUSES.includes(searchParams.status as StoreLoanStatus)
+    ? (searchParams.status as StoreLoanStatus)
+    : undefined
 
   const loans = await getStoreLoans({ direction, status })
 
