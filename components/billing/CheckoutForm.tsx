@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { SearchIcon, BanknoteIcon, SmartphoneIcon, CreditCardIcon, WalletIcon } from 'lucide-react'
+import { SearchIcon, BanknoteIcon, SmartphoneIcon, CreditCardIcon, WalletIcon, BuildingIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { type CartItem, cartTotals } from './types'
 import { getCustomers, createCustomerAndReturnId } from '@/actions/customers'
@@ -25,7 +25,7 @@ const INDIAN_STATES = [
   'Other',
 ]
 
-type PaymentMethod = 'cash' | 'upi' | 'card' | 'credit'
+type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
 
 interface CheckoutFormProps {
   initialCart: CartItem[]
@@ -59,10 +59,10 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
   // Payment
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
   const [amountTendered, setAmountTendered] = useState('')
+  const [paymentReference, setPaymentReference] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const tendered = parseFloat(amountTendered) || 0
-  const change = tendered - totals.grand_total
 
   function fillCustomer(c: Customer) {
     setCustomerName(c.name)
@@ -138,8 +138,9 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
         }
       }
 
-      const amountPaid = paymentMethod === 'cash' && amountTendered
-        ? parseFloat(amountTendered) || totals.grand_total
+      const tenderedAmt = parseFloat(amountTendered) || 0
+      const amountPaid = tenderedAmt > 0
+        ? Math.min(tenderedAmt, totals.grand_total)
         : totals.grand_total
 
       const invoicePayload = {
@@ -389,11 +390,12 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Payment Method</p>
         </div>
         <div className="p-4 space-y-4">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-5 gap-2">
             {([
               { value: 'cash' as const, label: 'Cash', icon: <BanknoteIcon className="size-5" /> },
               { value: 'upi' as const, label: 'UPI', icon: <SmartphoneIcon className="size-5" /> },
               { value: 'card' as const, label: 'Card', icon: <CreditCardIcon className="size-5" /> },
+              { value: 'bank_transfer' as const, label: 'Bank', icon: <BuildingIcon className="size-5" /> },
               { value: 'credit' as const, label: 'Credit', icon: <WalletIcon className="size-5" /> },
             ]).map(m => (
               <button
@@ -423,30 +425,55 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
             </div>
           )}
 
-          {paymentMethod === 'cash' && (
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-muted-foreground">Amount Tendered</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
-                <input
-                  type="number"
-                  value={amountTendered}
-                  min={0}
-                  step={0.01}
-                  onChange={e => setAmountTendered(e.target.value)}
-                  placeholder={totals.grand_total.toFixed(2)}
-                  className="w-full pl-7 pr-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
-                />
+          {paymentMethod !== 'credit' && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground">
+                  Amount Tendered <span className="font-normal text-muted-foreground">(leave blank to mark fully paid)</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                  <input
+                    type="number"
+                    value={amountTendered}
+                    min={0}
+                    step={0.01}
+                    onChange={e => setAmountTendered(e.target.value)}
+                    placeholder={totals.grand_total.toFixed(2)}
+                    className="w-full pl-7 pr-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+                {tendered > 0 && tendered >= totals.grand_total && (
+                  <p className="text-sm font-medium text-emerald-600">
+                    {paymentMethod === 'cash' ? `Change: ₹${(tendered - totals.grand_total).toFixed(2)}` : 'Fully paid'}
+                  </p>
+                )}
+                {tendered > 0 && tendered < totals.grand_total && (
+                  <p className="text-sm font-medium text-amber-600">
+                    Balance Due: ₹{(totals.grand_total - tendered).toFixed(2)} — invoice will be marked pending
+                  </p>
+                )}
               </div>
-              {tendered > 0 && change >= 0 && (
-                <p className="text-sm font-medium text-emerald-600">
-                  Change: ₹{change.toFixed(2)}
-                </p>
-              )}
-              {tendered > 0 && change < 0 && (
-                <p className="text-sm font-medium text-amber-600">
-                  Balance Due: ₹{Math.abs(change).toFixed(2)}
-                </p>
+              {paymentMethod !== 'cash' && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    {paymentMethod === 'upi' ? 'UPI Reference / UTR' :
+                     paymentMethod === 'card' ? 'Approval Code' :
+                     'Transfer Reference'}{' '}
+                    <span className="font-normal text-muted-foreground">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={paymentReference}
+                    onChange={e => setPaymentReference(e.target.value)}
+                    placeholder={
+                      paymentMethod === 'upi' ? 'e.g. 123456789012' :
+                      paymentMethod === 'card' ? 'e.g. 123456' :
+                      'e.g. NEFT/RTGS ref'
+                    }
+                    className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
               )}
             </div>
           )}
