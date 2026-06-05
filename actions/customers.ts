@@ -134,7 +134,7 @@ export async function getCustomerInvoices(customerId: string) {
 
   const { data, error } = await supabase
     .from('invoices')
-    .select('id, invoice_no, grand_total, status, payment_method, created_at')
+    .select('id, invoice_no, grand_total, amount_paid, status, payment_method, created_at')
     .eq('customer_id', customerId)
     .order('created_at', { ascending: false })
     .limit(50)

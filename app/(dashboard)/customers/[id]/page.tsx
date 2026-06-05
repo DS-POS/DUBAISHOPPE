@@ -23,6 +23,10 @@ export default async function CustomerDetailPage({ params }: Props) {
 
   if (!customer) notFound()
 
+  const totalInvoiced = invoices.reduce((s, i) => s + Number(i.grand_total), 0)
+  const totalPaid = invoices.reduce((s, i) => s + Number(i.amount_paid ?? 0), 0)
+  const totalOutstanding = Math.max(0, totalInvoiced - totalPaid)
+
   const creditSummary = (customer.credit_limit ?? 0) > 0
     ? await getCustomerCreditSummary(customer.id)
     : null
@@ -147,36 +151,67 @@ export default async function CustomerDetailPage({ params }: Props) {
                 <tr>
                   <th className="px-4 py-2 text-left text-xs font-medium">Invoice No</th>
                   <th className="px-4 py-2 text-left text-xs font-medium">Date</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium">Grand Total</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium">Total</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium">Paid</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium">Balance</th>
                   <th className="px-4 py-2 text-left text-xs font-medium">Status</th>
                   <th className="px-4 py-2 text-left text-xs font-medium hidden sm:table-cell">Payment</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {invoices.map(inv => (
-                  <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-2 text-xs font-mono font-medium">
-                      <Link href={`/invoices/${inv.id}`} className="text-primary hover:underline">
-                        {inv.invoice_no}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">
-                      {format(parseISO(inv.created_at), 'dd MMM yyyy')}
-                    </td>
-                    <td className="px-4 py-2 text-right text-xs font-medium">
-                      ₹{Number(inv.grand_total).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="px-4 py-2 text-xs">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${STATUS_STYLE[inv.status as InvoiceStatus]}`}>
-                        {inv.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground capitalize hidden sm:table-cell">
-                      {inv.payment_method ? inv.payment_method.replace('_', ' ') : '—'}
-                    </td>
-                  </tr>
-                ))}
+                {invoices.map(inv => {
+                  const paid = Number(inv.amount_paid ?? 0)
+                  const balance = Math.max(0, Number(inv.grand_total) - paid)
+                  return (
+                    <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-2 text-xs font-mono font-medium">
+                        <Link href={`/invoices/${inv.id}`} className="text-primary hover:underline">
+                          {inv.invoice_no}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-2 text-xs text-muted-foreground">
+                        {format(parseISO(inv.created_at), 'dd MMM yyyy')}
+                      </td>
+                      <td className="px-3 py-2 text-right text-xs font-medium">
+                        ₹{Number(inv.grand_total).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="px-3 py-2 text-right text-xs font-medium text-emerald-600">
+                        ₹{paid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className={`px-3 py-2 text-right text-xs font-medium ${balance > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
+                        {balance > 0 ? `₹${balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
+                      </td>
+                      <td className="px-4 py-2 text-xs">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${STATUS_STYLE[inv.status as InvoiceStatus]}`}>
+                          {inv.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-xs text-muted-foreground capitalize hidden sm:table-cell">
+                        {inv.payment_method ? inv.payment_method.replace('_', ' ') : '—'}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
+              {invoices.length > 0 && (
+                <tfoot className="border-t-2 border-border bg-muted/30">
+                  <tr>
+                    <td className="px-3 py-2 text-xs font-bold text-muted-foreground" colSpan={2}>
+                      {invoices.length} invoice{invoices.length !== 1 ? 's' : ''}
+                    </td>
+                    <td className="px-3 py-2 text-right text-xs font-bold">
+                      ₹{totalInvoiced.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-3 py-2 text-right text-xs font-bold text-emerald-600">
+                      ₹{totalPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className={`px-3 py-2 text-right text-xs font-bold ${totalOutstanding > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
+                      {totalOutstanding > 0 ? `₹${totalOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
+                    </td>
+                    <td colSpan={2} />
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         )}
