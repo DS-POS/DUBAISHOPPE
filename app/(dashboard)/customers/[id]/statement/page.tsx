@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCustomerById, getCustomerStatement } from '@/actions/customers'
 import { StatementExportButton } from '@/components/customers/StatementExportButton'
+import { StatementPrintButton } from '@/components/customers/StatementPrintButton'
 
 function formatINR(n: number) {
   return n.toLocaleString('en-IN', { minimumFractionDigits: 2 })
@@ -17,7 +18,7 @@ export default async function CustomerStatementPage({ params }: { params: { id: 
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Link href={`/customers/${params.id}`} className="text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1 mb-2">
+          <Link href={`/customers/${params.id}`} className="print-hide text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1 mb-2">
             ← {customer.name}
           </Link>
           <h1 className="text-2xl font-bold text-[#111827]">Account Statement</h1>
@@ -25,7 +26,10 @@ export default async function CustomerStatementPage({ params }: { params: { id: 
             {customer.name}{customer.business_name ? ` · ${customer.business_name}` : ''}
           </p>
         </div>
-        <StatementExportButton statement={statement} customerName={customer.name} />
+        <div className="flex items-center gap-2">
+          <StatementPrintButton />
+          <StatementExportButton statement={statement} customerName={customer.name} />
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">

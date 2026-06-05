@@ -1,0 +1,59 @@
+@media print {
+  /* Hide nav, sidebar, header, back link, export button, action buttons */
+  nav, aside, header, footer,
+  [data-sidebar], .sidebar,
+  a[href]:not([href="#"]),
+  button {
+    display: none !important;
+  }
+
+  /* But keep the print button's parent visible — we hide button via JS before print */
+  body {
+    background: white !important;
+    font-size: 11pt;
+    color: #000;
+  }
+
+  .print-hide {
+    display: none !important;
+  }
+
+  .print-show {
+    display: block !important;
+  }
+
+  /* Remove shadows, rounded corners for print */
+  * {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Make table borders visible */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 4pt 6pt;
+    font-size: 10pt;
+  }
+
+  thead {
+    background: #f0f0f0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Don't break rows across pages */
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 15mm;
+    size: A4;
+  }
+}
