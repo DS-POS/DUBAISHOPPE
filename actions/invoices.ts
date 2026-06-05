@@ -34,6 +34,7 @@ export interface CreateInvoiceData {
   grand_total: number
   payment_method: 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
   amount_paid?: number
+  payment_reference?: string
   items: CreateInvoiceItem[]
 }
 
@@ -93,6 +94,7 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string> {
       amount: initialPaid,
       payment_date: new Date().toISOString().split('T')[0],
       payment_method: data.payment_method,
+      payment_reference: data.payment_reference ?? null,
       notes: 'Initial payment at invoice creation',
       created_by: user.id,
     })

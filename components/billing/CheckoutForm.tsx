@@ -148,6 +148,7 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
         ...totals,
         payment_method: paymentMethod,
         amount_paid: amountPaid,
+        payment_reference: paymentReference || undefined,
         items: cart.map(i => ({
           product_id: i.product.id,
           product_name: i.product.name,
