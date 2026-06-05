@@ -336,3 +336,24 @@ export interface Expense {
   created_at: string
   expense_categories?: ExpenseCategory
 }
+
+export type StoreLoanDirection = 'lent_out' | 'borrowed_in'
+export type StoreLoanStatus = 'pending' | 'returned' | 'converted_to_invoice'
+
+export interface StoreLoan {
+  id: string
+  direction: StoreLoanDirection
+  store_name: string
+  person_name: string
+  product_name: string
+  quantity: number
+  price: number | null
+  loan_date: string
+  expected_return_date: string | null
+  returned_date: string | null
+  status: StoreLoanStatus
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
