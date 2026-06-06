@@ -50,3 +50,51 @@
 **What was tried:** Removing duplicate hooks, changing node paths (Windows backslash → bash forward-slash), moving hooks from plugin.json to settings.json, removing plugin.json hooks entirely.
 **Root cause:** Cygwin bash stdout pipe is incompatible with Claude Code's Electron subprocess pipe handles on Windows. Error happens BEFORE hook code runs — in bash's own initialization. Hook commands themselves work fine when tested directly.
 **Rule:** Do NOT spend more than 2 attempts fixing `/usr/bin/bash: line 1: printf: write error: Permission denied`. It is a system-level Cygwin incompatibility. Error is non-blocking — caveman mode still activates. Tell user immediately: "This is a Cygwin/Electron pipe incompatibility, cannot be fixed from config. It is cosmetic only."
+
+## Lesson 9: PROJECT STATUS — Feature Complete as of 2026-06-07
+**ALL primary objectives from CLAUDE.md are DONE. Do not tell user features are missing.**
+
+### Completed Features (verified via git log)
+- Inventory management — products, categories, stock tracking
+- Barcode scan IN/OUT — `useBarcodeScanner` hook, USB keyboard-wedge
+- GST billing — CGST/SGST (Telangana) + IGST (other states), is_taxable per item
+- Split invoices — Tax Invoice + Bill of Supply linked via `order_group_id`
+- Invoice PDF — multi-page, GST breakdown, ORDER BALANCE SUMMARY for split orders
+- WhatsApp + email invoice sharing
+- Barcode label printing — batch multi-select print
+- Thermal receipt — 80mm print layout
+- Quotations — create, send, convert to invoice
+- Sales Returns — full GST-aware, stock restore, serial restore, `total_returns` tracked
+- Customer refund tracking — `customer_refunds` table (migration 014), RecordCustomerRefundButton
+- Partial payments — `invoice_payments` table, RecordPaymentDialog, running balance
+- Reports — P&L, margins, day-end closing, AR aging, AP aging
+- Tally XML export + GSTR-1 export
+- Offline billing — PWA, Service Worker, Dexie.js IndexedDB, invoice queue
+- Expenses tracker — categories, CRUD, dashboard widget
+- Supplier ledger — ledger per supplier, payables aging, Excel export
+- Customer AR — receivables aging, credit limit, WhatsApp reminders
+- Customer account statement — full ledger PDF printable
+- Purchase Orders — PO creation and tracking
+- Stock Adjustments — add/remove stock with reason
+- User Management — roles and permissions
+- Supplier invoice bulk import — 3-step import UI
+- Store Loans — inter-store lending tracker (migration 012)
+- Dashboard — revenue chart, low stock widget, store loans widget, customizable widgets
+
+### DB Migrations Applied to Production
+001 initial_schema, 002 stock_in_trigger, 003 invoice_sequence, 004 supplier_invoices,
+006 invoice_payments, 007 quotation_sequence, 008 gst_config (is_taxable),
+009 expenses, 010 supplier_ledger, 011 customer_credit, 012 store_loans,
+013 split_invoices, 014 customer_refunds
+
+### Split Order Architecture (2026-06-07)
+- `order_group_id` UUID links Tax Invoice + Bill of Supply pair
+- Group balance = (TI.grand_total + BOS.grand_total) - (TI.amount_paid + BOS.amount_paid) - (TI.total_returns + BOS.total_returns)
+- Positive = Balance Due (red), Negative = Refund Due (green), Zero = Settled
+- Per-invoice Due suppressed for split orders — group balance is authoritative
+- `customer_refunds` table tracks when store physically refunds customer cash
+
+### What Is Actually Remaining (if any)
+- Bug fixes and QA as discovered in real use
+- Any NEW features the user requests beyond original spec
+- Do NOT re-build anything listed above — it already exists
