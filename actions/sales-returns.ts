@@ -124,7 +124,22 @@ export async function createSalesReturn(data: CreateSalesReturnData): Promise<st
   )
   if (itemsErr) throw new Error(itemsErr.message)
 
-  // 7. Restore stock for each product
+  // 7. If balance_adjustment, reduce the invoice's outstanding balance
+  if (data.refund_method === 'balance_adjustment') {
+    const { data: inv } = await supabase
+      .from('invoices')
+      .select('total_returns')
+      .eq('id', data.invoice_id)
+      .single()
+    if (inv) {
+      await supabase
+        .from('invoices')
+        .update({ total_returns: (inv.total_returns ?? 0) + total_refund })
+        .eq('id', data.invoice_id)
+    }
+  }
+
+  // 8. Restore stock for each product
   for (const item of returnItems) {
     if (!item.product_id) continue
     const { data: product } = await supabase
@@ -151,6 +166,17 @@ export async function createSalesReturn(data: CreateSalesReturnData): Promise<st
   revalidatePath('/returns')
   revalidatePath(`/invoices/${data.invoice_id}`)
   return ret.id
+}
+
+export async function getInvoiceReturns(invoiceId: string): Promise<SalesReturn[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('sales_returns')
+    .select('*')
+    .eq('invoice_id', invoiceId)
+    .order('created_at', { ascending: true })
+  if (error) return []
+  return (data ?? []) as SalesReturn[]
 }
 
 export async function getSalesReturns(limit = 100): Promise<(SalesReturn & {
@@ -190,6 +216,13 @@ export async function deleteSalesReturn(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
+  // Fetch return header to check refund method
+  const { data: returnHeader } = await supabase
+    .from('sales_returns')
+    .select('invoice_id, refund_method, total_refund')
+    .eq('id', id)
+    .single()
+
   // Fetch return items to reverse the stock restoration
   const { data: returnItems } = await supabase
     .from('sales_return_items')
@@ -220,9 +253,25 @@ export async function deleteSalesReturn(id: string) {
     }
   }
 
+  // Reverse balance_adjustment if applicable
+  if (returnHeader?.refund_method === 'balance_adjustment' && returnHeader.invoice_id) {
+    const { data: inv } = await supabase
+      .from('invoices')
+      .select('total_returns')
+      .eq('id', returnHeader.invoice_id)
+      .single()
+    if (inv) {
+      await supabase
+        .from('invoices')
+        .update({ total_returns: Math.max(0, (inv.total_returns ?? 0) - returnHeader.total_refund) })
+        .eq('id', returnHeader.invoice_id)
+    }
+  }
+
   const { error } = await supabase.from('sales_returns').delete().eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath('/returns')
+  if (returnHeader?.invoice_id) revalidatePath(`/invoices/${returnHeader.invoice_id}`)
 }
 
 export async function getReturnableItems(invoiceId: string): Promise<Array<{

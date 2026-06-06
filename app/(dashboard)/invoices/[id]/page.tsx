@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getInvoice } from '@/actions/invoices'
 import { getInvoicePayments } from '@/actions/invoice-payments'
+import { getInvoiceReturns } from '@/actions/sales-returns'
 import { InvoiceShareButtons } from '@/components/invoices/InvoiceShareButtons'
 import { RecordPaymentDialog } from '@/components/invoices/RecordPaymentDialog'
 import { ThermalReceipt } from '@/components/invoice/ThermalReceipt'
@@ -15,6 +16,7 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
   if (!invoice) notFound()
 
   const payments = await getInvoicePayments(invoice.id)
+  const returns = await getInvoiceReturns(invoice.id)
 
   const customer = invoice.customers
   const items = invoice.invoice_items ?? []
@@ -187,16 +189,35 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
             <div className="flex justify-between font-black text-lg border-t border-slate-200 pt-3 mt-1 bg-slate-50 -mx-5 px-5 py-3 text-slate-900">
               <span>Grand Total</span><span>₹{round2(invoice.grand_total).toFixed(2)}</span>
             </div>
+            {(invoice.total_returns ?? 0) > 0 && (
+              <>
+                {returns.map(r => (
+                  <div key={r.id} className="flex justify-between text-amber-700 text-xs">
+                    <span>Return {r.return_no} <span className="text-slate-400">({r.refund_method === 'balance_adjustment' ? 'Applied to balance' : r.refund_method})</span></span>
+                    <span>−₹{round2(r.total_refund).toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between border-t border-slate-100 pt-2 font-semibold text-slate-700">
+                  <span>Net Amount</span>
+                  <span>₹{round2(invoice.grand_total - (invoice.total_returns ?? 0)).toFixed(2)}</span>
+                </div>
+              </>
+            )}
             <div className="flex justify-between pt-1">
               <span className="text-slate-500">Amount Paid</span>
               <span className="text-emerald-600 font-semibold">₹{round2(invoice.amount_paid).toFixed(2)}</span>
             </div>
             {(() => {
-              const due = round2(invoice.grand_total - invoice.amount_paid)
+              const due = round2(invoice.grand_total - (invoice.total_returns ?? 0) - invoice.amount_paid)
               return due > 0 ? (
                 <div className="flex justify-between">
                   <span className="font-bold text-red-600">Balance Due</span>
                   <span className="font-black text-red-600 text-lg">₹{due.toFixed(2)}</span>
+                </div>
+              ) : due < 0 ? (
+                <div className="flex justify-between">
+                  <span className="font-bold text-emerald-600">Overpaid (Refund)</span>
+                  <span className="font-black text-emerald-600 text-lg">₹{Math.abs(due).toFixed(2)}</span>
                 </div>
               ) : null
             })()}

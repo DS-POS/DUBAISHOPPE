@@ -3,7 +3,7 @@ export type ProductStatus = 'active' | 'inactive'
 export type SerialStatus = 'available' | 'sold' | 'damaged' | 'returned'
 export type StockChangeType = 'stock_in' | 'sale' | 'adjustment' | 'return'
 export type StockAdjustmentType = 'damage' | 'return' | 'correction' | 'write_off' | 'found'
-export type ReturnRefundMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'store_credit' | 'no_refund'
+export type ReturnRefundMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'store_credit' | 'no_refund' | 'balance_adjustment'
 export type POStatus = 'draft' | 'sent' | 'received' | 'cancelled'
 export type InvoiceStatus = 'paid' | 'pending' | 'cancelled'
 export type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
@@ -210,6 +210,7 @@ export interface Invoice {
   total_gst: number
   grand_total: number
   amount_paid: number
+  total_returns: number
   payment_method: PaymentMethod | null
   status: InvoiceStatus
   created_by: string | null

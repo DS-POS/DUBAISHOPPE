@@ -27,8 +27,9 @@ interface Props {
   items: ReturnableItem[]
 }
 
-const REFUND_METHODS: { value: ReturnRefundMethod; label: string }[] = [
-  { value: 'cash', label: 'Cash' },
+const REFUND_METHODS: { value: ReturnRefundMethod; label: string; description?: string }[] = [
+  { value: 'balance_adjustment', label: 'Apply to Balance', description: 'Deduct from outstanding due' },
+  { value: 'cash', label: 'Cash Refund' },
   { value: 'upi', label: 'UPI' },
   { value: 'card', label: 'Card' },
   { value: 'bank_transfer', label: 'Bank Transfer' },
@@ -42,7 +43,7 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
   const [isPending, startTransition] = useTransition()
   const [selected, setSelected] = useState<Record<string, number>>({})
   const [reason, setReason] = useState('')
-  const [refundMethod, setRefundMethod] = useState<ReturnRefundMethod>('cash')
+  const [refundMethod, setRefundMethod] = useState<ReturnRefundMethod>('balance_adjustment')
   const [notes, setNotes] = useState('')
 
   function toggleItem(id: string) {
@@ -163,9 +164,10 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
                 key={m.value}
                 type="button"
                 onClick={() => setRefundMethod(m.value)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${refundMethod === m.value ? 'bg-[#111827] text-white border-[#111827]' : 'border-slate-200 text-slate-600 hover:border-slate-400'}`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors text-left ${refundMethod === m.value ? 'bg-[#111827] text-white border-[#111827]' : 'border-slate-200 text-slate-600 hover:border-slate-400'}`}
               >
                 {m.label}
+                {m.description && <span className={`block text-xs font-normal ${refundMethod === m.value ? 'text-slate-300' : 'text-slate-400'}`}>{m.description}</span>}
               </button>
             ))}
           </div>
