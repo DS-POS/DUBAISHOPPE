@@ -1,24 +1,8 @@
 import Link from 'next/link'
 import { getStockAdjustments } from '@/actions/stock-adjustments'
-import { format } from 'date-fns'
 import { PlusIcon, PackageIcon } from 'lucide-react'
-import type { StockAdjustmentType } from '@/types/database'
+import { StockAdjustmentsListClient } from '@/components/stock-adjustments/StockAdjustmentsListClient'
 
-const TYPE_LABELS: Record<StockAdjustmentType, string> = {
-  found:      'Found / Received',
-  return:     'Customer Return',
-  damage:     'Damage / Loss',
-  write_off:  'Write-Off',
-  correction: 'Manual Correction',
-}
-
-const TYPE_CLASSES: Record<StockAdjustmentType, string> = {
-  found:      'bg-emerald-100 text-emerald-700',
-  return:     'bg-blue-100 text-blue-700',
-  damage:     'bg-red-100 text-red-700',
-  write_off:  'bg-red-100 text-red-700',
-  correction: 'bg-amber-100 text-amber-700',
-}
 
 export default async function StockAdjustmentsPage() {
   const adjustments = await getStockAdjustments()
@@ -60,33 +44,10 @@ export default async function StockAdjustmentsPage() {
                   <th className="px-4 py-3 text-right font-semibold text-slate-300 text-xs uppercase tracking-wider">Qty</th>
                   <th className="px-4 py-3 text-left font-semibold text-slate-300 text-xs uppercase tracking-wider">Notes</th>
                   <th className="px-4 py-3 text-right font-semibold text-slate-300 text-xs uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-right font-semibold text-slate-300 text-xs uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {adjustments.map((adj, i) => (
-                  <tr key={adj.id}
-                    className={`border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
-                    <td className="px-4 py-3">
-                      <p className="font-semibold text-[#111827]">{adj.products?.name ?? '—'}</p>
-                      <p className="text-xs text-slate-500">{adj.products?.sku}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${TYPE_CLASSES[adj.adjustment_type as StockAdjustmentType]}`}>
-                        {TYPE_LABELS[adj.adjustment_type as StockAdjustmentType]}
-                      </span>
-                    </td>
-                    <td className={`px-4 py-3 text-right font-bold ${adj.quantity > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {adj.quantity > 0 ? '+' : ''}{adj.quantity}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 text-sm max-w-xs truncate">
-                      {adj.notes ?? <span className="text-slate-300">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right text-slate-500 whitespace-nowrap">
-                      {format(new Date(adj.created_at), 'dd MMM yyyy')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              <StockAdjustmentsListClient adjustments={adjustments} />
             </table>
           </div>
         </div>

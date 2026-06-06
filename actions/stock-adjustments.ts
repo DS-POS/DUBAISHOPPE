@@ -47,6 +47,37 @@ export async function createStockAdjustment(data: CreateAdjustmentData): Promise
   revalidatePath('/products')
 }
 
+export async function deleteStockAdjustment(id: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: adj } = await supabase
+    .from('stock_adjustments')
+    .select('product_id, quantity')
+    .eq('id', id)
+    .single()
+
+  if (adj?.product_id) {
+    const { data: product } = await supabase
+      .from('products')
+      .select('current_stock')
+      .eq('id', adj.product_id)
+      .single()
+    if (product) {
+      await supabase
+        .from('products')
+        .update({ current_stock: Math.max(0, product.current_stock - adj.quantity) })
+        .eq('id', adj.product_id)
+    }
+  }
+
+  const { error } = await supabase.from('stock_adjustments').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/stock-adjustments')
+  revalidatePath('/products')
+}
+
 export async function getStockAdjustments(limit = 200): Promise<(StockAdjustment & {
   products: { id: string; name: string; sku: string; current_stock: number } | null
 })[]> {

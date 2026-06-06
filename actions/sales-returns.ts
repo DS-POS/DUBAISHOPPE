@@ -185,6 +185,46 @@ export async function getSalesReturn(id: string): Promise<(SalesReturn & {
   return data as never
 }
 
+export async function deleteSalesReturn(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  // Fetch return items to reverse the stock restoration
+  const { data: returnItems } = await supabase
+    .from('sales_return_items')
+    .select('product_id, quantity_returned, serial_number')
+    .eq('return_id', id)
+
+  if (returnItems && returnItems.length > 0) {
+    for (const item of returnItems) {
+      if (!item.product_id) continue
+      const { data: product } = await supabase
+        .from('products')
+        .select('current_stock')
+        .eq('id', item.product_id)
+        .single()
+      if (product) {
+        await supabase
+          .from('products')
+          .update({ current_stock: Math.max(0, product.current_stock - item.quantity_returned) })
+          .eq('id', item.product_id)
+      }
+      if (item.serial_number) {
+        await supabase
+          .from('product_serials')
+          .update({ status: 'sold' })
+          .eq('serial_number', item.serial_number)
+          .eq('product_id', item.product_id)
+      }
+    }
+  }
+
+  const { error } = await supabase.from('sales_returns').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/returns')
+}
+
 export async function getReturnableItems(invoiceId: string): Promise<Array<{
   invoice_item_id: string
   product_id: string | null

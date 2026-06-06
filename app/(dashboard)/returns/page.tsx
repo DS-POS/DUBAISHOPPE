@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { getSalesReturns } from '@/actions/sales-returns'
+import { DeleteReturnButton } from '@/components/sales-returns/DeleteReturnButton'
 
 const REFUND_LABELS: Record<string, string> = {
   cash: 'Cash', upi: 'UPI', card: 'Card',
@@ -37,7 +38,7 @@ export default async function ReturnsPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden md:table-cell">Refund</th>
                 <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Amount</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden sm:table-cell">Date</th>
-                <th className="px-5 py-3.5" />
+                <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -54,7 +55,10 @@ export default async function ReturnsPage() {
                   <td className="px-5 py-3.5 text-right font-semibold text-slate-900">₹{formatINR(ret.total_refund)}</td>
                   <td className="px-5 py-3.5 text-xs text-slate-500 hidden sm:table-cell">{format(new Date(ret.created_at), 'd MMM yyyy')}</td>
                   <td className="px-5 py-3.5 text-right">
-                    <Link href={`/returns/${ret.id}`} className="text-xs text-blue-600 hover:underline font-medium">View</Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link href={`/returns/${ret.id}`} className="text-xs text-blue-600 hover:underline font-medium">View</Link>
+                      <DeleteReturnButton returnId={ret.id} />
+                    </div>
                   </td>
                 </tr>
               ))}

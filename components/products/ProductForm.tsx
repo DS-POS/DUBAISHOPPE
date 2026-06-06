@@ -68,6 +68,13 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
   const [barcodePreview, setBarcodePreview] = useState<string>(product?.barcode ?? '')
   const [brandInput, setBrandInput] = useState<string>(product?.brand ?? '')
   const [showBrandList, setShowBrandList] = useState(false)
+  const [showAddBrand, setShowAddBrand] = useState(false)
+  const [newBrand, setNewBrand] = useState('')
+  const [customBrands, setCustomBrands] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return []
+    try { return JSON.parse(localStorage.getItem('ds-pos-custom-brands') ?? '[]') }
+    catch { return [] }
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
@@ -167,6 +174,21 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
     }
   }
 
+  function addCustomBrand() {
+    const trimmed = newBrand.trim()
+    if (!trimmed) return
+    const updated = [...customBrands, trimmed]
+    setCustomBrands(updated)
+    localStorage.setItem('ds-pos-custom-brands', JSON.stringify(updated))
+    setBrandInput(trimmed)
+    setValue('brand', trimmed)
+    setNewBrand('')
+    setShowAddBrand(false)
+    setShowBrandList(false)
+  }
+
+  const allBrands = [...CAMERA_BRANDS, ...customBrands]
+
   async function handleAddCategory() {
     if (!newCategoryName.trim()) return
     setIsAddingCategory(true)
@@ -256,7 +278,14 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
               </button>
               {showBrandList && (
                 <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border bg-white shadow-lg">
-                  {CAMERA_BRANDS.filter(b =>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-sm font-semibold text-blue-600 hover:bg-blue-50 border-b border-slate-100"
+                    onMouseDown={() => { setShowAddBrand(true); setShowBrandList(false) }}
+                  >
+                    + Add Brand
+                  </button>
+                  {allBrands.filter(b =>
                     b.toLowerCase().includes(brandInput.toLowerCase())
                   ).map(b => (
                     <button
@@ -275,6 +304,21 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
                 </div>
               )}
             </div>
+            {showAddBrand && (
+              <div className="flex gap-2 items-center mt-1.5">
+                <input
+                  type="text"
+                  value={newBrand}
+                  onChange={e => setNewBrand(e.target.value)}
+                  placeholder="New brand name"
+                  autoFocus
+                  className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomBrand() } }}
+                />
+                <button type="button" onClick={addCustomBrand} className="px-3 py-2 bg-blue-600 text-white text-sm rounded-xl font-semibold hover:bg-blue-700">Add</button>
+                <button type="button" onClick={() => { setShowAddBrand(false); setNewBrand('') }} className="px-2 py-2 text-slate-400 hover:bg-slate-100 rounded-xl text-sm">✕</button>
+              </div>
+            )}
           </div>
 
           {/* SKU */}
