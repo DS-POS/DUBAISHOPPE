@@ -41,8 +41,12 @@ export function DashboardWidgets({
       {w('stat_cards', statCards)}
       {w('invoice_quick', invoiceQuick)}
       {w('store_loans', storeLoans)}
-      {w('revenue_chart', revenueChart)}
-      {w('low_stock', lowStock)}
+      {(visible.revenue_chart || visible.low_stock) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {w('revenue_chart', revenueChart)}
+          {w('low_stock', lowStock)}
+        </div>
+      )}
       {w('expenses', expenses)}
       {w('customer_dues', customerDues)}
       {w('supplier_payments', supplierPayments)}

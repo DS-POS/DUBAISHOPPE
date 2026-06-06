@@ -7,21 +7,23 @@ export function LowStockWidgetClient({ children, count }: { children: ReactNode;
   const [isOpen, setIsOpen] = useState(true)
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-amber-100">
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
       <button
         onClick={() => setIsOpen(o => !o)}
-        className="w-full flex items-center justify-between px-5 py-4 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100 hover:from-amber-100 hover:to-orange-100 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-700 hover:to-red-800 transition-colors"
       >
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
-            <AlertTriangleIcon className="size-5 text-amber-600" />
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
+            <AlertTriangleIcon className="size-4 text-white" />
           </div>
           <div className="text-left">
-            <h2 className="font-bold text-amber-900 text-sm leading-tight">Low Stock Alert</h2>
-            <p className="text-amber-700 text-xs">{count} items need attention</p>
+            <h2 className="font-bold text-white text-sm leading-tight">Low Stock</h2>
+            <p className="text-red-100 text-xs">{count} items</p>
           </div>
         </div>
-        <ChevronDownIcon className={`size-4 text-amber-500 transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`} />
+        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/20 text-white text-xs font-bold transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`}>
+          {isOpen ? '▾' : '▸'}
+        </span>
       </button>
       {isOpen && <>{children}</>}
     </div>

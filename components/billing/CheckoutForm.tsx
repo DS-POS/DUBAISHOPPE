@@ -168,11 +168,15 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
       }
 
       try {
-        const invoiceId = await createInvoice(invoicePayload)
+        const invoiceIds = await createInvoice(invoicePayload)
         sessionStorage.removeItem('pos_checkout_cart')
         sessionStorage.removeItem('pos_checkout_customer')
-        toast.success('Invoice created!')
-        router.push(`/invoices/${invoiceId}`)
+        if (invoiceIds.length === 2) {
+          toast.success('2 invoices created: Tax Invoice + Bill of Supply', { duration: 5000 })
+        } else {
+          toast.success('Invoice created!')
+        }
+        router.push(`/invoices/${invoiceIds[0]}`)
         return
       } catch (err) {
         const isNetworkError =
@@ -219,22 +223,33 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
                 <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Total</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-100">
               {cart.map(item => (
-                <tr key={item._id}>
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-slate-900">{item.product.name}</p>
-                    {item.serial_number && (
-                      <p className="text-xs text-slate-400 mt-0.5">S/N: {item.serial_number}</p>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right text-slate-700">{item.quantity}</td>
-                  <td className="px-4 py-3 text-right text-slate-700">₹{item.rate.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-right text-slate-400">
-                    {item.discount > 0 ? `₹${item.discount.toFixed(2)}` : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right font-semibold text-slate-900">₹{item.total.toFixed(2)}</td>
-                </tr>
+                <>
+                  <tr key={item._id}>
+                    <td className="px-4 pt-3 pb-1">
+                      <p className="font-medium text-slate-900">{item.product.name}</p>
+                      {item.serial_number && (
+                        <p className="text-xs text-slate-400 mt-0.5">S/N: {item.serial_number}</p>
+                      )}
+                    </td>
+                    <td className="px-4 pt-3 pb-1 text-right text-slate-700">{item.quantity}</td>
+                    <td className="px-4 pt-3 pb-1 text-right text-slate-700">₹{item.rate.toFixed(2)}</td>
+                    <td className="px-4 pt-3 pb-1 text-right text-slate-400">
+                      {item.discount > 0 ? `₹${item.discount.toFixed(2)}` : '—'}
+                    </td>
+                    <td className="px-4 pt-3 pb-1 text-right font-semibold text-slate-900">₹{item.total.toFixed(2)}</td>
+                  </tr>
+                  {item.is_taxable && item.total_gst > 0 && (
+                    <tr key={`${item._id}-gst`} className="bg-blue-50/40">
+                      <td colSpan={5} className="px-4 pb-2 pt-0">
+                        <p className="text-xs text-blue-700 font-medium">
+                          {`Taxable: ₹${item.taxable_amount.toFixed(2)} · GST ${item.product.gst_rate}%${item.cgst > 0 ? ` · CGST: ₹${item.cgst.toFixed(2)}` : ''}${item.sgst > 0 ? ` · SGST: ₹${item.sgst.toFixed(2)}` : ''}${item.igst > 0 ? ` · IGST: ₹${item.igst.toFixed(2)}` : ''}`}
+                        </p>
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>
@@ -248,23 +263,32 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
               <span>Discount</span><span>−₹{totals.discount.toFixed(2)}</span>
             </div>
           )}
-          <div className="flex justify-between text-xs text-slate-500">
-            <span>Taxable</span><span>₹{totals.taxable_amount.toFixed(2)}</span>
-          </div>
-          {totals.cgst > 0 && (
+          {totals.taxable_amount > 0 && (
             <div className="flex justify-between text-xs text-slate-500">
-              <span>CGST</span><span>₹{totals.cgst.toFixed(2)}</span>
+              <span>Taxable Amount</span><span>₹{totals.taxable_amount.toFixed(2)}</span>
             </div>
           )}
-          {totals.sgst > 0 && (
-            <div className="flex justify-between text-xs text-slate-500">
-              <span>SGST</span><span>₹{totals.sgst.toFixed(2)}</span>
-            </div>
-          )}
-          {totals.igst > 0 && (
-            <div className="flex justify-between text-xs text-slate-500">
-              <span>IGST</span><span>₹{totals.igst.toFixed(2)}</span>
-            </div>
+          {totals.total_gst > 0 && (
+            <>
+              <div className="flex justify-between text-xs font-semibold text-blue-700">
+                <span>Total GST</span><span>₹{totals.total_gst.toFixed(2)}</span>
+              </div>
+              {totals.cgst > 0 && (
+                <div className="flex justify-between text-xs text-slate-400 pl-3">
+                  <span>↳ CGST</span><span>₹{totals.cgst.toFixed(2)}</span>
+                </div>
+              )}
+              {totals.sgst > 0 && (
+                <div className="flex justify-between text-xs text-slate-400 pl-3">
+                  <span>↳ SGST</span><span>₹{totals.sgst.toFixed(2)}</span>
+                </div>
+              )}
+              {totals.igst > 0 && (
+                <div className="flex justify-between text-xs text-slate-400 pl-3">
+                  <span>↳ IGST</span><span>₹{totals.igst.toFixed(2)}</span>
+                </div>
+              )}
+            </>
           )}
           <div className="flex justify-between items-center font-black bg-gradient-to-r from-slate-800 to-slate-700 text-white -mx-5 px-5 py-4 mt-2 rounded-b-xl">
             <span className="text-base">Grand Total</span>

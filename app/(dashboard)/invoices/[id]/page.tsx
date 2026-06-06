@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getInvoice } from '@/actions/invoices'
+import { getInvoice, getLinkedInvoice } from '@/actions/invoices'
 import { getInvoicePayments } from '@/actions/invoice-payments'
 import { getInvoiceReturns } from '@/actions/sales-returns'
+import { getCustomerRefundsByGroup, getCustomerRefundsByInvoice } from '@/actions/customer-refunds'
 import { InvoiceShareButtons } from '@/components/invoices/InvoiceShareButtons'
 import { RecordPaymentDialog } from '@/components/invoices/RecordPaymentDialog'
+import { RecordCustomerRefundButton } from '@/components/invoices/RecordCustomerRefundButton'
 import { ThermalReceipt } from '@/components/invoice/ThermalReceipt'
 import { PrintReceiptButton } from '@/components/invoice/PrintReceiptButton'
 import { format } from 'date-fns'
@@ -15,8 +17,18 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
   const invoice = await getInvoice(params.id)
   if (!invoice) notFound()
 
-  const payments = await getInvoicePayments(invoice.id)
-  const returns = await getInvoiceReturns(invoice.id)
+  const [payments, returns, linkedInvoice] = await Promise.all([
+    getInvoicePayments(invoice.id),
+    getInvoiceReturns(invoice.id),
+    invoice.order_group_id
+      ? getLinkedInvoice(invoice.order_group_id, invoice.id)
+      : Promise.resolve(null),
+  ])
+
+  // Fetch customer refunds after we know if it's a split order
+  const customerRefunds = invoice.order_group_id
+    ? await getCustomerRefundsByGroup(invoice.order_group_id)
+    : await getCustomerRefundsByInvoice(invoice.id)
 
   const customer = invoice.customers
   const items = invoice.invoice_items ?? []
@@ -39,7 +51,7 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
             </div>
             <div className="flex flex-col gap-2 items-end">
               <div className="flex items-center gap-2 flex-wrap justify-end">
-                <PrintReceiptButton />
+                <PrintReceiptButton invoiceId={invoice.id} />
                 <InvoiceShareButtons
                   invoiceId={invoice.id}
                   invoiceNo={invoice.invoice_no}
@@ -207,7 +219,7 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
               <span className="text-slate-500">Amount Paid</span>
               <span className="text-emerald-600 font-semibold">₹{round2(invoice.amount_paid).toFixed(2)}</span>
             </div>
-            {(() => {
+            {!linkedInvoice && (() => {
               const due = round2(invoice.grand_total - (invoice.total_returns ?? 0) - invoice.amount_paid)
               return due > 0 ? (
                 <div className="flex justify-between">
@@ -215,15 +227,153 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
                   <span className="font-black text-red-600 text-lg">₹{due.toFixed(2)}</span>
                 </div>
               ) : due < 0 ? (
-                <div className="flex justify-between">
-                  <span className="font-bold text-emerald-600">Overpaid (Refund)</span>
-                  <span className="font-black text-emerald-600 text-lg">₹{Math.abs(due).toFixed(2)}</span>
+                <div className="pt-1 border-t border-slate-100">
+                  <div className="flex justify-between">
+                    <span className="font-bold text-emerald-600">Refund Due to Customer</span>
+                    <span className="font-black text-emerald-600 text-lg">₹{Math.abs(due).toFixed(2)}</span>
+                  </div>
+                  <RecordCustomerRefundButton
+                    invoiceId={invoice.id}
+                    orderGroupId={null}
+                    refundAmount={Math.abs(due)}
+                    existingRefunds={customerRefunds}
+                  />
                 </div>
               ) : null
             })()}
           </div>
         </div>
       </div>
+
+      {/* Order Balance — only for split orders */}
+      {linkedInvoice && (() => {
+        const groupTotal = round2(invoice.grand_total + linkedInvoice.grand_total)
+        const groupPaid = round2(invoice.amount_paid + linkedInvoice.amount_paid)
+        const groupReturns = round2((invoice.total_returns ?? 0) + (linkedInvoice.total_returns ?? 0))
+        const groupBalance = round2(groupTotal - groupPaid - groupReturns)
+        const isRefund = groupBalance < 0
+        const isSettled = groupBalance === 0
+        return (
+          <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-teal-600 to-cyan-700 px-5 py-3.5">
+              <h2 className="text-sm font-bold text-white">Order Balance Summary</h2>
+              <p className="text-xs text-teal-100 mt-0.5">Combined total for this split order (Tax Invoice + Bill of Supply)</p>
+            </div>
+            <div className="p-5 flex justify-end">
+              <div className="w-72 space-y-2 text-sm">
+                <div className="flex justify-between text-slate-500">
+                  <span>Tax Invoice ({invoice.invoice_type === 'tax_invoice' ? invoice.invoice_no : linkedInvoice.invoice_no})</span>
+                  <span>₹{round2(invoice.invoice_type === 'tax_invoice' ? invoice.grand_total : linkedInvoice.grand_total).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-slate-500">
+                  <span>Bill of Supply ({invoice.invoice_type === 'bill_of_supply' ? invoice.invoice_no : linkedInvoice.invoice_no})</span>
+                  <span>₹{round2(invoice.invoice_type === 'bill_of_supply' ? invoice.grand_total : linkedInvoice.grand_total).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-black text-base border-t border-slate-200 pt-3 mt-1 bg-slate-50 -mx-5 px-5 py-3 text-slate-900">
+                  <span>Order Total</span><span>₹{groupTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-slate-500">
+                  <span>Total Paid</span>
+                  <span className="text-emerald-600 font-semibold">₹{groupPaid.toFixed(2)}</span>
+                </div>
+                {groupReturns > 0 && (
+                  <div className="flex justify-between text-amber-700">
+                    <span>Total Returns</span>
+                    <span className="font-semibold">−₹{groupReturns.toFixed(2)}</span>
+                  </div>
+                )}
+                {isSettled ? (
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                    <span className="font-bold text-emerald-600">Order Settled</span>
+                    <span className="font-black text-emerald-600 text-lg">NIL</span>
+                  </div>
+                ) : isRefund ? (
+                  <div className="pt-2 border-t border-slate-100">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-emerald-600">Refund Due to Customer</span>
+                      <span className="font-black text-emerald-600 text-lg">₹{Math.abs(groupBalance).toFixed(2)}</span>
+                    </div>
+                    <RecordCustomerRefundButton
+                      invoiceId={invoice.id}
+                      orderGroupId={invoice.order_group_id}
+                      refundAmount={Math.abs(groupBalance)}
+                      existingRefunds={customerRefunds}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                    <span className="font-bold text-red-600">Order Balance Due</span>
+                    <span className="font-black text-red-600 text-lg">₹{groupBalance.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Linked invoice items (split order) — light header = secondary context */}
+      {linkedInvoice && (() => {
+        const linkedItems = linkedInvoice.invoice_items ?? []
+        const isBOS = linkedInvoice.invoice_type === 'bill_of_supply'
+        const isCurrent = invoice.invoice_type === 'tax_invoice'
+        // Light color because this is the secondary/linked document
+        const headerCls = isBOS
+          ? 'bg-amber-50 border-b border-amber-200'
+          : 'bg-blue-50 border-b border-blue-200'
+        const titleCls = isBOS ? 'text-amber-800' : 'text-blue-800'
+        const linkCls = isBOS ? 'text-amber-600 hover:text-amber-800' : 'text-blue-600 hover:text-blue-800'
+        void isCurrent
+        return (
+          <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
+            <div className={`${headerCls} px-5 py-3 flex items-center justify-between`}>
+              <h2 className={`text-sm font-semibold ${titleCls}`}>
+                {isBOS ? 'Bill of Supply' : 'Tax Invoice'} — Linked Document
+              </h2>
+              <Link
+                href={`/invoices/${linkedInvoice.id}`}
+                className={`text-xs font-mono font-semibold transition-colors ${linkCls}`}
+              >
+                {linkedInvoice.invoice_no} →
+              </Link>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 border-b border-slate-100">
+                  <tr>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">#</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Product</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Qty</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Rate</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {linkedItems.map((item, i) => (
+                    <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="px-4 py-2.5 text-slate-400 text-xs">{i + 1}</td>
+                      <td className="px-4 py-2.5">
+                        <p className="font-semibold text-slate-900">{item.product_name}</p>
+                        {item.sku && <p className="text-xs text-slate-400">{item.sku}</p>}
+                        {item.serial_number && <p className="text-xs text-slate-400 font-mono">S/N: {item.serial_number}</p>}
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-slate-700">{item.quantity}</td>
+                      <td className="px-4 py-2.5 text-right text-slate-700">₹{round2(item.rate).toFixed(2)}</td>
+                      <td className="px-4 py-2.5 text-right font-bold text-slate-900">₹{round2(item.total).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-slate-50 border-t border-slate-200">
+                    <td colSpan={4} className="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Total</td>
+                    <td className="px-4 py-2 text-right font-bold text-slate-900">₹{round2(linkedInvoice.grand_total).toFixed(2)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Payment history — emerald header */}
       <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">

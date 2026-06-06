@@ -38,92 +38,113 @@ export interface CreateInvoiceData {
   items: CreateInvoiceItem[]
 }
 
-export async function createInvoice(data: CreateInvoiceData): Promise<string> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+type SupabaseInstance = Awaited<ReturnType<typeof createClient>>
 
-  // 1. Verify stock for all items
-  for (const item of data.items) {
-    const { data: product, error } = await supabase
-      .from('products')
-      .select('current_stock, name')
-      .eq('id', item.product_id)
-      .single()
-    if (error || !product) throw new Error(`Product not found: ${item.product_id}`)
-    if (product.current_stock < item.quantity) {
-      throw new Error(`Insufficient stock for "${product.name}". Available: ${product.current_stock}, Required: ${item.quantity}`)
-    }
+function sumItems(items: CreateInvoiceItem[]) {
+  return {
+    subtotal: items.reduce((s, i) => s + i.rate * i.quantity, 0),
+    discount: items.reduce((s, i) => s + i.discount, 0),
+    taxable_amount: items.reduce((s, i) => s + i.taxable_amount, 0),
+    cgst: items.reduce((s, i) => s + i.cgst, 0),
+    sgst: items.reduce((s, i) => s + i.sgst, 0),
+    igst: items.reduce((s, i) => s + i.igst, 0),
+    total_gst: items.reduce((s, i) => s + i.cgst + i.sgst + i.igst, 0),
+    grand_total: items.reduce((s, i) => s + i.total, 0),
   }
+}
 
-  // 2. Get next invoice number atomically
-  const { data: invoiceNoRow, error: seqError } = await supabase.rpc('next_invoice_no')
-  if (seqError) throw new Error(`Invoice number generation failed: ${seqError.message}`)
-  if (!invoiceNoRow) throw new Error('Invoice number generation returned empty value')
-  const invoice_no: string = String(invoiceNoRow)
+async function insertOneInvoice(
+  supabase: SupabaseInstance,
+  userId: string,
+  params: {
+    invoice_no: string
+    invoice_type: 'tax_invoice' | 'bill_of_supply'
+    order_group_id: string | null
+    customer_id: string | null
+    subtotal: number
+    discount: number
+    taxable_amount: number
+    cgst: number
+    sgst: number
+    igst: number
+    total_gst: number
+    grand_total: number
+    payment_method: 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
+    amount_paid?: number
+    payment_reference?: string
+    items: CreateInvoiceItem[]
+  }
+): Promise<string> {
+  const amountPaid = params.amount_paid ?? params.grand_total
 
-  // 3. Insert invoice
-  const { data: invoice, error: invoiceError } = await supabase
+  const { data: invoice, error } = await supabase
     .from('invoices')
     .insert({
-      invoice_no,
-      customer_id: data.customer_id,
-      subtotal: data.subtotal,
-      discount: data.discount,
-      taxable_amount: data.taxable_amount,
-      cgst: data.cgst,
-      sgst: data.sgst,
-      igst: data.igst,
-      total_gst: data.total_gst,
-      grand_total: data.grand_total,
-      payment_method: data.payment_method,
-      amount_paid: data.amount_paid ?? data.grand_total,
-      status: (data.amount_paid ?? data.grand_total) >= data.grand_total ? 'paid' : 'pending',
-      created_by: user.id,
+      invoice_no: params.invoice_no,
+      invoice_type: params.invoice_type,
+      order_group_id: params.order_group_id,
+      customer_id: params.customer_id,
+      subtotal: params.subtotal,
+      discount: params.discount,
+      taxable_amount: params.taxable_amount,
+      cgst: params.cgst,
+      sgst: params.sgst,
+      igst: params.igst,
+      total_gst: params.total_gst,
+      grand_total: params.grand_total,
+      payment_method: params.payment_method,
+      amount_paid: amountPaid,
+      status: amountPaid >= params.grand_total ? 'paid' : 'pending',
+      created_by: userId,
     })
     .select('id')
     .single()
-  if (invoiceError) throw new Error(invoiceError.message)
-  const invoiceId = invoice.id
+  if (error) throw new Error(error.message)
 
-  // 4. Record initial payment in invoice_payments (so recompute sums correctly)
-  const initialPaid = data.amount_paid ?? data.grand_total
-  if (initialPaid > 0) {
+  if (amountPaid > 0) {
     await supabase.from('invoice_payments').insert({
-      invoice_id: invoiceId,
-      amount: initialPaid,
+      invoice_id: invoice.id,
+      amount: amountPaid,
       payment_date: new Date().toISOString().split('T')[0],
-      payment_method: data.payment_method,
-      payment_reference: data.payment_reference ?? null,
+      payment_method: params.payment_method,
+      payment_reference: params.payment_reference ?? null,
       notes: 'Initial payment at invoice creation',
-      created_by: user.id,
+      created_by: userId,
     })
   }
 
-  // 5. Insert invoice items
-  const itemRows = data.items.map(item => ({
-    invoice_id: invoiceId,
-    product_id: item.product_id,
-    product_name: item.product_name,
-    sku: item.sku,
-    hsn_code: item.hsn_code,
-    serial_number: item.serial_number,
-    quantity: item.quantity,
-    rate: item.rate,
-    discount: item.discount,
-    gst_rate: item.gst_rate,
-    is_taxable: item.is_taxable,
-    taxable_amount: item.taxable_amount,
-    cgst: item.cgst,
-    sgst: item.sgst,
-    igst: item.igst,
-    total: item.total,
-  }))
-  const { error: itemsError } = await supabase.from('invoice_items').insert(itemRows)
+  const { error: itemsError } = await supabase.from('invoice_items').insert(
+    params.items.map(item => ({
+      invoice_id: invoice.id,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      sku: item.sku,
+      hsn_code: item.hsn_code,
+      serial_number: item.serial_number,
+      quantity: item.quantity,
+      rate: item.rate,
+      discount: item.discount,
+      gst_rate: item.gst_rate,
+      is_taxable: item.is_taxable,
+      taxable_amount: item.taxable_amount,
+      cgst: item.cgst,
+      sgst: item.sgst,
+      igst: item.igst,
+      total: item.total,
+    }))
+  )
   if (itemsError) throw new Error(itemsError.message)
 
-  // 6. Deduct stock + log history + mark serials sold
-  for (const item of data.items) {
+  return invoice.id
+}
+
+async function deductStock(
+  supabase: SupabaseInstance,
+  userId: string,
+  items: CreateInvoiceItem[],
+  invoiceId: string
+) {
+  for (const item of items) {
     const { data: prod } = await supabase
       .from('products')
       .select('current_stock')
@@ -141,7 +162,7 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string> {
       quantity_change: -item.quantity,
       quantity_after: newStock,
       reference_id: invoiceId,
-      created_by: user.id,
+      created_by: userId,
     })
 
     if (item.serial_number) {
@@ -152,12 +173,117 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string> {
         .eq('serial_number', item.serial_number)
     }
   }
+}
+
+// Returns array of invoice IDs: [gstInvoiceId] or [gstInvoiceId, bosInvoiceId]
+// Mixed cart (taxable + non-taxable) → 2 invoices: Tax Invoice + Bill of Supply
+export async function createInvoice(data: CreateInvoiceData): Promise<string[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  // 1. Verify stock for all items
+  for (const item of data.items) {
+    const { data: product, error } = await supabase
+      .from('products')
+      .select('current_stock, name')
+      .eq('id', item.product_id)
+      .single()
+    if (error || !product) throw new Error(`Product not found: ${item.product_id}`)
+    if (product.current_stock < item.quantity) {
+      throw new Error(`Insufficient stock for "${product.name}". Available: ${product.current_stock}, Required: ${item.quantity}`)
+    }
+  }
+
+  const taxableItems = data.items.filter(i => i.is_taxable)
+  const nonTaxableItems = data.items.filter(i => !i.is_taxable)
+  const isMixed = taxableItems.length > 0 && nonTaxableItems.length > 0
+
+  if (isMixed) {
+    // Split: Tax Invoice (INV-) for GST items + Bill of Supply (BOS-) for non-GST items
+    const orderGroupId = crypto.randomUUID()
+    const gstTotals = sumItems(taxableItems)
+    const bosTotals = sumItems(nonTaxableItems)
+
+    // Sequential allocation: fill GST invoice first, overflow to BOS
+    const amountPaid = data.amount_paid ?? data.grand_total
+    const gstPaid = Math.min(amountPaid, gstTotals.grand_total)
+    const bosPaid = Math.max(0, amountPaid - gstTotals.grand_total)
+
+    const { data: invNoRow, error: invSeqErr } = await supabase.rpc('next_invoice_no')
+    if (invSeqErr || !invNoRow) throw new Error('Invoice number generation failed')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: bosNoRow, error: bosSeqErr } = await (supabase.rpc as any)('next_bos_no')
+    if (bosSeqErr || !bosNoRow) throw new Error('BOS number generation failed')
+
+    const gstId = await insertOneInvoice(supabase, user.id, {
+      invoice_no: String(invNoRow),
+      invoice_type: 'tax_invoice',
+      order_group_id: orderGroupId,
+      customer_id: data.customer_id,
+      ...gstTotals,
+      payment_method: data.payment_method,
+      amount_paid: gstPaid,
+      payment_reference: data.payment_reference,
+      items: taxableItems,
+    })
+
+    const bosId = await insertOneInvoice(supabase, user.id, {
+      invoice_no: String(bosNoRow),
+      invoice_type: 'bill_of_supply',
+      order_group_id: orderGroupId,
+      customer_id: data.customer_id,
+      ...bosTotals,
+      payment_method: data.payment_method,
+      amount_paid: bosPaid,
+      payment_reference: data.payment_reference,
+      items: nonTaxableItems,
+    })
+
+    await deductStock(supabase, user.id, taxableItems, gstId)
+    await deductStock(supabase, user.id, nonTaxableItems, bosId)
+
+    revalidatePath('/invoices')
+    revalidatePath('/products')
+    revalidatePath('/stock-in')
+    revalidatePath('/dashboard')
+    return [gstId, bosId]
+  }
+
+  // Single invoice — all taxable (Tax Invoice) or all non-taxable (Bill of Supply)
+  const allNonTaxable = taxableItems.length === 0
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rpcFn = allNonTaxable ? (supabase.rpc as any)('next_bos_no') : supabase.rpc('next_invoice_no')
+  const { data: invoiceNoRow, error: seqError } = await rpcFn
+  if (seqError) throw new Error(`Invoice number generation failed: ${seqError.message}`)
+  if (!invoiceNoRow) throw new Error('Invoice number generation returned empty value')
+
+  const invoiceId = await insertOneInvoice(supabase, user.id, {
+    invoice_no: String(invoiceNoRow),
+    invoice_type: allNonTaxable ? 'bill_of_supply' : 'tax_invoice',
+    order_group_id: null,
+    customer_id: data.customer_id,
+    subtotal: data.subtotal,
+    discount: data.discount,
+    taxable_amount: data.taxable_amount,
+    cgst: data.cgst,
+    sgst: data.sgst,
+    igst: data.igst,
+    total_gst: data.total_gst,
+    grand_total: data.grand_total,
+    payment_method: data.payment_method,
+    amount_paid: data.amount_paid,
+    payment_reference: data.payment_reference,
+    items: data.items,
+  })
+
+  await deductStock(supabase, user.id, data.items, invoiceId)
 
   revalidatePath('/invoices')
   revalidatePath('/products')
   revalidatePath('/stock-in')
   revalidatePath('/dashboard')
-  return invoiceId
+  return [invoiceId]
 }
 
 export async function getInvoices(params?: {
@@ -258,6 +384,21 @@ export async function getRecentDueInvoices() {
     created_at: string
     customers: { name: string; phone: string | null } | null
   }>
+}
+
+export async function getLinkedInvoice(orderGroupId: string, excludeId: string): Promise<(Invoice & {
+  invoice_items: InvoiceItem[]
+  customers: { name: string; phone: string | null; email: string | null; gstin: string | null; address: string | null; state: string } | null
+}) | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('*, invoice_items(*), customers(*)')
+    .eq('order_group_id', orderGroupId)
+    .neq('id', excludeId)
+    .single()
+  if (error) return null
+  return data as never
 }
 
 export async function getRecentInvoices() {

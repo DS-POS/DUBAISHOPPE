@@ -15,6 +15,7 @@ export interface ReturnLineInput {
   rate: number
   discount: number
   gst_rate: number
+  is_taxable: boolean
   customer_state: string
 }
 
@@ -79,6 +80,7 @@ export async function createSalesReturn(data: CreateSalesReturnData): Promise<st
         quantity: item.quantity_returned,
         discount: item.discount,
         gst_rate: item.gst_rate,
+        is_taxable: item.is_taxable,
       },
       item.customer_state
     )
@@ -124,8 +126,8 @@ export async function createSalesReturn(data: CreateSalesReturnData): Promise<st
   )
   if (itemsErr) throw new Error(itemsErr.message)
 
-  // 7. If balance_adjustment, reduce the invoice's outstanding balance
-  if (data.refund_method === 'balance_adjustment') {
+  // 7. Always update total_returns — reduces net amount owed regardless of refund method
+  {
     const { data: inv } = await supabase
       .from('invoices')
       .select('total_returns')
@@ -177,6 +179,17 @@ export async function getInvoiceReturns(invoiceId: string): Promise<SalesReturn[
     .order('created_at', { ascending: true })
   if (error) return []
   return (data ?? []) as SalesReturn[]
+}
+
+export async function getInvoiceReturnsWithItems(invoiceId: string): Promise<(SalesReturn & { sales_return_items: SalesReturnItem[] })[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('sales_returns')
+    .select('*, sales_return_items(*)')
+    .eq('invoice_id', invoiceId)
+    .order('created_at', { ascending: true })
+  if (error) return []
+  return (data ?? []) as never
 }
 
 export async function getSalesReturns(limit = 100): Promise<(SalesReturn & {
@@ -253,8 +266,8 @@ export async function deleteSalesReturn(id: string) {
     }
   }
 
-  // Reverse balance_adjustment if applicable
-  if (returnHeader?.refund_method === 'balance_adjustment' && returnHeader.invoice_id) {
+  // Always reverse total_returns when deleting a return
+  if (returnHeader?.invoice_id) {
     const { data: inv } = await supabase
       .from('invoices')
       .select('total_returns')
@@ -263,7 +276,7 @@ export async function deleteSalesReturn(id: string) {
     if (inv) {
       await supabase
         .from('invoices')
-        .update({ total_returns: Math.max(0, (inv.total_returns ?? 0) - returnHeader.total_refund) })
+        .update({ total_returns: Math.max(0, (inv.total_returns ?? 0) - (returnHeader.total_refund ?? 0)) })
         .eq('id', returnHeader.invoice_id)
     }
   }
@@ -286,6 +299,7 @@ export async function getReturnableItems(invoiceId: string): Promise<Array<{
   rate: number
   discount: number
   gst_rate: number
+  is_taxable: boolean
 }>> {
   const supabase = await createClient()
 
@@ -306,6 +320,7 @@ export async function getReturnableItems(invoiceId: string): Promise<Array<{
     rate: number
     discount: number
     gst_rate: number
+    is_taxable: boolean
   }>
 
   const result = []
@@ -328,6 +343,7 @@ export async function getReturnableItems(invoiceId: string): Promise<Array<{
       rate: item.rate,
       discount: item.discount,
       gst_rate: item.gst_rate,
+      is_taxable: item.is_taxable,
     })
   }
   return result.filter(i => i.returnable_qty > 0)

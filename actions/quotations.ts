@@ -158,7 +158,7 @@ export async function convertQuotationToInvoice(quotationId: string): Promise<st
     total: item.total,
   }))
 
-  const invoiceId = await createInvoice({
+  const [invoiceId] = await createInvoice({
     customer_id: quotation.customer_id,
     subtotal: quotation.subtotal,
     discount: quotation.discount,

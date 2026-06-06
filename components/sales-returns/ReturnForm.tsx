@@ -18,6 +18,7 @@ interface ReturnableItem {
   rate: number
   discount: number
   gst_rate: number
+  is_taxable: boolean
 }
 
 interface Props {
@@ -67,9 +68,9 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
   const selectedItems = items.filter(i => selected[i.invoice_item_id] !== undefined)
   const totalRefund = selectedItems.reduce((s, i) => {
     const qty = selected[i.invoice_item_id] ?? 0
-    const taxable = i.rate * qty - (i.discount / i.original_qty) * qty
-    const gst = taxable * (i.gst_rate / 100)
-    return s + taxable + gst
+    const net = i.rate * qty - (i.discount / i.original_qty) * qty
+    const gst = i.is_taxable ? net * (i.gst_rate / 100) : 0
+    return s + net + gst
   }, 0)
 
   function handleSubmit() {
@@ -86,6 +87,7 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
       rate: i.rate,
       discount: i.discount,
       gst_rate: i.gst_rate,
+      is_taxable: i.is_taxable,
       customer_state: customerState,
     }))
 
@@ -113,6 +115,10 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
         <div className="space-y-3">
           {items.map(item => {
             const isSelected = selected[item.invoice_item_id] !== undefined
+            const qty = selected[item.invoice_item_id] ?? 1
+            const unitNet = item.rate - item.discount / item.original_qty
+            const unitTotal = item.is_taxable ? unitNet * (1 + item.gst_rate / 100) : unitNet
+            const lineTotal = unitTotal * qty
             return (
               <div
                 key={item.invoice_item_id}
@@ -127,7 +133,13 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
                     {' '}· Max: {item.returnable_qty}
                   </p>
                 </div>
-                <p className="text-sm font-semibold text-slate-900">₹{item.rate.toFixed(2)}</p>
+                <div className="text-right">
+                  {isSelected && qty > 1
+                    ? <p className="text-sm font-semibold text-blue-700">₹{lineTotal.toFixed(2)}</p>
+                    : <p className="text-sm font-semibold text-slate-900">₹{unitTotal.toFixed(2)}</p>
+                  }
+                  {item.is_taxable && <p className="text-xs text-slate-400">incl. GST</p>}
+                </div>
                 {isSelected && (
                   <div onClick={e => e.stopPropagation()}>
                     <input

@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Package, PackagePlus, ShoppingCart,
   FileText, Users, Tag, BarChart3, FileDown, Settings,
-  ClipboardList, Menu, X, Truck, SlidersHorizontal, RotateCcw, ClipboardCheck, Receipt, ArrowLeftRight
+  ClipboardList, Menu, X, Truck, SlidersHorizontal, RotateCcw, ClipboardCheck, Receipt, ArrowLeftRight,
+  LayoutGrid,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -83,6 +84,19 @@ export default function Sidebar({ userRole }: { userRole: string }) {
             )
           })}
         </nav>
+
+        {/* Customize Dashboard — only on /dashboard */}
+        {pathname === '/dashboard' && (
+          <div className="px-3 pb-2">
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('ds-customize-dashboard'))}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-white/[0.07] hover:text-slate-100 transition-all duration-200"
+            >
+              <LayoutGrid className="w-4 h-4 flex-shrink-0 text-slate-500" />
+              <span className="truncate">Customize Dashboard</span>
+            </button>
+          </div>
+        )}
 
         {/* Bottom section */}
         <div className="px-3 pb-3 pt-2 border-t border-white/[0.05]">

@@ -13,20 +13,20 @@ export async function LowStockWidget() {
   return (
     <LowStockWidgetClient count={items.length}>
       {/* Stats Row */}
-      <div className="grid grid-cols-2 divide-x divide-amber-100 border-b border-amber-100 bg-amber-50/30">
-        <div className="px-4 py-3 text-center">
-          <p className="text-2xl font-black text-red-500">{outOfStock}</p>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">Out of Stock</p>
+      <div className="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100 bg-slate-50/50">
+        <div className="px-3 py-2 text-center">
+          <p className="text-lg font-black text-red-500">{outOfStock}</p>
+          <p className="text-xs text-slate-500 font-medium">Out of Stock</p>
         </div>
-        <div className="px-4 py-3 text-center">
-          <p className="text-2xl font-black text-amber-500">{lowCount}</p>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">Running Low</p>
+        <div className="px-3 py-2 text-center">
+          <p className="text-lg font-black text-amber-500">{lowCount}</p>
+          <p className="text-xs text-slate-500 font-medium">Running Low</p>
         </div>
       </div>
 
-      {/* Top 4 Preview */}
-      <div className="px-5 py-3 space-y-2.5">
-        {items.slice(0, 4).map(p => (
+      {/* Top 3 Preview */}
+      <div className="px-4 py-2.5 space-y-2">
+        {items.slice(0, 3).map(p => (
           <div key={p.id} className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-slate-800 truncate">{p.name}</p>
@@ -41,19 +41,19 @@ export async function LowStockWidget() {
             </span>
           </div>
         ))}
-        {items.length > 4 && (
-          <p className="text-xs text-slate-400 text-center pt-0.5">+{items.length - 4} more items</p>
+        {items.length > 3 && (
+          <p className="text-xs text-slate-400 text-center">+{items.length - 3} more</p>
         )}
       </div>
 
       {/* CTA Button */}
-      <div className="px-5 pb-4 pt-1">
+      <div className="px-4 pb-3 pt-1">
         <Link
           href="/products?filter=low-stock"
-          className="flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+          className="flex items-center justify-center gap-2 w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 rounded-xl transition-colors text-xs"
         >
-          View All Low Stock
-          <ArrowRightIcon className="size-4" />
+          View All
+          <ArrowRightIcon className="size-3.5" />
         </Link>
       </div>
     </LowStockWidgetClient>

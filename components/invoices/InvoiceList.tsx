@@ -119,7 +119,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
       'Total GST': inv.total_gst,
       'Grand Total': inv.grand_total,
       'Amount Paid': inv.amount_paid,
-      'Due': Math.max(0, inv.grand_total - inv.amount_paid),
+      'Due': Math.max(0, inv.grand_total - (inv.total_returns ?? 0) - inv.amount_paid),
       'Status': inv.status,
     }))
     const ws = XLSX.utils.json_to_sheet(rows)
@@ -137,7 +137,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
       'Payment Method': inv.payment_method ?? '',
       'Grand Total': inv.grand_total,
       'Amount Paid': inv.amount_paid,
-      'Due': Math.max(0, inv.grand_total - inv.amount_paid),
+      'Due': Math.max(0, inv.grand_total - (inv.total_returns ?? 0) - inv.amount_paid),
       'Status': inv.status,
     }))
     const ws = XLSX.utils.json_to_sheet(rows)
@@ -152,7 +152,8 @@ export default function InvoiceList({ initialInvoices }: Props) {
   }
 
   function renderInvoiceRow(inv: InvoiceWithCustomer) {
-    const due = Math.max(0, inv.grand_total - inv.amount_paid)
+    const due = Math.max(0, inv.grand_total - (inv.total_returns ?? 0) - inv.amount_paid)
+    const isSplitOrder = !!inv.order_group_id
     return (
       <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
         <td className="px-5 py-3.5 text-sm whitespace-nowrap">
@@ -179,7 +180,12 @@ export default function InvoiceList({ initialInvoices }: Props) {
           ₹{inv.amount_paid.toFixed(2)}
         </td>
         <td className="px-5 py-3.5 text-sm text-right whitespace-nowrap">
-          {due > 0 ? <span className="font-bold text-red-600">₹{due.toFixed(2)}</span> : <span className="text-slate-400">—</span>}
+          {isSplitOrder
+            ? <span className="text-slate-300 text-xs">↑ group</span>
+            : due > 0
+              ? <span className="font-bold text-red-600">₹{due.toFixed(2)}</span>
+              : <span className="text-slate-400">—</span>
+          }
         </td>
         <td className="px-5 py-3.5 text-sm text-center">
           <StatusBadge status={inv.status} />
@@ -355,20 +361,25 @@ export default function InvoiceList({ initialInvoices }: Props) {
                       >
                         <td colSpan={8} className="px-5 py-2.5">
                           <div className="flex items-center gap-2.5">
-                            <span
-                              className="text-slate-400 text-xs inline-block transition-transform duration-200"
-                              style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
-                            >▶</span>
                             <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
                               <span className="text-white text-xs font-bold">{group.name.charAt(0).toUpperCase()}</span>
                             </div>
                             <span className="font-bold text-slate-800 text-sm">{group.name}</span>
                             {group.phone && <span className="text-slate-400 text-xs">{group.phone}</span>}
-                            <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-semibold">
-                              {group.invoices.length} invoice{group.invoices.length !== 1 ? 's' : ''}
+                            <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-bold">
+                              {group.invoices.length}
                             </span>
-                            <span className="ml-auto text-xs font-semibold text-slate-600">
-                              Total: ₹{group.invoices.reduce((s, i) => s + i.grand_total, 0).toFixed(2)}
+                            <span className="ml-auto flex items-center gap-3 text-xs">
+                              <span className="font-semibold text-slate-600">
+                                Total: ₹{group.invoices.reduce((s, i) => s + i.grand_total, 0).toFixed(2)}
+                              </span>
+                              {(() => {
+                                const net = group.invoices.reduce((s, i) => s + i.grand_total - (i.total_returns ?? 0) - i.amount_paid, 0)
+                                const r = Math.round(net * 100) / 100
+                                if (r > 0) return <span className="font-bold text-red-600">Due: ₹{r.toFixed(2)}</span>
+                                if (r < 0) return <span className="font-bold text-emerald-600">Refund: ₹{Math.abs(r).toFixed(2)}</span>
+                                return null
+                              })()}
                             </span>
                           </div>
                         </td>

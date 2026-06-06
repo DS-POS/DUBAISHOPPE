@@ -1,10 +1,8 @@
 import Link from 'next/link'
 import { getAllQuotations } from '@/actions/quotations'
-import { format } from 'date-fns'
 import { PlusIcon, FileTextIcon } from 'lucide-react'
-import { round2 } from '@/lib/gst'
 import type { QuotationStatus } from '@/types/database'
-import { QuotationRowActions } from '@/components/quotations/QuotationRowActions'
+import { QuotationList } from '@/components/quotations/QuotationList'
 
 const STATUS_LABELS: Record<QuotationStatus, string> = {
   draft: 'Draft',
@@ -12,14 +10,6 @@ const STATUS_LABELS: Record<QuotationStatus, string> = {
   accepted: 'Accepted',
   expired: 'Expired',
   rejected: 'Rejected',
-}
-
-const STATUS_CLASSES: Record<QuotationStatus, string> = {
-  draft: 'bg-slate-100 text-slate-600',
-  sent: 'bg-blue-100 text-blue-700',
-  accepted: 'bg-emerald-100 text-emerald-700',
-  expired: 'bg-red-100 text-red-700',
-  rejected: 'bg-gray-100 text-gray-500',
 }
 
 const ALL_STATUSES: QuotationStatus[] = ['draft', 'sent', 'accepted', 'expired', 'rejected']
@@ -110,63 +100,7 @@ export default async function QuotationsPage({
           )}
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-[#111827] border-b border-[#1F2937]">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-300 whitespace-nowrap text-xs uppercase tracking-wider">Quotation #</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-300 text-xs uppercase tracking-wider">Customer</th>
-                  <th className="px-4 py-3 text-right font-semibold text-slate-300 whitespace-nowrap text-xs uppercase tracking-wider">Amount</th>
-                  <th className="px-4 py-3 text-center font-semibold text-slate-300 whitespace-nowrap text-xs uppercase tracking-wider">Valid Until</th>
-                  <th className="px-4 py-3 text-center font-semibold text-slate-300 text-xs uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-center font-semibold text-slate-300 whitespace-nowrap text-xs uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 w-32 text-right" />
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((q, i) => (
-                  <tr
-                    key={q.id}
-                    className={`border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition-colors row-hover ${
-                      i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'
-                    }`}
-                  >
-                    <td className="px-4 py-3 font-mono font-semibold text-[#111827] whitespace-nowrap">
-                      {q.quotation_no}
-                    </td>
-                    <td className="px-4 py-3 text-slate-700">
-                      {q.customers?.name ?? <span className="text-slate-400">Walk-in</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-900 whitespace-nowrap">
-                      ₹{round2(q.grand_total).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-center text-slate-500 whitespace-nowrap">
-                      {q.valid_until
-                        ? format(new Date(q.valid_until), 'dd MMM yyyy')
-                        : <span className="text-slate-300">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          STATUS_CLASSES[q.status as QuotationStatus]
-                        }`}
-                      >
-                        {STATUS_LABELS[q.status as QuotationStatus]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center text-slate-500 whitespace-nowrap">
-                      {format(new Date(q.quotation_date ?? q.created_at), 'dd MMM yyyy')}
-                    </td>
-                    <td className="px-4 py-3">
-                      <QuotationRowActions quotationId={q.id} status={q.status} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <QuotationList quotations={filtered} />
       )}
     </div>
   )

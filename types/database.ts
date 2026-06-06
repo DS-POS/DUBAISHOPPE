@@ -200,6 +200,8 @@ export interface Customer {
 export interface Invoice {
   id: string
   invoice_no: string
+  invoice_type: 'tax_invoice' | 'bill_of_supply'
+  order_group_id: string | null
   customer_id: string | null
   subtotal: number
   discount: number
