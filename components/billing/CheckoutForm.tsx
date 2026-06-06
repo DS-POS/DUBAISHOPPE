@@ -3,7 +3,11 @@
 import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { SearchIcon, BanknoteIcon, SmartphoneIcon, CreditCardIcon, WalletIcon, BuildingIcon } from 'lucide-react'
+import {
+  SearchIcon, BanknoteIcon, SmartphoneIcon, CreditCardIcon,
+  WalletIcon, BuildingIcon, ShoppingCartIcon, UserIcon,
+  CreditCardIcon as PayIcon, FileTextIcon,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { type CartItem, cartTotals } from './types'
 import { getCustomers, createCustomerAndReturnId } from '@/actions/customers'
@@ -12,17 +16,8 @@ import { queueOfflineInvoice } from '@/lib/offline/cache-sync'
 import type { Customer } from '@/types/database'
 
 const INDIAN_STATES = [
-  'Telangana',
-  'Maharashtra',
-  'Karnataka',
-  'Tamil Nadu',
-  'Gujarat',
-  'Rajasthan',
-  'Delhi',
-  'Uttar Pradesh',
-  'West Bengal',
-  'Kerala',
-  'Other',
+  'Telangana', 'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Gujarat',
+  'Rajasthan', 'Delhi', 'Uttar Pradesh', 'West Bengal', 'Kerala', 'Other',
 ]
 
 type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
@@ -60,6 +55,8 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
   const [amountTendered, setAmountTendered] = useState('')
   const [paymentReference, setPaymentReference] = useState('')
+  const [creditAmountReceived, setCreditAmountReceived] = useState('')
+  const [creditNote, setCreditNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const tendered = parseFloat(amountTendered) || 0
@@ -107,23 +104,15 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
   }, [])
 
   async function handleSubmit() {
-    if (!customerName.trim() && !phone.trim()) {
-      // allow walk-in with no customer
-    }
-
     setSubmitting(true)
     try {
       let customerId: string | null = existingCustomerId
 
-      // If user typed customer info but didn't select existing, create new
       if (!existingCustomerId && (customerName.trim() || phone.trim())) {
-        // Check if customer with same phone already exists
         if (phone.trim()) {
           const existing = await getCustomers(phone.trim())
           const match = existing.find(c => c.phone?.trim() === phone.trim())
-          if (match) {
-            customerId = match.id
-          }
+          if (match) customerId = match.id
         }
         if (!customerId && customerName.trim()) {
           customerId = await createCustomerAndReturnId({
@@ -138,17 +127,27 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
         }
       }
 
-      const tenderedAmt = parseFloat(amountTendered) || 0
-      const amountPaid = tenderedAmt > 0
-        ? Math.min(tenderedAmt, totals.grand_total)
-        : totals.grand_total
+      let amountPaid: number
+      let reference: string | undefined
+
+      if (paymentMethod === 'credit') {
+        const received = parseFloat(creditAmountReceived) || 0
+        amountPaid = Math.min(received, totals.grand_total)
+        reference = creditNote.trim() || undefined
+      } else {
+        const tenderedAmt = parseFloat(amountTendered) || 0
+        amountPaid = tenderedAmt > 0
+          ? Math.min(tenderedAmt, totals.grand_total)
+          : totals.grand_total
+        reference = paymentReference || undefined
+      }
 
       const invoicePayload = {
         customer_id: customerId,
         ...totals,
         payment_method: paymentMethod,
         amount_paid: amountPaid,
-        payment_reference: paymentReference || undefined,
+        payment_reference: reference,
         items: cart.map(i => ({
           product_id: i.product.id,
           product_name: i.product.name,
@@ -179,7 +178,6 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
         const isNetworkError =
           err instanceof TypeError && err.message.toLowerCase().includes('fetch')
         if (!isNetworkError) throw err
-        // Network offline — queue locally
       }
 
       const tempNo = await queueOfflineInvoice(invoicePayload)
@@ -194,46 +192,55 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
     }
   }
 
+  const inputCls = 'w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-slate-400'
+  const sectionHeaderCls = 'flex items-center gap-2.5 px-5 py-3.5'
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-5">
       {/* Cart Summary */}
-      <div className="rounded-xl border border-border overflow-hidden">
-        <div className="bg-muted/50 px-4 py-2 border-b border-border">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cart Summary</p>
+      <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className={`${sectionHeaderCls} bg-gradient-to-r from-slate-800 to-slate-700`}>
+          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+            <ShoppingCartIcon className="size-4 text-white" />
+          </div>
+          <p className="text-sm font-bold text-white">Cart Summary</p>
+          <span className="ml-auto text-xs font-semibold text-slate-300 bg-white/10 px-2.5 py-1 rounded-full">
+            {cart.length} item{cart.length !== 1 ? 's' : ''}
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="border-b border-border">
+            <thead className="border-b border-slate-100 bg-slate-50">
               <tr>
-                <th className="px-4 py-2 text-left font-medium text-muted-foreground">Product</th>
-                <th className="px-4 py-2 text-right font-medium text-muted-foreground">Qty</th>
-                <th className="px-4 py-2 text-right font-medium text-muted-foreground">Rate</th>
-                <th className="px-4 py-2 text-right font-medium text-muted-foreground">Disc.</th>
-                <th className="px-4 py-2 text-right font-medium text-muted-foreground">Total</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Product</th>
+                <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Qty</th>
+                <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Rate</th>
+                <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Disc.</th>
+                <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Total</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-50">
               {cart.map(item => (
-                <tr key={item._id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-2">
-                    <p className="font-medium">{item.product.name}</p>
+                <tr key={item._id}>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-slate-900">{item.product.name}</p>
                     {item.serial_number && (
-                      <p className="text-xs text-muted-foreground">S/N: {item.serial_number}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">S/N: {item.serial_number}</p>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-right">{item.quantity}</td>
-                  <td className="px-4 py-2 text-right">₹{item.rate.toFixed(2)}</td>
-                  <td className="px-4 py-2 text-right text-muted-foreground">
+                  <td className="px-4 py-3 text-right text-slate-700">{item.quantity}</td>
+                  <td className="px-4 py-3 text-right text-slate-700">₹{item.rate.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-right text-slate-400">
                     {item.discount > 0 ? `₹${item.discount.toFixed(2)}` : '—'}
                   </td>
-                  <td className="px-4 py-2 text-right font-medium">₹{item.total.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-slate-900">₹{item.total.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <div className="px-4 py-3 border-t border-border bg-muted/30 space-y-1">
-          <div className="flex justify-between text-xs text-muted-foreground">
+        <div className="px-5 py-4 border-t border-slate-100 bg-slate-50 space-y-1.5">
+          <div className="flex justify-between text-xs text-slate-500">
             <span>Subtotal</span><span>₹{totals.subtotal.toFixed(2)}</span>
           </div>
           {totals.discount > 0 && (
@@ -241,156 +248,125 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
               <span>Discount</span><span>−₹{totals.discount.toFixed(2)}</span>
             </div>
           )}
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-xs text-slate-500">
             <span>Taxable</span><span>₹{totals.taxable_amount.toFixed(2)}</span>
           </div>
           {totals.cgst > 0 && (
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-slate-500">
               <span>CGST</span><span>₹{totals.cgst.toFixed(2)}</span>
             </div>
           )}
           {totals.sgst > 0 && (
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-slate-500">
               <span>SGST</span><span>₹{totals.sgst.toFixed(2)}</span>
             </div>
           )}
           {totals.igst > 0 && (
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-slate-500">
               <span>IGST</span><span>₹{totals.igst.toFixed(2)}</span>
             </div>
           )}
-          <div className="flex justify-between text-base font-bold pt-1 border-t border-border mt-1">
-            <span>Grand Total</span><span>₹{totals.grand_total.toFixed(2)}</span>
+          <div className="flex justify-between items-center font-black bg-gradient-to-r from-slate-800 to-slate-700 text-white -mx-5 px-5 py-4 mt-2 rounded-b-xl">
+            <span className="text-base">Grand Total</span>
+            <span className="text-2xl">₹{totals.grand_total.toFixed(2)}</span>
           </div>
         </div>
       </div>
 
       {/* Customer Section */}
-      <div className="rounded-xl border border-border overflow-hidden">
-        <div className="bg-muted/50 px-4 py-2 border-b border-border">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Customer</p>
+      <div className="rounded-2xl border border-blue-200 overflow-hidden shadow-sm">
+        <div className={`${sectionHeaderCls} bg-gradient-to-r from-blue-600 to-blue-700`}>
+          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+            <UserIcon className="size-4 text-white" />
+          </div>
+          <p className="text-sm font-bold text-white">Customer Details</p>
+          <span className="ml-auto text-xs text-blue-200">Optional for walk-in</span>
         </div>
-        <div className="p-4 space-y-4">
+        <div className="p-5 space-y-4 bg-white">
           {/* Search */}
           <div className="relative">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Search by name or phone..."
                   value={searchQuery}
                   onChange={e => handleSearch(e.target.value)}
                   onFocus={() => searchResults.length > 0 && setShowResults(true)}
-                  className="w-full pl-8 pr-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
+                  className={`${inputCls} pl-9`}
                 />
               </div>
-              <Button variant="outline" size="sm" type="button" onClick={clearCustomer}>
+              <button
+                type="button"
+                onClick={clearCustomer}
+                className="px-4 py-2.5 text-sm font-semibold border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-600 transition-colors"
+              >
                 New
-              </Button>
+              </button>
             </div>
             {showResults && searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 rounded-lg border border-border bg-background shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 rounded-xl border border-slate-200 bg-white shadow-xl max-h-48 overflow-y-auto">
                 {searchResults.map(c => (
                   <button
                     key={c.id}
                     type="button"
                     onClick={() => fillCustomer(c)}
-                    className="w-full text-left px-3 py-2 hover:bg-accent transition-colors text-sm"
+                    className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors text-sm border-b border-slate-50 last:border-0"
                   >
-                    <span className="font-medium">{c.name}</span>
-                    {c.phone && <span className="text-muted-foreground ml-2">{c.phone}</span>}
-                    {c.business_name && <span className="text-muted-foreground ml-2">— {c.business_name}</span>}
+                    <span className="font-semibold text-slate-900">{c.name}</span>
+                    {c.phone && <span className="text-slate-400 ml-2 text-xs">{c.phone}</span>}
+                    {c.business_name && <span className="text-slate-400 ml-2 text-xs">— {c.business_name}</span>}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Customer fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Name <span className="text-destructive">*</span></label>
-              <input
-                type="text"
-                value={customerName}
-                onChange={e => { setCustomerName(e.target.value); setExistingCustomerId(null) }}
-                placeholder="Customer name"
-                className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
-              />
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Name <span className="text-red-500">*</span></label>
+              <input type="text" value={customerName} onChange={e => { setCustomerName(e.target.value); setExistingCustomerId(null) }} placeholder="Customer name" className={inputCls} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Business Name</label>
-              <input
-                type="text"
-                value={businessName}
-                onChange={e => { setBusinessName(e.target.value); setExistingCustomerId(null) }}
-                placeholder="Business / Company"
-                className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
-              />
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Business Name</label>
+              <input type="text" value={businessName} onChange={e => { setBusinessName(e.target.value); setExistingCustomerId(null) }} placeholder="Business / Company" className={inputCls} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Phone <span className="text-destructive">*</span></label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={e => { setPhone(e.target.value); setExistingCustomerId(null) }}
-                placeholder="10-digit mobile"
-                className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
-              />
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Phone <span className="text-red-500">*</span></label>
+              <input type="tel" value={phone} onChange={e => { setPhone(e.target.value); setExistingCustomerId(null) }} placeholder="10-digit mobile" className={inputCls} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => { setEmail(e.target.value); setExistingCustomerId(null) }}
-                placeholder="email@example.com"
-                className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
-              />
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Email</label>
+              <input type="email" value={email} onChange={e => { setEmail(e.target.value); setExistingCustomerId(null) }} placeholder="email@example.com" className={inputCls} />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Address</label>
-              <input
-                type="text"
-                value={address}
-                onChange={e => { setAddress(e.target.value); setExistingCustomerId(null) }}
-                placeholder="Street, City"
-                className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
-              />
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Address</label>
+              <input type="text" value={address} onChange={e => { setAddress(e.target.value); setExistingCustomerId(null) }} placeholder="Street, City" className={inputCls} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">State</label>
-              <select
-                value={state}
-                onChange={e => { setState(e.target.value); setExistingCustomerId(null) }}
-                className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
-              >
-                {INDIAN_STATES.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">State</label>
+              <select value={state} onChange={e => { setState(e.target.value); setExistingCustomerId(null) }} className={inputCls}>
+                {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">GSTIN</label>
-              <input
-                type="text"
-                value={gstin}
-                onChange={e => { setGstin(e.target.value.toUpperCase()); setExistingCustomerId(null) }}
-                placeholder="GST number"
-                className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
-              />
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">GSTIN</label>
+              <input type="text" value={gstin} onChange={e => { setGstin(e.target.value.toUpperCase()); setExistingCustomerId(null) }} placeholder="GST number" className={inputCls} />
             </div>
           </div>
         </div>
       </div>
 
       {/* Payment Method */}
-      <div className="rounded-xl border border-border overflow-hidden">
-        <div className="bg-muted/50 px-4 py-2 border-b border-border">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Payment Method</p>
+      <div className="rounded-2xl border border-violet-200 overflow-hidden shadow-sm">
+        <div className={`${sectionHeaderCls} bg-gradient-to-r from-violet-600 to-purple-700`}>
+          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+            <PayIcon className="size-4 text-white" />
+          </div>
+          <p className="text-sm font-bold text-white">Payment Method</p>
         </div>
-        <div className="p-4 space-y-4">
+        <div className="p-5 space-y-4 bg-white">
           <div className="grid grid-cols-5 gap-2">
             {([
               { value: 'cash' as const, label: 'Cash', icon: <BanknoteIcon className="size-5" /> },
@@ -404,10 +380,12 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
                 type="button"
                 onClick={() => setPaymentMethod(m.value)}
                 className={[
-                  'flex flex-col items-center gap-2 py-3 rounded-lg border text-xs font-medium transition-colors',
+                  'flex flex-col items-center gap-2 py-3.5 rounded-xl border-2 text-xs font-semibold transition-all',
                   paymentMethod === m.value
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border bg-background text-muted-foreground hover:bg-accent',
+                    ? m.value === 'credit'
+                      ? 'border-violet-500 bg-violet-50 text-violet-700'
+                      : 'border-slate-800 bg-slate-50 text-slate-900'
+                    : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50',
                 ].join(' ')}
               >
                 {m.icon}
@@ -416,24 +394,77 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
             ))}
           </div>
 
+          {/* Credit mode warning */}
           {paymentMethod === 'credit' && creditAvailable !== undefined && totals.grand_total > creditAvailable && (
-            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800 flex items-start gap-2">
-              <span className="text-amber-500 mt-0.5">⚠️</span>
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-sm text-amber-800 flex items-start gap-2">
+              <span className="text-amber-500 mt-0.5 shrink-0">⚠️</span>
               <div>
                 <p className="font-semibold">Credit limit exceeded</p>
-                <p>Order ₹{totals.grand_total.toFixed(2)} exceeds available credit of ₹{creditAvailable.toFixed(2)}.</p>
+                <p className="text-xs mt-0.5">Order ₹{totals.grand_total.toFixed(2)} exceeds available credit of ₹{creditAvailable.toFixed(2)}.</p>
               </div>
             </div>
           )}
 
+          {/* Credit fields */}
+          {paymentMethod === 'credit' && (
+            <div className="space-y-3 rounded-xl bg-violet-50 border border-violet-200 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <FileTextIcon className="size-4 text-violet-600" />
+                <p className="text-xs font-bold text-violet-800 uppercase tracking-wide">Credit Record</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-violet-700 mb-1.5">
+                    Amount Received Now <span className="font-normal text-violet-500">(partial, if any)</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">₹</span>
+                    <input
+                      type="number"
+                      value={creditAmountReceived}
+                      min={0}
+                      step={0.01}
+                      onChange={e => setCreditAmountReceived(e.target.value)}
+                      placeholder="0.00"
+                      className={`${inputCls} pl-7`}
+                    />
+                  </div>
+                  {creditAmountReceived && parseFloat(creditAmountReceived) > 0 && (
+                    <p className="text-xs text-violet-600 font-medium mt-1">
+                      Balance due: ₹{Math.max(0, totals.grand_total - (parseFloat(creditAmountReceived) || 0)).toFixed(2)}
+                    </p>
+                  )}
+                  {!creditAmountReceived && (
+                    <p className="text-xs text-violet-500 mt-1">
+                      Leave blank → full ₹{totals.grand_total.toFixed(2)} marked as due
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-violet-700 mb-1.5">
+                    Note <span className="font-normal text-violet-500">(item given, customer detail)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={creditNote}
+                    onChange={e => setCreditNote(e.target.value)}
+                    placeholder="e.g. Canon EOS given on credit to Malik"
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Non-credit payment fields */}
           {paymentMethod !== 'credit' && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground">
-                  Amount Tendered <span className="font-normal text-muted-foreground">(leave blank to mark fully paid)</span>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  Amount Tendered <span className="font-normal text-slate-400">(leave blank = fully paid)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">₹</span>
                   <input
                     type="number"
                     value={amountTendered}
@@ -441,27 +472,27 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
                     step={0.01}
                     onChange={e => setAmountTendered(e.target.value)}
                     placeholder={totals.grand_total.toFixed(2)}
-                    className="w-full pl-7 pr-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
+                    className={`${inputCls} pl-7`}
                   />
                 </div>
                 {tendered > 0 && tendered >= totals.grand_total && (
-                  <p className="text-sm font-medium text-emerald-600">
+                  <p className="text-sm font-semibold text-emerald-600 mt-1">
                     {paymentMethod === 'cash' ? `Change: ₹${(tendered - totals.grand_total).toFixed(2)}` : 'Fully paid'}
                   </p>
                 )}
                 {tendered > 0 && tendered < totals.grand_total && (
-                  <p className="text-sm font-medium text-amber-600">
-                    Balance Due: ₹{(totals.grand_total - tendered).toFixed(2)} — invoice will be marked pending
+                  <p className="text-sm font-semibold text-amber-600 mt-1">
+                    Balance Due: ₹{(totals.grand_total - tendered).toFixed(2)} — invoice marked pending
                   </p>
                 )}
               </div>
               {paymentMethod !== 'cash' && (
-                <div className="space-y-1">
-                  <label className="block text-xs font-medium text-muted-foreground">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                     {paymentMethod === 'upi' ? 'UPI Reference / UTR' :
                      paymentMethod === 'card' ? 'Approval Code' :
                      'Transfer Reference'}{' '}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
+                    <span className="font-normal text-slate-400">(optional)</span>
                   </label>
                   <input
                     type="text"
@@ -472,7 +503,7 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
                       paymentMethod === 'card' ? 'e.g. 123456' :
                       'e.g. NEFT/RTGS ref'
                     }
-                    className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background outline-none focus:ring-1 focus:ring-ring"
+                    className={inputCls}
                   />
                 </div>
               )}
@@ -485,7 +516,7 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
       <div className="flex gap-3 pb-6">
         <Button
           variant="outline"
-          className="flex-1"
+          className="flex-1 h-12 text-sm font-semibold rounded-xl"
           type="button"
           onClick={() => router.push('/billing')}
           disabled={submitting}
@@ -493,12 +524,12 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
           ← Cancel
         </Button>
         <Button
-          className="flex-1 h-12 text-base font-semibold"
+          className="flex-1 h-12 text-base font-bold rounded-xl bg-slate-900 hover:bg-slate-800"
           type="button"
           onClick={handleSubmit}
           disabled={submitting}
         >
-          {submitting ? 'Creating Invoice…' : 'Create Invoice'}
+          {submitting ? 'Creating Invoice…' : 'Create Invoice →'}
         </Button>
       </div>
     </div>

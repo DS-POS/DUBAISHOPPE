@@ -17,6 +17,7 @@ export default function CustomerList({ initialCustomers }: Props) {
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers)
   const [search, setSearch] = useState('')
   const [pending, startTransition] = useTransition()
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   const filtered = search.trim()
     ? customers.filter(c => {
@@ -149,72 +150,63 @@ export default function CustomerList({ initialCustomers }: Props) {
           </div>
         </div>
       ) : (
-        /* Table card */
-        <div className="rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-100">
-                <tr>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">
-                    Business Name
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Phone
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">
-                    Email
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
-                    State
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
-                    GSTIN
-                  </th>
-                  <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filtered.map(c => (
-                  <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-5 py-3.5 text-sm">
-                      <span className="font-semibold text-slate-900">{c.name}</span>
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-slate-500 hidden sm:table-cell">
-                      {c.business_name ?? '—'}
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-slate-500">{c.phone ?? '—'}</td>
-                    <td className="px-5 py-3.5 text-sm text-slate-500 hidden md:table-cell">{c.email ?? '—'}</td>
-                    <td className="px-5 py-3.5 text-sm text-slate-500 hidden lg:table-cell">{c.state}</td>
-                    <td className="px-5 py-3.5 text-sm hidden lg:table-cell">
-                      <span className="font-mono text-xs text-slate-500">{c.gstin ?? '—'}</span>
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <Link href={`/customers/${c.id}`} className="text-xs font-medium text-[#4B5563] hover:underline">
-                          View
-                        </Link>
-                        <Link href={`/customers/${c.id}/edit`} className="text-xs font-medium text-slate-500 hover:text-slate-700">
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(c)}
-                          disabled={pending}
-                          className="text-xs font-medium text-red-400 hover:text-red-600 disabled:opacity-50"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="space-y-2">
+          {filtered.map(c => {
+            const isOpen = expanded.has(c.id)
+            return (
+              <div key={c.id} className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
+                <div
+                  onClick={() => setExpanded(prev => {
+                    const next = new Set(prev)
+                    if (isOpen) { next.delete(c.id) } else { next.add(c.id) }
+                    return next
+                  })}
+                  className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-slate-50/70 transition-colors select-none"
+                >
+                  <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
+                    <span className="text-white text-sm font-bold">{c.name.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-slate-900">{c.name}</p>
+                    {c.business_name && <p className="text-xs text-slate-500">{c.business_name}</p>}
+                  </div>
+                  <p className="text-sm text-slate-500 hidden sm:block">{c.phone ?? '—'}</p>
+                  <p className="text-sm text-slate-500 hidden md:block truncate max-w-[180px]">{c.email ?? '—'}</p>
+                  <p className="text-xs text-slate-400 hidden lg:block">{c.state}</p>
+                  <span
+                    className="text-slate-300 ml-2 text-xs inline-block transition-transform duration-200"
+                    style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  >▶</span>
+                </div>
+                {isOpen && (
+                  <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm mb-4">
+                      {c.phone && (
+                        <div><p className="text-xs text-slate-400 font-medium">Phone</p><p className="font-semibold text-slate-800">{c.phone}</p></div>
+                      )}
+                      {c.email && (
+                        <div><p className="text-xs text-slate-400 font-medium">Email</p><p className="font-semibold text-slate-800 break-all">{c.email}</p></div>
+                      )}
+                      {c.state && (
+                        <div><p className="text-xs text-slate-400 font-medium">State</p><p className="font-semibold text-slate-800">{c.state}</p></div>
+                      )}
+                      {c.gstin && (
+                        <div><p className="text-xs text-slate-400 font-medium">GSTIN</p><p className="font-mono text-xs font-semibold text-slate-800">{c.gstin}</p></div>
+                      )}
+                      {c.address && (
+                        <div className="col-span-2 sm:col-span-3"><p className="text-xs text-slate-400 font-medium">Address</p><p className="font-semibold text-slate-800">{c.address}</p></div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Link href={`/customers/${c.id}`} className="text-xs font-semibold text-blue-600 hover:underline">View Details</Link>
+                      <Link href={`/customers/${c.id}/edit`} className="text-xs font-medium text-slate-500 hover:underline">Edit</Link>
+                      <button onClick={() => handleDelete(c)} disabled={pending} className="text-xs font-medium text-red-400 hover:text-red-600 disabled:opacity-50">Delete</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

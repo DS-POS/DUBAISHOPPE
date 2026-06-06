@@ -14,6 +14,7 @@ export interface CreateStoreLoanData {
   loan_date: string
   expected_return_date?: string | null
   notes?: string | null
+  product_id?: string | null
 }
 
 export interface StoreLoanStats {
@@ -113,11 +114,28 @@ export async function createStoreLoan(data: CreateStoreLoanData): Promise<StoreL
       notes: data.notes?.trim() ?? null,
       status: 'pending',
       created_by: user.id,
+      product_id: data.product_id ?? null,
     })
     .select()
     .single()
 
   if (error) throw new Error(error.message)
+
+  // Deduct inventory when lending out a linked product
+  if (data.product_id && data.direction === 'lent_out') {
+    const { data: prod } = await supabase
+      .from('products')
+      .select('current_stock')
+      .eq('id', data.product_id)
+      .single()
+    if (prod) {
+      await supabase
+        .from('products')
+        .update({ current_stock: Math.max(0, prod.current_stock - data.quantity) })
+        .eq('id', data.product_id)
+    }
+  }
+
   revalidatePath('/store-loans')
   revalidatePath('/dashboard')
   return created
@@ -127,6 +145,13 @@ export async function markLoanReturned(id: string): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
+
+  // Fetch loan to restore stock if needed
+  const { data: loan } = await supabase
+    .from('store_loans')
+    .select('product_id, direction, quantity')
+    .eq('id', id)
+    .single()
 
   const { error } = await supabase
     .from('store_loans')
@@ -138,6 +163,22 @@ export async function markLoanReturned(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) throw new Error(error.message)
+
+  // Restore inventory when a lent-out linked product is returned
+  if (loan?.product_id && loan.direction === 'lent_out') {
+    const { data: prod } = await supabase
+      .from('products')
+      .select('current_stock')
+      .eq('id', loan.product_id)
+      .single()
+    if (prod) {
+      await supabase
+        .from('products')
+        .update({ current_stock: prod.current_stock + loan.quantity })
+        .eq('id', loan.product_id)
+    }
+  }
+
   revalidatePath('/store-loans')
   revalidatePath(`/store-loans/${id}`)
   revalidatePath('/dashboard')

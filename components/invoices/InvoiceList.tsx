@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Fragment } from 'react'
 import Link from 'next/link'
 import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns'
 import * as XLSX from 'xlsx'
-import { SearchIcon, DownloadIcon, XIcon, FileTextIcon } from 'lucide-react'
+import {
+  SearchIcon, DownloadIcon, XIcon, FileTextIcon,
+  UsersIcon, ListIcon,
+} from 'lucide-react'
 import type { Invoice } from '@/types/database'
 
 type InvoiceWithCustomer = Invoice & { customers: { name: string; phone: string | null } | null }
@@ -49,12 +52,13 @@ export default function InvoiceList({ initialInvoices }: Props) {
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [groupByCustomer, setGroupByCustomer] = useState(true)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   const hasActiveFilters = search.trim() !== '' || fromDate !== '' || toDate !== ''
 
   const filtered = useMemo(() => {
     return initialInvoices.filter(inv => {
-      // search
       if (search.trim()) {
         const q = search.trim().toLowerCase()
         const matchInvoice = inv.invoice_no.toLowerCase().includes(q)
@@ -62,7 +66,6 @@ export default function InvoiceList({ initialInvoices }: Props) {
         const matchPhone = inv.customers?.phone?.toLowerCase().includes(q) ?? false
         if (!matchInvoice && !matchCustomer && !matchPhone) return false
       }
-      // date range
       if (fromDate) {
         const from = startOfDay(new Date(fromDate))
         if (isBefore(parseISO(inv.created_at), from)) return false
@@ -71,7 +74,6 @@ export default function InvoiceList({ initialInvoices }: Props) {
         const to = endOfDay(new Date(toDate))
         if (isAfter(parseISO(inv.created_at), to)) return false
       }
-      // status tab
       if (statusFilter !== 'all') {
         if (inv.status !== statusFilter) return false
       }
@@ -85,6 +87,19 @@ export default function InvoiceList({ initialInvoices }: Props) {
     paid: initialInvoices.filter(i => i.status === 'paid').length,
     cancelled: initialInvoices.filter(i => i.status === 'cancelled').length,
   }), [initialInvoices])
+
+  const grouped = useMemo(() => {
+    if (!groupByCustomer) return null
+    const map = new Map<string, { name: string; phone?: string; invoices: InvoiceWithCustomer[] }>()
+    for (const inv of filtered) {
+      const key = inv.customers?.name ?? 'Walk-in'
+      if (!map.has(key)) {
+        map.set(key, { name: key, phone: inv.customers?.phone ?? undefined, invoices: [] })
+      }
+      map.get(key)!.invoices.push(inv)
+    }
+    return Array.from(map.values()).sort((a, b) => b.invoices.length - a.invoices.length)
+  }, [filtered, groupByCustomer])
 
   function clearFilters() {
     setSearch('')
@@ -136,40 +151,81 @@ export default function InvoiceList({ initialInvoices }: Props) {
     URL.revokeObjectURL(url)
   }
 
+  function renderInvoiceRow(inv: InvoiceWithCustomer) {
+    const due = Math.max(0, inv.grand_total - inv.amount_paid)
+    return (
+      <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
+        <td className="px-5 py-3.5 text-sm whitespace-nowrap">
+          <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-semibold text-[#4B5563] hover:text-[#111827] hover:underline">
+            {inv.invoice_no}
+          </Link>
+        </td>
+        <td className="px-5 py-3.5 text-sm">
+          <span className="font-semibold text-slate-900">{inv.customers?.name ?? 'Walk-in'}</span>
+          {inv.customers?.phone && <p className="text-xs text-slate-400 mt-0.5">{inv.customers.phone}</p>}
+        </td>
+        <td className="px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">
+          {format(parseISO(inv.created_at), 'dd MMM yyyy')}
+        </td>
+        <td className="px-5 py-3.5 text-sm">
+          <span className="capitalize text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
+            {inv.payment_method ?? '—'}
+          </span>
+        </td>
+        <td className="px-5 py-3.5 text-sm text-right font-semibold text-slate-900 whitespace-nowrap">
+          ₹{inv.grand_total.toFixed(2)}
+        </td>
+        <td className="px-5 py-3.5 text-sm text-right text-slate-500 whitespace-nowrap">
+          ₹{inv.amount_paid.toFixed(2)}
+        </td>
+        <td className="px-5 py-3.5 text-sm text-right whitespace-nowrap">
+          {due > 0 ? <span className="font-bold text-red-600">₹{due.toFixed(2)}</span> : <span className="text-slate-400">—</span>}
+        </td>
+        <td className="px-5 py-3.5 text-sm text-center">
+          <StatusBadge status={inv.status} />
+        </td>
+      </tr>
+    )
+  }
+
   return (
     <div className="space-y-5">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Invoices</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            {filtered.length === initialInvoices.length
-              ? `${initialInvoices.length} invoice${initialInvoices.length !== 1 ? 's' : ''}`
-              : `${filtered.length} of ${initialInvoices.length} invoices`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/billing">
-            <button className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all text-sm">
-              + New Invoice
-            </button>
-          </Link>
-          <button
-            onClick={exportExcel}
-            disabled={filtered.length === 0}
-            className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-3 py-2 rounded-xl text-sm transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <DownloadIcon className="h-4 w-4" />
-            Excel
-          </button>
-          <button
-            onClick={exportCSV}
-            disabled={filtered.length === 0}
-            className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-3 py-2 rounded-xl text-sm transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <DownloadIcon className="h-4 w-4" />
-            CSV
-          </button>
+      {/* Colored Page Header */}
+      <div className="rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-gradient-to-r from-[#111827] via-[#1e2d40] to-[#1a3a5c] px-6 py-5">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h1 className="text-2xl font-black text-white tracking-tight">Invoices</h1>
+              <p className="text-slate-400 text-sm mt-0.5">
+                {filtered.length === initialInvoices.length
+                  ? `${initialInvoices.length} invoice${initialInvoices.length !== 1 ? 's' : ''}`
+                  : `${filtered.length} of ${initialInvoices.length} invoices`}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href="/billing">
+                <button className="bg-white hover:bg-slate-100 active:scale-[0.98] text-slate-900 font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all text-sm">
+                  + New Invoice
+                </button>
+              </Link>
+              <button
+                onClick={exportExcel}
+                disabled={filtered.length === 0}
+                className="border border-white/20 bg-white/10 hover:bg-white/20 text-white font-medium px-3 py-2 rounded-xl text-sm transition-all flex items-center gap-1.5 disabled:opacity-40"
+              >
+                <DownloadIcon className="h-4 w-4" />
+                Excel
+              </button>
+              <button
+                onClick={exportCSV}
+                disabled={filtered.length === 0}
+                className="border border-white/20 bg-white/10 hover:bg-white/20 text-white font-medium px-3 py-2 rounded-xl text-sm transition-all flex items-center gap-1.5 disabled:opacity-40"
+              >
+                <DownloadIcon className="h-4 w-4" />
+                CSV
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -188,31 +244,31 @@ export default function InvoiceList({ initialInvoices }: Props) {
           </div>
           <div className="flex items-center gap-2">
             <label className="text-sm text-slate-500 whitespace-nowrap">From</label>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={e => setFromDate(e.target.value)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] w-36"
-            />
+            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] w-36" />
           </div>
           <div className="flex items-center gap-2">
             <label className="text-sm text-slate-500 whitespace-nowrap">To</label>
-            <input
-              type="date"
-              value={toDate}
-              onChange={e => setToDate(e.target.value)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] w-36"
-            />
+            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] w-36" />
           </div>
           {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="flex items-center gap-1.5 h-10 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-700 text-sm font-medium transition-all shadow-sm"
-            >
+            <button onClick={clearFilters} className="flex items-center gap-1.5 h-10 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-700 text-sm font-medium transition-all shadow-sm">
               <XIcon className="h-3.5 w-3.5" />
               Clear
             </button>
           )}
+          <div className="ml-auto">
+            <button
+              onClick={() => setGroupByCustomer(g => !g)}
+              className={`flex items-center gap-1.5 h-10 px-3 rounded-xl border text-sm font-medium transition-all shadow-sm ${
+                groupByCustomer
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+              }`}
+            >
+              {groupByCustomer ? <UsersIcon className="h-4 w-4" /> : <ListIcon className="h-4 w-4" />}
+              {groupByCustomer ? 'By Customer' : 'Flat List'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -226,9 +282,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
               key={tab.key}
               onClick={() => setStatusFilter(tab.key)}
               className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg transition-colors font-medium ${
-                isActive
-                  ? 'bg-white text-slate-900 font-semibold shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                isActive ? 'bg-white text-slate-900 font-semibold shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               {tab.label}
@@ -263,10 +317,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
               </Link>
             )}
             {(hasActiveFilters || statusFilter !== 'all') && (
-              <button
-                onClick={() => { clearFilters(); setStatusFilter('all') }}
-                className="text-sm text-[#4B5563] hover:text-[#111827] hover:underline font-medium"
-              >
+              <button onClick={() => { clearFilters(); setStatusFilter('all') }} className="text-sm text-[#4B5563] hover:text-[#111827] hover:underline font-medium">
                 Clear filters
               </button>
             )}
@@ -278,80 +329,57 @@ export default function InvoiceList({ initialInvoices }: Props) {
             <table className="w-full">
               <thead className="bg-[#111827] border-b border-[#1F2937]">
                 <tr>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">
-                    Invoice No
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">
-                    Date
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">
-                    Payment
-                  </th>
-                  <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">
-                    Total
-                  </th>
-                  <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">
-                    Paid
-                  </th>
-                  <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">
-                    Due
-                  </th>
-                  <th className="px-5 py-3.5 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                    Status
-                  </th>
+                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">Invoice No</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Customer</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">Date</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">Payment</th>
+                  <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">Total</th>
+                  <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">Paid</th>
+                  <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">Due</th>
+                  <th className="px-5 py-3.5 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.map(inv => {
-                  const due = Math.max(0, inv.grand_total - inv.amount_paid)
-                  return (
-                    <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-5 py-3.5 text-sm whitespace-nowrap">
-                        <Link
-                          href={`/invoices/${inv.id}`}
-                          className="font-mono text-xs font-semibold text-[#4B5563] hover:text-[#111827] hover:underline"
-                        >
-                          {inv.invoice_no}
-                        </Link>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm">
-                        <span className="font-semibold text-slate-900">
-                          {inv.customers?.name ?? 'Walk-in'}
-                        </span>
-                        {inv.customers?.phone && (
-                          <p className="text-xs text-slate-400 mt-0.5">{inv.customers.phone}</p>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">
-                        {format(parseISO(inv.created_at), 'dd MMM yyyy')}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm">
-                        <span className="capitalize text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
-                          {inv.payment_method ?? '—'}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-right font-semibold text-slate-900 whitespace-nowrap">
-                        ₹{inv.grand_total.toFixed(2)}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-right text-slate-500 whitespace-nowrap">
-                        ₹{inv.amount_paid.toFixed(2)}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-right whitespace-nowrap">
-                        {due > 0 ? (
-                          <span className="font-bold text-red-600">₹{due.toFixed(2)}</span>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-center">
-                        <StatusBadge status={inv.status} />
-                      </td>
-                    </tr>
-                  )
-                })}
+                {groupByCustomer && grouped ? (
+                  grouped.map(group => {
+                    const isOpen = expanded.has(group.name)
+                    return (
+                    <Fragment key={`group-${group.name}`}>
+                      <tr
+                        onClick={() => setExpanded(prev => {
+                          const next = new Set(prev)
+                          if (isOpen) { next.delete(group.name) } else { next.add(group.name) }
+                          return next
+                        })}
+                        className="bg-gradient-to-r from-blue-50 to-slate-50 border-y border-blue-100 cursor-pointer select-none hover:from-blue-100 hover:to-slate-100 transition-colors"
+                      >
+                        <td colSpan={8} className="px-5 py-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <span
+                              className="text-slate-400 text-xs inline-block transition-transform duration-200"
+                              style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                            >▶</span>
+                            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
+                              <span className="text-white text-xs font-bold">{group.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <span className="font-bold text-slate-800 text-sm">{group.name}</span>
+                            {group.phone && <span className="text-slate-400 text-xs">{group.phone}</span>}
+                            <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-semibold">
+                              {group.invoices.length} invoice{group.invoices.length !== 1 ? 's' : ''}
+                            </span>
+                            <span className="ml-auto text-xs font-semibold text-slate-600">
+                              Total: ₹{group.invoices.reduce((s, i) => s + i.grand_total, 0).toFixed(2)}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                      {isOpen && group.invoices.map(inv => renderInvoiceRow(inv))}
+                    </Fragment>
+                    )
+                  })
+                ) : (
+                  filtered.map(inv => renderInvoiceRow(inv))
+                )}
               </tbody>
             </table>
           </div>

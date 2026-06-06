@@ -3,10 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { ChevronDownIcon } from 'lucide-react'
 import { createStoreLoan, type CreateStoreLoanData } from '@/actions/store-loans'
-import type { StoreLoanDirection } from '@/types/database'
+import type { Product, StoreLoanDirection } from '@/types/database'
 
-export function StoreLoanForm() {
+interface StoreLoanFormProps {
+  products: Product[]
+}
+
+export function StoreLoanForm({ products }: StoreLoanFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState<CreateStoreLoanData>({
@@ -19,7 +24,18 @@ export function StoreLoanForm() {
     loan_date: new Date().toISOString().slice(0, 10),
     expected_return_date: null,
     notes: null,
+    product_id: null,
   })
+  const [productSearch, setProductSearch] = useState('')
+  const [showProductDropdown, setShowProductDropdown] = useState(false)
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+
+  const filteredInventory = productSearch.trim()
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+        p.sku.toLowerCase().includes(productSearch.toLowerCase())
+      ).slice(0, 20)
+    : products.slice(0, 20)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -29,7 +45,7 @@ export function StoreLoanForm() {
     if (form.quantity < 1) { toast.error('Quantity must be at least 1'); return }
     setLoading(true)
     try {
-      const loan = await createStoreLoan(form)
+      const loan = await createStoreLoan({ ...form, product_id: selectedProductId })
       toast.success('Loan recorded')
       router.push(`/store-loans/${loan.id}`)
     } catch (err) {
@@ -103,17 +119,50 @@ export function StoreLoanForm() {
         </div>
       </div>
 
-      {/* Product */}
+      {/* Product — inventory combobox */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-700">Product / Item</label>
-        <input
-          type="text"
-          value={form.product_name}
-          onChange={e => setForm(f => ({ ...f, product_name: e.target.value }))}
-          placeholder="e.g. Canon 50mm f/1.8, Sony A7 III body"
-          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
-          required
-        />
+        <div className="relative">
+          <input
+            type="text"
+            value={form.product_name}
+            onChange={e => {
+              setProductSearch(e.target.value)
+              setForm(f => ({ ...f, product_name: e.target.value }))
+              setSelectedProductId(null)
+              setShowProductDropdown(true)
+            }}
+            onFocus={() => setShowProductDropdown(true)}
+            onBlur={() => setTimeout(() => setShowProductDropdown(false), 150)}
+            placeholder="Search inventory or type custom item..."
+            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] pr-8"
+            required
+          />
+          <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+          {showProductDropdown && filteredInventory.length > 0 && (
+            <div className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+              {filteredInventory.map(p => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onMouseDown={() => {
+                    setSelectedProductId(p.id)
+                    setForm(f => ({ ...f, product_name: p.name }))
+                    setProductSearch(p.name)
+                    setShowProductDropdown(false)
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-slate-50 border-b border-slate-100 last:border-0 text-left"
+                >
+                  <span className="font-medium text-slate-800">{p.name}</span>
+                  <span className="text-slate-400 text-xs">{p.sku} · {p.current_stock} in stock</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {selectedProductId && (
+          <p className="text-xs text-blue-600 font-medium">✓ Linked to inventory — stock will be deducted on save</p>
+        )}
       </div>
 
       {/* Qty + Price */}

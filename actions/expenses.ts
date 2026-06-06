@@ -111,3 +111,15 @@ export async function getExpenseSummary(year: number, month: number): Promise<Ex
       .sort((a, b) => b.total - a.total),
   }
 }
+
+export async function createExpenseCategory(name: string): Promise<ExpenseCategory> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('expense_categories')
+    .insert({ name: name.trim() })
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  revalidatePath('/expenses')
+  return data as ExpenseCategory
+}
