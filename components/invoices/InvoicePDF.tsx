@@ -63,7 +63,8 @@ const s = StyleSheet.create({
   borderBottomSep: { fontSize: 7.5, color: '#1e293b', marginHorizontal: 6 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 },
   logoBlock: { flexDirection: 'row', alignItems: 'center', gap: 0 },
-  logoImg: { width: 90, height: 90, objectFit: 'contain' },
+  logoImg: { width: 110, height: 110 },
+  logoClip: { width: 110, height: 72, overflow: 'hidden', backgroundColor: '#ffffff' },
   headerDividerV: { width: 1, backgroundColor: '#D1D5DB', marginHorizontal: 12, alignSelf: 'stretch' },
   storeName: { fontSize: 14, fontFamily: 'SegoeUI', fontWeight: 'bold', color: DARK_GREEN },
   storeTagline: { fontSize: 7, color: '#64748b', marginTop: 1 },
@@ -155,12 +156,14 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling }:
     <Page size="A4" style={s.page}>
 
       {/* Top border */}
-      <View style={s.borderTop} />
+      <View style={[s.borderTop, isBOS ? { backgroundColor: '#94a3b8' } : {}]} />
 
       {/* Header */}
       <View style={s.header}>
         <View style={s.logoBlock}>
-          <Image src={LOGO_SRC} style={s.logoImg} />
+          <View style={s.logoClip}>
+            <Image src={LOGO_SRC} style={s.logoImg} />
+          </View>
           <View style={s.headerDividerV} />
           <View>
             <Text style={s.storeName}>{STORE.name}</Text>
@@ -169,9 +172,11 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling }:
             <Text style={s.storeDetail}>{STORE.city}</Text>
             <Text style={s.storeDetail}>Ph: {STORE.phone}</Text>
             <Text style={s.storeDetail}>Email: {STORE.email}</Text>
-            <View style={s.gstnBadge}>
-              <Text style={s.gstnText}>GSTIN: {STORE.gstin} | State: {STORE.state} ({STORE.state_code})</Text>
-            </View>
+            {!isBOS && (
+              <View style={s.gstnBadge}>
+                <Text style={s.gstnText}>GSTIN: {STORE.gstin} | State: {STORE.state} ({STORE.state_code})</Text>
+              </View>
+            )}
           </View>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
@@ -215,8 +220,7 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling }:
       {isBOS ? (
         /* Bill of Supply — simplified table, no GST columns */
         <>
-          <Text style={s.bosNote}>Bill of Supply — Exempt / Non-Taxable Goods (No GST Applicable)</Text>
-          <View style={s.tableHeader}>
+          <View style={[s.tableHeader, { backgroundColor: '#475569' }]}>
             <Text style={[s.tableHeaderCell, s.col_no]}>#</Text>
             <Text style={[s.tableHeaderCell, s.col_desc]}>Description</Text>
             <Text style={[s.tableHeaderCell, s.col_hsn]}>HSN</Text>
@@ -366,37 +370,53 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling }:
             <Text style={s.amountWordsLabel}>Amount in Words</Text>
             <Text style={s.amountWordsText}>{amountInWords(hasReturns ? netPayable : round2(invoice.grand_total))}</Text>
           </View>
-          {linkedSibling ? (
-            <View style={{ marginTop: 6, paddingHorizontal: 8, paddingVertical: 5, backgroundColor: '#f0fdfa', borderRadius: 3, borderWidth: 0.5, borderColor: '#99f6e4' }}>
-              <Text style={{ fontSize: 7, color: '#0f766e', fontFamily: 'SegoeUI', fontWeight: 'bold' }}>Payment & balance details in Order Balance Summary below</Text>
-            </View>
-          ) : (
-            <>
-              <View style={s.paidRow}>
-                <Text style={[s.totalLabel]}>Amount Paid</Text>
-                <Text style={s.totalValue}>₹{round2(invoice.amount_paid).toFixed(2)}</Text>
-              </View>
-              {balanceDue > 0 && (
-                <View style={s.dueRow}>
-                  <Text style={[s.grandTotalLabel, { color: '#dc2626' }]}>Balance Due</Text>
-                  <Text style={[s.grandTotalValue, { color: '#dc2626' }]}>₹{balanceDue.toFixed(2)}</Text>
+          {(() => {
+            // For split orders, only show "balance below" note when balance is still outstanding
+            if (linkedSibling) {
+              const sibRet2 = linkedSibling.total_returns ?? 0
+              const grpTotal2 = round2(invoice.grand_total + linkedSibling.grand_total)
+              const grpPaid2 = round2(invoice.amount_paid + linkedSibling.amount_paid)
+              const grpRet2 = round2(totalReturned + sibRet2)
+              const grpBal2 = round2(grpTotal2 - grpPaid2 - grpRet2)
+              if (grpBal2 !== 0) {
+                return (
+                  <View style={{ marginTop: 6, paddingHorizontal: 8, paddingVertical: 5, backgroundColor: '#f0fdfa', borderRadius: 3, borderWidth: 0.5, borderColor: '#99f6e4' }}>
+                    <Text style={{ fontSize: 7, color: '#0f766e', fontFamily: 'SegoeUI', fontWeight: 'bold' }}>Payment & balance details in Order Balance Summary below</Text>
+                  </View>
+                )
+              }
+            }
+            // For non-split or settled split orders — show normal paid / balance rows
+            return (
+              <>
+                <View style={s.paidRow}>
+                  <Text style={[s.totalLabel]}>Amount Paid</Text>
+                  <Text style={s.totalValue}>₹{round2(invoice.amount_paid).toFixed(2)}</Text>
                 </View>
-              )}
-            </>
-          )}
+                {balanceDue > 0 && (
+                  <View style={s.dueRow}>
+                    <Text style={[s.grandTotalLabel, { color: '#dc2626' }]}>Balance Due</Text>
+                    <Text style={[s.grandTotalValue, { color: '#dc2626' }]}>₹{balanceDue.toFixed(2)}</Text>
+                  </View>
+                )}
+              </>
+            )
+          })()}
           {linkedSibling && (() => {
             const sibRet = linkedSibling.total_returns ?? 0
             const grpTotal = round2(invoice.grand_total + linkedSibling.grand_total)
             const grpPaid = round2(invoice.amount_paid + linkedSibling.amount_paid)
             const grpRet = round2(totalReturned + sibRet)
             const grpBal = round2(grpTotal - grpPaid - grpRet)
+            // Hide when fully settled — no outstanding balance
+            if (grpBal === 0) return null
             const tiNo = invoice.invoice_type === 'tax_invoice' ? invoice.invoice_no : linkedSibling.invoice_no
             const bosNo = invoice.invoice_type === 'bill_of_supply' ? invoice.invoice_no : linkedSibling.invoice_no
             const tiAmt = round2(invoice.invoice_type === 'tax_invoice' ? invoice.grand_total : linkedSibling.grand_total)
             const bosAmt = round2(invoice.invoice_type === 'bill_of_supply' ? invoice.grand_total : linkedSibling.grand_total)
             const balColor = grpBal > 0 ? '#dc2626' : '#15803d'
-            const balLabel = grpBal > 0 ? 'Order Balance Due' : grpBal < 0 ? 'Order Refund Due' : 'Order Settled'
-            const balDisplay = grpBal === 0 ? 'NIL' : `₹${Math.abs(grpBal).toFixed(2)}`
+            const balLabel = grpBal > 0 ? 'Order Balance Due' : 'Order Refund Due'
+            const balDisplay = `₹${Math.abs(grpBal).toFixed(2)}`
             return (
               <View style={[s.amountWordsBox, { marginTop: 10, backgroundColor: '#f0fdfa', borderColor: '#99f6e4' }]}>
                 <Text style={[s.amountWordsLabel, { color: '#0f766e' }]}>ORDER BALANCE SUMMARY</Text>

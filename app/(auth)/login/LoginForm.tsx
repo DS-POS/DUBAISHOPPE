@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,6 +42,11 @@ export default function LoginForm() {
       <Button type="submit" disabled={loading} className="w-full bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white font-semibold py-2.5">
         {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Signing in...</> : 'Sign In'}
       </Button>
+      <div className="text-center mt-4">
+        <Link href="/forgot-password" className="text-sm text-slate-500 hover:text-[#111827] transition-colors">
+          Forgot password?
+        </Link>
+      </div>
     </form>
   )
 }

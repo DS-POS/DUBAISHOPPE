@@ -5,10 +5,10 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Package, PackagePlus, ShoppingCart,
   FileText, Users, Tag, BarChart3, FileDown, Settings,
-  ClipboardList, Menu, X, Truck, SlidersHorizontal, RotateCcw, ClipboardCheck, Receipt, ArrowLeftRight,
+  ClipboardList, Truck, SlidersHorizontal, RotateCcw, ClipboardCheck, Receipt, ArrowLeftRight,
   LayoutGrid,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface NavItem { label: string; href: string; icon: React.ElementType; adminOnly?: boolean }
 
@@ -37,24 +37,25 @@ export default function Sidebar({ userRole }: { userRole: string }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const isAdmin = userRole === 'admin'
 
+  useEffect(() => {
+    const handler = () => setMobileOpen(true)
+    window.addEventListener('ds-open-sidebar', handler)
+    return () => window.removeEventListener('ds-open-sidebar', handler)
+  }, [])
+
   function SidebarContent() {
     return (
       <div className="flex flex-col h-full bg-[#111827] text-white border-r border-white/[0.05]">
-        {/* Logo area */}
-        <div className="px-5 pt-5 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
-              <img src="/DUBAI LOGO BR.png" alt="DS" className="w-8 h-8 object-contain" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-bold text-sm leading-tight truncate tracking-wide text-white">DUBAI SHOPPE</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">POS System</p>
-            </div>
+        {/* Logo area — white section */}
+        <div className="bg-white px-5 pt-4 pb-4 flex flex-col items-center gap-2 border-b border-slate-100">
+          <div className="w-16 h-16 flex items-center justify-center overflow-hidden flex-shrink-0" style={{ clipPath: 'inset(0 0 26% 0)' }}>
+            <img src="/DUBAI LOGO BR.png" alt="DS" className="w-16 h-16 object-contain object-top" />
+          </div>
+          <div className="text-center">
+            <p className="font-bold text-sm leading-tight tracking-wide text-[#111827]">DUBAI SHOPPE</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">A Professional Camera Store</p>
           </div>
         </div>
-
-        {/* Gradient divider */}
-        <div className="mx-4 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent)' }} />
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
@@ -119,14 +120,7 @@ export default function Sidebar({ userRole }: { userRole: string }) {
         <SidebarContent />
       </div>
 
-      {/* Mobile hamburger button */}
-      <button
-        className="md:hidden fixed top-3 left-3 z-50 w-10 h-10 bg-[#111827] text-white rounded-xl flex items-center justify-center shadow-lg ring-1 ring-white/10 transition-all duration-150 hover:bg-[#1F2937]"
-        onClick={() => setMobileOpen(!mobileOpen)}
-        aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-      >
-        {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
+      {/* Hamburger hidden — BottomNav "More" button handles mobile sidebar */}
 
       {/* Mobile sidebar */}
       {mobileOpen && (

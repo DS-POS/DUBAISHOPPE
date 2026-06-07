@@ -187,56 +187,72 @@ export default async function SupplierDetailPage({ params }: PageProps) {
                 <p className="text-xs text-slate-400 mt-1">Purchase invoices from this supplier will appear here</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-[#111827] border-b border-[#1F2937]">
-                    <tr>
-                      <th className="px-5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Invoice No</th>
-                      <th className="px-5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
-                      <th className="px-5 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Amount</th>
-                      <th className="px-5 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Status</th>
-                      <th className="px-5 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {invoices.map(inv => {
-                      const paid = (inv.supplier_payments ?? []).reduce((s, p) => s + Number(p.amount), 0)
-                      const due = Number(inv.total_amount) - paid
-                      return (
-                        <tr key={inv.id} className="hover:bg-[#D1D5DB]/50 transition-colors">
-                          <td className="px-5 py-3.5">
-                            <span className="font-mono text-xs font-semibold text-[#111827]">
-                              {inv.purchase_invoice_no ?? '—'}
-                            </span>
-                          </td>
-                          <td className="px-5 py-3.5 text-slate-500 text-xs">
-                            {format(parseISO(inv.purchase_date), 'dd MMM yyyy')}
-                          </td>
-                          <td className="px-5 py-3.5 text-right">
-                            <p className="font-semibold text-slate-900">₹{Number(inv.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                            {due > 0 && (
-                              <p className="text-xs text-red-500 mt-0.5">Due ₹{due.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                            )}
-                          </td>
-                          <td className="px-5 py-3.5 text-center">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[inv.payment_status] ?? STATUS_COLORS.pending}`}>
-                              {STATUS_LABELS[inv.payment_status] ?? inv.payment_status}
-                            </span>
-                          </td>
-                          <td className="px-5 py-3.5 text-right">
-                            <Link
-                              href={`/stock-in/${inv.id}`}
-                              className="text-xs font-semibold text-[#111827] hover:underline"
-                            >
-                              View
-                            </Link>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                {/* Mobile: card list */}
+                <div className="sm:hidden divide-y divide-slate-100">
+                  {invoices.map(inv => {
+                    const paid = (inv.supplier_payments ?? []).reduce((s, p) => s + Number(p.amount), 0)
+                    const due = Number(inv.total_amount) - paid
+                    return (
+                      <div key={inv.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-mono text-xs font-semibold text-[#111827] truncate">{inv.purchase_invoice_no ?? '—'}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">{format(parseISO(inv.purchase_date), 'dd MMM yy')}</p>
+                          {due > 0 && <p className="text-xs text-red-500 mt-0.5">Due ₹{due.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[inv.payment_status] ?? STATUS_COLORS.pending}`}>
+                            {STATUS_LABELS[inv.payment_status] ?? inv.payment_status}
+                          </span>
+                          <p className="font-semibold text-xs text-slate-900 tabular-nums">₹{Number(inv.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                          <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-[#111827] underline shrink-0">View</Link>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Desktop: table */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[#111827] border-b border-[#1F2937]">
+                      <tr>
+                        <th className="px-5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Invoice No</th>
+                        <th className="px-5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
+                        <th className="px-5 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Amount</th>
+                        <th className="px-5 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Status</th>
+                        <th className="px-5 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {invoices.map(inv => {
+                        const paid = (inv.supplier_payments ?? []).reduce((s, p) => s + Number(p.amount), 0)
+                        const due = Number(inv.total_amount) - paid
+                        return (
+                          <tr key={inv.id} className="hover:bg-[#D1D5DB]/50 transition-colors">
+                            <td className="px-5 py-3.5">
+                              <span className="font-mono text-xs font-semibold text-[#111827]">{inv.purchase_invoice_no ?? '—'}</span>
+                            </td>
+                            <td className="px-5 py-3.5 text-slate-500 text-xs">{format(parseISO(inv.purchase_date), 'dd MMM yyyy')}</td>
+                            <td className="px-5 py-3.5 text-right">
+                              <p className="font-semibold text-slate-900">₹{Number(inv.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                              {due > 0 && <p className="text-xs text-red-500 mt-0.5">Due ₹{due.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
+                            </td>
+                            <td className="px-5 py-3.5 text-center">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[inv.payment_status] ?? STATUS_COLORS.pending}`}>
+                                {STATUS_LABELS[inv.payment_status] ?? inv.payment_status}
+                              </span>
+                            </td>
+                            <td className="px-5 py-3.5 text-right">
+                              <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-[#111827] hover:underline">View</Link>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </div>
