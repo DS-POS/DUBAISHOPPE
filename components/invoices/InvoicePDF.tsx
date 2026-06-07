@@ -185,6 +185,12 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling }:
             <Text style={[s.invoiceHighlightValue, { fontSize: 10 }]}>{new Date(invoice.created_at).toLocaleDateString('en-IN')}</Text>
           </View>
           <Text style={[s.invoiceDetail, { marginTop: 3 }]}>Payment: {invoice.payment_method?.toUpperCase()}</Text>
+          {invoice.payment_method === 'insurance' && invoice.insurance_company && (
+            <Text style={[s.invoiceDetail, { marginTop: 2 }]}>Insurer: {invoice.insurance_company}</Text>
+          )}
+          {invoice.payment_method === 'insurance' && invoice.insurance_claim_no && (
+            <Text style={[s.invoiceDetail, { marginTop: 1 }]}>Claim No: {invoice.insurance_claim_no}</Text>
+          )}
         </View>
       </View>
 

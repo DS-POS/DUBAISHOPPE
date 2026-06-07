@@ -6,7 +6,7 @@ export type StockAdjustmentType = 'damage' | 'return' | 'correction' | 'write_of
 export type ReturnRefundMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'store_credit' | 'no_refund' | 'balance_adjustment'
 export type POStatus = 'draft' | 'sent' | 'received' | 'cancelled'
 export type InvoiceStatus = 'paid' | 'pending' | 'cancelled'
-export type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
+export type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit' | 'insurance'
 export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'expired' | 'rejected'
 export type SupplierPaymentMethod = 'cash' | 'cheque' | 'neft' | 'upi' | 'rtgs'
 export type SupplierPaymentStatus = 'pending' | 'partial' | 'paid'
@@ -214,6 +214,8 @@ export interface Invoice {
   amount_paid: number
   total_returns: number
   payment_method: PaymentMethod | null
+  insurance_company: string | null
+  insurance_claim_no: string | null
   status: InvoiceStatus
   created_by: string | null
   created_at: string

@@ -32,9 +32,11 @@ export interface CreateInvoiceData {
   igst: number
   total_gst: number
   grand_total: number
-  payment_method: 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
+  payment_method: 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit' | 'insurance'
   amount_paid?: number
   payment_reference?: string
+  insurance_company?: string
+  insurance_claim_no?: string
   items: CreateInvoiceItem[]
 }
 
@@ -69,9 +71,11 @@ async function insertOneInvoice(
     igst: number
     total_gst: number
     grand_total: number
-    payment_method: 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
+    payment_method: 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit' | 'insurance'
     amount_paid?: number
     payment_reference?: string
+    insurance_company?: string
+    insurance_claim_no?: string
     items: CreateInvoiceItem[]
   }
 ): Promise<string> {
@@ -94,6 +98,8 @@ async function insertOneInvoice(
       grand_total: params.grand_total,
       payment_method: params.payment_method,
       amount_paid: amountPaid,
+      insurance_company: params.insurance_company ?? null,
+      insurance_claim_no: params.insurance_claim_no ?? null,
       status: amountPaid >= params.grand_total ? 'paid' : 'pending',
       created_by: userId,
     })
@@ -225,6 +231,8 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string[]> 
       payment_method: data.payment_method,
       amount_paid: gstPaid,
       payment_reference: data.payment_reference,
+      insurance_company: data.insurance_company,
+      insurance_claim_no: data.insurance_claim_no,
       items: taxableItems,
     })
 
@@ -237,6 +245,8 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string[]> 
       payment_method: data.payment_method,
       amount_paid: bosPaid,
       payment_reference: data.payment_reference,
+      insurance_company: data.insurance_company,
+      insurance_claim_no: data.insurance_claim_no,
       items: nonTaxableItems,
     })
 
@@ -274,6 +284,8 @@ export async function createInvoice(data: CreateInvoiceData): Promise<string[]> 
     payment_method: data.payment_method,
     amount_paid: data.amount_paid,
     payment_reference: data.payment_reference,
+    insurance_company: data.insurance_company,
+    insurance_claim_no: data.insurance_claim_no,
     items: data.items,
   })
 

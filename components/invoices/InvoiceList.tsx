@@ -169,9 +169,15 @@ export default function InvoiceList({ initialInvoices }: Props) {
           {format(parseISO(inv.created_at), 'dd MMM yyyy')}
         </td>
         <td className="px-5 py-3.5 text-sm">
-          <span className="capitalize text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
-            {inv.payment_method ?? '—'}
-          </span>
+          {inv.payment_method === 'insurance' ? (
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+              🛡 Insurance
+            </span>
+          ) : (
+            <span className="capitalize text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
+              {inv.payment_method ?? '—'}
+            </span>
+          )}
         </td>
         <td className="px-5 py-3.5 text-sm text-right font-semibold text-slate-900 whitespace-nowrap">
           ₹{inv.grand_total.toFixed(2)}

@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import {
   SearchIcon, BanknoteIcon, SmartphoneIcon, CreditCardIcon,
   WalletIcon, BuildingIcon, ShoppingCartIcon, UserIcon,
-  CreditCardIcon as PayIcon, FileTextIcon,
+  CreditCardIcon as PayIcon, FileTextIcon, ShieldCheckIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { type CartItem, cartTotals } from './types'
@@ -20,7 +20,7 @@ const INDIAN_STATES = [
   'Rajasthan', 'Delhi', 'Uttar Pradesh', 'West Bengal', 'Kerala', 'Other',
 ]
 
-type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit'
+type PaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'credit' | 'insurance'
 
 interface CheckoutFormProps {
   initialCart: CartItem[]
@@ -57,6 +57,8 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
   const [paymentReference, setPaymentReference] = useState('')
   const [creditAmountReceived, setCreditAmountReceived] = useState('')
   const [creditNote, setCreditNote] = useState('')
+  const [insuranceCompany, setInsuranceCompany] = useState('')
+  const [insuranceClaimNo, setInsuranceClaimNo] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const tendered = parseFloat(amountTendered) || 0
@@ -148,6 +150,10 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
         payment_method: paymentMethod,
         amount_paid: amountPaid,
         payment_reference: reference,
+        ...(paymentMethod === 'insurance' && {
+          insurance_company: insuranceCompany.trim() || undefined,
+          insurance_claim_no: insuranceClaimNo.trim() || undefined,
+        }),
         items: cart.map(i => ({
           product_id: i.product.id,
           product_name: i.product.name,
@@ -391,13 +397,14 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
           <p className="text-sm font-bold text-white">Payment Method</p>
         </div>
         <div className="p-5 space-y-4 bg-white">
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             {([
-              { value: 'cash' as const, label: 'Cash', icon: <BanknoteIcon className="size-5" /> },
-              { value: 'upi' as const, label: 'UPI', icon: <SmartphoneIcon className="size-5" /> },
-              { value: 'card' as const, label: 'Card', icon: <CreditCardIcon className="size-5" /> },
-              { value: 'bank_transfer' as const, label: 'Bank', icon: <BuildingIcon className="size-5" /> },
-              { value: 'credit' as const, label: 'Credit', icon: <WalletIcon className="size-5" /> },
+              { value: 'cash' as const, label: 'Cash', icon: <BanknoteIcon className="size-5" />, color: null },
+              { value: 'upi' as const, label: 'UPI', icon: <SmartphoneIcon className="size-5" />, color: null },
+              { value: 'card' as const, label: 'Card', icon: <CreditCardIcon className="size-5" />, color: null },
+              { value: 'bank_transfer' as const, label: 'Bank', icon: <BuildingIcon className="size-5" />, color: null },
+              { value: 'credit' as const, label: 'Credit', icon: <WalletIcon className="size-5" />, color: 'violet' },
+              { value: 'insurance' as const, label: 'Insurance', icon: <ShieldCheckIcon className="size-5" />, color: 'blue' },
             ]).map(m => (
               <button
                 key={m.value}
@@ -406,8 +413,10 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
                 className={[
                   'flex flex-col items-center gap-2 py-3.5 rounded-xl border-2 text-xs font-semibold transition-all',
                   paymentMethod === m.value
-                    ? m.value === 'credit'
+                    ? m.color === 'violet'
                       ? 'border-violet-500 bg-violet-50 text-violet-700'
+                      : m.color === 'blue'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-slate-800 bg-slate-50 text-slate-900'
                     : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50',
                 ].join(' ')}
@@ -473,6 +482,39 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
                     value={creditNote}
                     onChange={e => setCreditNote(e.target.value)}
                     placeholder="e.g. Canon EOS given on credit to Malik"
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Insurance fields */}
+          {paymentMethod === 'insurance' && (
+            <div className="space-y-3 rounded-xl bg-blue-50 border border-blue-200 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <ShieldCheckIcon className="size-4 text-blue-600" />
+                <p className="text-xs font-bold text-blue-800 uppercase tracking-wide">Insurance Details</p>
+              </div>
+              <p className="text-xs text-blue-600">Insurer deposits claim amount to store bank. Customer collects item against claim.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-blue-700 mb-1.5">Insurance Company</label>
+                  <input
+                    type="text"
+                    value={insuranceCompany}
+                    onChange={e => setInsuranceCompany(e.target.value)}
+                    placeholder="e.g. Bajaj Allianz, HDFC Ergo"
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-blue-700 mb-1.5">Claim / Policy Number</label>
+                  <input
+                    type="text"
+                    value={insuranceClaimNo}
+                    onChange={e => setInsuranceClaimNo(e.target.value)}
+                    placeholder="e.g. CLM-2024-001234"
                     className={inputCls}
                   />
                 </div>

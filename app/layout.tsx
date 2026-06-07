@@ -7,7 +7,6 @@ import { Toaster } from '@/components/ui/sonner'
 // Browser-only: must never run server-side
 const OfflineBanner = dynamic(() => import('@/components/offline/OfflineBanner').then(m => m.OfflineBanner), { ssr: false })
 const ServiceWorkerRegister = dynamic(() => import('@/components/offline/ServiceWorkerRegister').then(m => m.ServiceWorkerRegister), { ssr: false })
-const AgentationClient = dynamic(() => import('@/components/AgentationClient'), { ssr: false })
 
 const rubik = Rubik({
   subsets: ['latin'],
@@ -45,7 +44,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster richColors position="top-right" />
         <OfflineBanner />
         <ServiceWorkerRegister />
-        <AgentationClient />
       </body>
     </html>
   )

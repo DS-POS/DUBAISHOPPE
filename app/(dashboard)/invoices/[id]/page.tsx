@@ -87,8 +87,8 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
             }`}>
               {invoice.status === 'pending' ? 'Due' : invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
             </span>
-            <span className="bg-white/20 text-white text-xs px-2.5 py-1 rounded-full capitalize">
-              {invoice.payment_method ?? '—'}
+            <span className={`text-xs px-2.5 py-1 rounded-full capitalize ${invoice.payment_method === 'insurance' ? 'bg-blue-500/30 text-white font-semibold' : 'bg-white/20 text-white'}`}>
+              {invoice.payment_method === 'insurance' ? '🛡 Insurance' : (invoice.payment_method ?? '—')}
             </span>
           </div>
         </div>
@@ -219,6 +219,25 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
               <span className="text-slate-500">Amount Paid</span>
               <span className="text-emerald-600 font-semibold">₹{round2(invoice.amount_paid).toFixed(2)}</span>
             </div>
+            {invoice.payment_method === 'insurance' && (invoice.insurance_company || invoice.insurance_claim_no) && (
+              <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2.5 space-y-1">
+                <p className="text-xs font-bold text-blue-700 uppercase tracking-wide flex items-center gap-1.5">
+                  <span>🛡</span> Insurance Payment
+                </p>
+                {invoice.insurance_company && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-600">Company</span>
+                    <span className="font-semibold text-blue-800">{invoice.insurance_company}</span>
+                  </div>
+                )}
+                {invoice.insurance_claim_no && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-600">Claim No.</span>
+                    <span className="font-semibold text-blue-800 font-mono">{invoice.insurance_claim_no}</span>
+                  </div>
+                )}
+              </div>
+            )}
             {!linkedInvoice && (() => {
               const due = round2(invoice.grand_total - (invoice.total_returns ?? 0) - invoice.amount_paid)
               return due > 0 ? (
