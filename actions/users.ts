@@ -87,3 +87,71 @@ export async function setMyPin(pin: string): Promise<void> {
 
   if (error) throw new Error(error.message)
 }
+
+export async function createStaffUser(data: {
+  name: string
+  email: string
+  role: UserRole
+  pin: string
+  recovery_password: string
+}): Promise<void> {
+  await requireAdmin()
+
+  if (!/^\d{4}$/.test(data.pin)) throw new Error('PIN must be 4 digits')
+  if (data.recovery_password.length < 8) throw new Error('Recovery password must be 8+ characters')
+
+  const adminClient = createAdminClient()
+
+  const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
+    email: data.email,
+    password: data.recovery_password,
+    email_confirm: true,
+    user_metadata: { name: data.name },
+  })
+
+  if (authError || !authData.user) {
+    throw new Error(authError?.message ?? 'Failed to create auth user')
+  }
+
+  const userId = authData.user.id
+
+  const bcrypt = await import('bcryptjs')
+  const pin_hash = await bcrypt.hash(data.pin, 10)
+
+  const { error: profileError } = await adminClient
+    .from('profiles')
+    .upsert({
+      id: userId,
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      is_active: true,
+      pin_hash,
+    })
+
+  if (profileError) {
+    await adminClient.auth.admin.deleteUser(userId)
+    throw new Error(profileError.message)
+  }
+
+  revalidatePath('/settings/users')
+}
+
+export async function resetStaffPin(userId: string, newPin: string): Promise<void> {
+  await requireAdmin()
+
+  if (!/^\d{4}$/.test(newPin)) throw new Error('PIN must be 4 digits')
+
+  const bcrypt = await import('bcryptjs')
+  const pin_hash = await bcrypt.hash(newPin, 10)
+
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
+    .from('profiles')
+    .update({ pin_hash })
+    .eq('id', userId)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/settings/users')
+}
