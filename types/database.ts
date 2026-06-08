@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'staff'
+export type UserRole = 'admin' | 'manager' | 'cashier' | 'staff'
 export type ProductStatus = 'active' | 'inactive'
 export type SerialStatus = 'available' | 'sold' | 'damaged' | 'returned'
 export type StockChangeType = 'stock_in' | 'sale' | 'adjustment' | 'return'
@@ -25,6 +25,7 @@ export interface Profile {
   email: string | null
   role: UserRole
   is_active: boolean
+  pin_hash: string | null
   created_at: string
 }
 

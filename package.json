@@ -24,6 +24,7 @@
     "@supabase/supabase-js": "^2.106.2",
     "@zxing/browser": "^0.2.0",
     "@zxing/library": "^0.23.0",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -49,6 +50,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
