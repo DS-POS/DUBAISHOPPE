@@ -19,16 +19,26 @@ export default function CustomerList({ initialCustomers }: Props) {
   const [pending, startTransition] = useTransition()
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
-  const filtered = search.trim()
-    ? customers.filter(c => {
-        const q = search.trim().toLowerCase()
-        return (
-          c.name.toLowerCase().includes(q) ||
-          (c.phone?.toLowerCase().includes(q) ?? false) ||
-          (c.business_name?.toLowerCase().includes(q) ?? false)
-        )
-      })
-    : customers
+  const filtered = (() => {
+    const base = search.trim()
+      ? customers.filter(c => {
+          const q = search.trim().toLowerCase()
+          return (
+            c.name.toLowerCase().includes(q) ||
+            (c.phone?.toLowerCase().includes(q) ?? false) ||
+            (c.business_name?.toLowerCase().includes(q) ?? false)
+          )
+        })
+      : customers
+    // dedup by name + phone
+    const seen = new Set<string>()
+    return base.filter(c => {
+      const key = `${c.name.trim().toLowerCase()}|${(c.phone ?? '').trim()}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  })()
 
   function exportCustomers(formatType: 'xlsx' | 'csv') {
     const rows = filtered.map(c => ({
@@ -75,36 +85,36 @@ export default function CustomerList({ initialCustomers }: Props) {
   return (
     <div className="space-y-5">
       {/* Page Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Customers</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Customers</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             {customers.length} customer{customers.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <button
             onClick={() => exportCustomers('xlsx')}
             disabled={filtered.length === 0}
-            className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-3 py-2 rounded-xl text-sm transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-2.5 py-2 rounded-xl text-xs transition-all shadow-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Export to Excel"
           >
-            <DownloadIcon className="size-3.5" />
-            Excel
+            <DownloadIcon className="size-3" />
+            XLS
           </button>
           <button
             onClick={() => exportCustomers('csv')}
             disabled={filtered.length === 0}
-            className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-3 py-2 rounded-xl text-sm transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-2.5 py-2 rounded-xl text-xs transition-all shadow-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Export to CSV"
           >
-            <DownloadIcon className="size-3.5" />
+            <DownloadIcon className="size-3" />
             CSV
           </button>
           <Link href="/customers/new">
-            <span className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm text-sm flex items-center gap-1.5 cursor-pointer">
-              <PlusIcon className="size-4" />
-              Add Customer
+            <span className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white font-semibold px-3 py-2 rounded-xl shadow-sm text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer">
+              <PlusIcon className="size-3.5" />
+              Add
             </span>
           </Link>
         </div>
@@ -151,7 +161,7 @@ export default function CustomerList({ initialCustomers }: Props) {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map(c => {
+          {filtered.map((c, idx) => {
             const isOpen = expanded.has(c.id)
             return (
               <div key={c.id} className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
@@ -163,6 +173,7 @@ export default function CustomerList({ initialCustomers }: Props) {
                   })}
                   className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-slate-50/70 transition-colors select-none"
                 >
+                  <span className="text-xs font-bold text-slate-300 w-6 text-right flex-shrink-0">{idx + 1}</span>
                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
                     <span className="text-white text-sm font-bold">{c.name.charAt(0).toUpperCase()}</span>
                   </div>

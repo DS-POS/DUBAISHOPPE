@@ -69,6 +69,8 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
         setTimeout(() => { el.textContent = ''; el.className = 'h-4 text-xs' }, 2000)
       }
     }
+    // Refocus search input so next scan is ready immediately
+    document.getElementById('billing-search-input')?.focus()
   }
   useBarcodeScanner({ onScan: handleBarcodeScan, enabled: true })
 
@@ -133,6 +135,11 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
   }
 
   const totals = cartTotals(cart)
+  const sortedCart = [...cart].sort((a, b) => {
+    const aGst = a.is_taxable && a.product.gst_rate > 0 ? 1 : 0
+    const bGst = b.is_taxable && b.product.gst_rate > 0 ? 1 : 0
+    return bGst - aGst
+  })
 
   return (
     <div className="flex flex-col lg:flex-row gap-5 min-h-0">
@@ -151,7 +158,84 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
           </div>
         ) : (
           <div className="rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
-            <table className="w-full text-sm">
+            {/* Mobile: compact cart cards */}
+            <div className="block md:hidden divide-y divide-slate-100">
+              {sortedCart.map(item => (
+                <div key={item._id} className="px-4 py-3 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-sm text-slate-900 leading-tight">{item.product.name}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{item.product.sku}</p>
+                      {item.product.serial_required && (
+                        <button
+                          type="button"
+                          onClick={() => pickSerial(item._id)}
+                          className={`mt-1 text-xs rounded-full px-2 py-0.5 border transition-colors ${
+                            item.serial_number
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                              : 'border-red-200 bg-red-50 text-red-600'
+                          }`}
+                        >
+                          {item.serial_number ? `S/N: ${item.serial_number}` : '⚠ Pick serial'}
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <p className="font-bold text-sm text-slate-900 tabular-nums">₹{item.total.toFixed(2)}</p>
+                      <button type="button" onClick={() => removeItem(item._id)} className="text-slate-300 hover:text-red-500 transition-colors p-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1">
+                      <button type="button" onClick={() => updateQty(item._id, Math.max(1, item.quantity - 1))} className="size-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 font-bold text-sm">−</button>
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        min={1}
+                        onChange={e => updateQty(item._id, Math.max(1, parseInt(e.target.value) || 1))}
+                        onFocus={e => e.target.select()}
+                        className="w-10 text-center text-sm font-semibold border border-slate-200 rounded-lg h-7 bg-white outline-none focus:ring-2 focus:ring-[#111827]/20"
+                      />
+                      <button type="button" onClick={() => updateQty(item._id, item.quantity + 1)} className="size-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 font-bold text-sm">+</button>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">₹</span>
+                      <input
+                        type="number"
+                        value={item.rate}
+                        min={0}
+                        step={0.01}
+                        onChange={e => updateRate(item._id, parseFloat(e.target.value) || 0)}
+                        onFocus={e => e.target.select()}
+                        className="w-24 pl-5 pr-2 py-1.5 text-sm border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-[#111827]/20"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => updateDiscountMode(item._id, item.discount_mode === 'percent' ? 'flat' : 'percent')}
+                        className="h-7 w-7 text-xs rounded-lg border border-slate-200 bg-white font-semibold text-slate-600"
+                      >{item.discount_mode === 'percent' ? '%' : '₹'}</button>
+                      <input
+                        type="number"
+                        value={item.discount_raw}
+                        min={0}
+                        onChange={e => updateDiscountRaw(item._id, parseFloat(e.target.value) || 0)}
+                        onFocus={e => e.target.select()}
+                        className="w-16 px-2 py-1.5 text-sm border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-[#111827]/20"
+                      />
+                    </div>
+                    {item.is_taxable && item.total_gst > 0 && (
+                      <span className="text-xs text-slate-400">GST {item.product.gst_rate}%: ₹{item.total_gst.toFixed(2)}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop: table */}
+            <table className="hidden md:table w-full text-sm">
               <thead className="bg-[#111827] border-b border-[#1F2937]">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Product</th>
@@ -164,7 +248,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {cart.map(item => (
+                {sortedCart.map(item => (
                   <CartItemRow
                     key={item._id}
                     item={item}

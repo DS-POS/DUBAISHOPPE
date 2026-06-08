@@ -65,34 +65,34 @@ export default async function ProductsPage({ searchParams }: { searchParams?: { 
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#111827]/10">
-            <PackageIcon className="size-5 text-[#4B5563]" />
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <Card className="p-2.5 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 text-center sm:text-left">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-[#111827]/10 shrink-0">
+            <PackageIcon className="size-4 sm:size-5 text-[#4B5563]" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-[#111827]">{products.length}</p>
-            <p className="text-xs text-muted-foreground">Total Products</p>
+            <p className="text-xl sm:text-2xl font-bold text-[#111827] leading-tight">{products.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Total Products</p>
           </div>
         </Card>
 
-        <Card className="p-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#111827]/10">
-            <CheckCircleIcon className="size-5 text-[#4B5563]" />
+        <Card className="p-2.5 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 text-center sm:text-left">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-[#111827]/10 shrink-0">
+            <CheckCircleIcon className="size-4 sm:size-5 text-[#4B5563]" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-[#111827]">{activeCount}</p>
-            <p className="text-xs text-muted-foreground">Active Products</p>
+            <p className="text-xl sm:text-2xl font-bold text-[#111827] leading-tight">{activeCount}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Active Products</p>
           </div>
         </Card>
 
-        <Card className="p-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-amber-500/10">
-            <AlertTriangleIcon className="size-5 text-amber-500" />
+        <Card className="p-2.5 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 text-center sm:text-left">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-amber-500/10 shrink-0">
+            <AlertTriangleIcon className="size-4 sm:size-5 text-amber-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-[#111827]">{lowStockCount}</p>
-            <p className="text-xs text-muted-foreground">Low Stock Items</p>
+            <p className="text-xl sm:text-2xl font-bold text-[#111827] leading-tight">{lowStockCount}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Low Stock Items</p>
           </div>
         </Card>
       </div>

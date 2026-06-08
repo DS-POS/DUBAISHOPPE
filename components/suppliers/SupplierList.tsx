@@ -77,24 +77,24 @@ export default function SupplierList({ initialSuppliers }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#0F172A]" style={{ fontFamily: 'Rubik, sans-serif' }}>
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A]" style={{ fontFamily: 'Rubik, sans-serif' }}>
             Suppliers
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
             {suppliers.length} supplier{suppliers.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative w-56">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 sm:flex-none sm:w-48">
             <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="Search name, phone, GSTIN…"
+              placeholder="Search name, phone…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-8"
+              className="pl-8 h-9 text-sm"
             />
           </div>
           <Button
@@ -103,9 +103,10 @@ export default function SupplierList({ initialSuppliers }: Props) {
             onClick={() => exportSuppliers('xlsx')}
             disabled={filtered.length === 0}
             title="Export to Excel"
+            className="h-9 text-xs px-2.5"
           >
-            <DownloadIcon className="size-3.5 mr-1.5" />
-            Excel
+            <DownloadIcon className="size-3 mr-1" />
+            XLS
           </Button>
           <Button
             variant="outline"
@@ -113,14 +114,15 @@ export default function SupplierList({ initialSuppliers }: Props) {
             onClick={() => exportSuppliers('csv')}
             disabled={filtered.length === 0}
             title="Export to CSV"
+            className="h-9 text-xs px-2.5"
           >
-            <DownloadIcon className="size-3.5 mr-1.5" />
+            <DownloadIcon className="size-3 mr-1" />
             CSV
           </Button>
           <Link href="/suppliers/new">
-            <Button className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white">
-              <PlusIcon className="size-4 mr-2" />
-              Add Supplier
+            <Button className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white h-9 text-xs sm:text-sm">
+              <PlusIcon className="size-3.5 mr-1.5" />
+              Add
             </Button>
           </Link>
         </div>
@@ -139,49 +141,53 @@ export default function SupplierList({ initialSuppliers }: Props) {
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-[#111827] border-b border-[#1F2937]">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">Name</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">Business Name</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">Phone</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">GSTIN</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">State</th>
-                <th className="px-4 py-3 text-right font-semibold text-slate-300 uppercase tracking-wide text-xs">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((s, i) => (
-                <tr key={s.id} className={`${i % 2 === 0 ? 'bg-[#F3F4F6]' : 'bg-[#E5E7EB]/40'} hover:bg-[#D1D5DB]/60 transition-colors cursor-pointer`}>
-                  <td className="px-4 py-3 font-medium">{s.name}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{s.business_name ?? '—'}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{s.phone ?? '—'}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{s.gstin ?? '—'}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{s.state}</td>
-                  <td className="px-4 py-3 text-right space-x-3">
-                    <Link
-                      href={`/suppliers/${s.id}`}
-                      className="text-xs text-[#4B5563] hover:text-[#111827] font-semibold transition-colors"
-                    >
-                      View
-                    </Link>
-                    <Link
-                      href={`/suppliers/${s.id}/edit`}
-                      className="text-xs text-slate-500 hover:text-[#1F2937] transition-colors"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(s)}
-                      className="text-xs text-destructive hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </td>
+          {/* Mobile: card list */}
+          <div className="block md:hidden divide-y divide-slate-100">
+            {filtered.map(s => (
+              <div key={s.id} className="px-4 py-3 flex items-center justify-between gap-3 bg-white hover:bg-slate-50 transition-colors">
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm text-slate-900 truncate">{s.name}</p>
+                  {s.business_name && <p className="text-xs text-slate-500 truncate">{s.business_name}</p>}
+                  {s.phone && <p className="text-xs text-slate-400 mt-0.5">{s.phone}</p>}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link href={`/suppliers/${s.id}`} className="text-xs font-semibold text-[#111827] underline">View</Link>
+                  <Link href={`/suppliers/${s.id}/edit`} className="text-xs text-slate-500 hover:underline">Edit</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Desktop: table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#111827] border-b border-[#1F2937]">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">Name</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">Business Name</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">Phone</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">GSTIN</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">State</th>
+                  <th className="px-4 py-3 text-right font-semibold text-slate-300 uppercase tracking-wide text-xs">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map((s, i) => (
+                  <tr key={s.id} className={`${i % 2 === 0 ? 'bg-[#F3F4F6]' : 'bg-[#E5E7EB]/40'} hover:bg-[#D1D5DB]/60 transition-colors cursor-pointer`}>
+                    <td className="px-4 py-3 font-medium">{s.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{s.business_name ?? '—'}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{s.phone ?? '—'}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{s.gstin ?? '—'}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{s.state}</td>
+                    <td className="px-4 py-3 text-right space-x-3">
+                      <Link href={`/suppliers/${s.id}`} className="text-xs text-[#4B5563] hover:text-[#111827] font-semibold transition-colors">View</Link>
+                      <Link href={`/suppliers/${s.id}/edit`} className="text-xs text-slate-500 hover:text-[#1F2937] transition-colors">Edit</Link>
+                      <button onClick={() => handleDelete(s)} className="text-xs text-destructive hover:underline">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

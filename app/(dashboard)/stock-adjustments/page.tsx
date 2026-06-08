@@ -35,21 +35,7 @@ export default async function StockAdjustmentsPage() {
         </div>
       ) : (
         <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-[#111827] border-b border-[#1F2937]">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-300 text-xs uppercase tracking-wider">Product</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-300 text-xs uppercase tracking-wider">Type</th>
-                  <th className="px-4 py-3 text-right font-semibold text-slate-300 text-xs uppercase tracking-wider">Qty</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-300 text-xs uppercase tracking-wider">Notes</th>
-                  <th className="px-4 py-3 text-right font-semibold text-slate-300 text-xs uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-right font-semibold text-slate-300 text-xs uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <StockAdjustmentsListClient adjustments={adjustments} />
-            </table>
-          </div>
+          <StockAdjustmentsListClient adjustments={adjustments} />
         </div>
       )}
     </div>

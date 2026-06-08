@@ -27,13 +27,44 @@ export function ProductSearch({ products, onAdd }: ProductSearchProps) {
   function handleSelect(product: Product) {
     if (product.status === 'inactive') {
       toast.error('Product is inactive.')
+      setQuery('')
+      inputRef.current?.focus()
       return
     }
     if (product.current_stock <= 0) {
       toast.error(`"${product.name}" is out of stock.`)
+      setQuery('')
+      inputRef.current?.focus()
       return
     }
     onAdd(product)
+    setQuery('')
+    inputRef.current?.focus()
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    const trimmed = query.trim()
+    if (!trimmed) return
+
+    // Exact barcode or SKU match first (case-insensitive)
+    const lower = trimmed.toLowerCase()
+    const exact = products.find(
+      p => p.barcode?.toLowerCase() === lower || p.sku.toLowerCase() === lower
+    )
+    if (exact) {
+      handleSelect(exact)
+      return
+    }
+
+    // Single result in dropdown — add it
+    if (filtered.length === 1) {
+      handleSelect(filtered[0])
+      return
+    }
+
+    toast.error(`No product found: "${trimmed}"`)
     setQuery('')
     inputRef.current?.focus()
   }
@@ -68,10 +99,14 @@ export function ProductSearch({ products, onAdd }: ProductSearchProps) {
           <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400" />
           <input
             ref={inputRef}
+            id="billing-search-input"
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Search product by name, SKU or barcode…"
+            autoFocus
+            autoComplete="off"
             className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-10 text-sm font-medium shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] placeholder:text-slate-400 transition-all"
           />
           {query && (

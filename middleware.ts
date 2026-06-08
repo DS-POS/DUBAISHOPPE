@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const AUTH_PAGES = ['/login', '/forgot-pin', '/forgot-password', '/reset-password']
+const AUTH_PAGES = ['/login', '/forgot-pin', '/forgot-password', '/reset-password', '/auth/callback']
 // NOTE: /set-pin is intentionally excluded — it requires auth
 
 const ROLE_RESTRICTIONS: Record<string, string[]> = {

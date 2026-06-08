@@ -20,13 +20,15 @@ export default function TopBar({ user }: { user: User | null }) {
 
   return (
     <div
-      className="h-14 border-b border-slate-200/70 flex items-center justify-between px-4 md:px-6 pl-16 md:pl-6 flex-shrink-0"
+      className="h-14 border-b border-slate-200/70 flex items-center justify-between px-4 md:px-6 flex-shrink-0"
       style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
     >
-      <div className="text-sm">
-        <span className="font-bold text-slate-800 tracking-tight">Dubai Shoppe</span>
+      <div className="flex items-center gap-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/DUBAI LOGO BR.png" alt="Dubai Shoppe" className="h-8 w-auto object-contain" />
+        <span className="font-bold text-slate-800 tracking-tight text-sm">Dubai Shoppe</span>
         {user?.role === 'admin' && (
-          <span className="ml-2 text-[10px] bg-[#111827] text-white px-1.5 py-0.5 rounded-md font-semibold tracking-wide">ADMIN</span>
+          <span className="text-[10px] bg-[#111827] text-white px-1.5 py-0.5 rounded-md font-semibold tracking-wide">ADMIN</span>
         )}
       </div>
       <DropdownMenu>

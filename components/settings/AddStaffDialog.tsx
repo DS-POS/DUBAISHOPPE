@@ -13,7 +13,6 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
     email: '',
     role: 'cashier' as UserRole,
     pin: '',
-    recovery_password: '',
   })
 
   function handleSubmit(e: React.FormEvent) {
@@ -52,6 +51,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+            <p className="text-xs text-slate-400 mb-1.5">Staff uses this email to receive a PIN reset link if they forget their PIN.</p>
             <input
               type="email" required value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
@@ -69,7 +69,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
             >
               <option value="cashier">Cashier — Sales only</option>
               <option value="manager">Manager — Sales, stock, reports</option>
-              <option value="staff">Staff — Sales only (legacy)</option>
+              <option value="staff">Staff — Sales only</option>
               <option value="admin">Admin — Full access</option>
             </select>
           </div>
@@ -83,19 +83,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
               placeholder="1234"
               className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm text-center tracking-widest outline-none focus:ring-2 focus:ring-[#111827]/20"
             />
-            <p className="text-xs text-slate-400 mt-1">Tell staff this PIN in person.</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Recovery Password (8+ chars)</label>
-            <input
-              type="text" minLength={8} required
-              value={form.recovery_password}
-              onChange={e => setForm(f => ({ ...f, recovery_password: e.target.value }))}
-              placeholder="Strong password for PIN recovery"
-              className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20"
-            />
-            <p className="text-xs text-slate-400 mt-1">Staff uses this + their email if they forget their PIN.</p>
+            <p className="text-xs text-slate-400 mt-1">Tell staff this PIN in person. They can change it anytime via Forgot PIN.</p>
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -103,7 +91,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
               className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={isPending}
+            <button type="submit" disabled={isPending || form.pin.length !== 4}
               className="flex-1 h-10 rounded-xl bg-[#111827] text-white text-sm font-semibold hover:bg-[#1F2937] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
               <UserPlusIcon className="size-4" />
               {isPending ? 'Creating…' : 'Add Staff'}

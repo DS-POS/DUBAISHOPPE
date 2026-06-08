@@ -429,7 +429,7 @@ export default function TallyPage() {
         <div className="flex flex-wrap gap-3">
 
           {/* Stock Masters */}
-          <div className="flex-1 min-w-[220px] bg-[#F3F4F6] rounded-xl ring-1 ring-black/[0.06] p-4">
+          <div className="flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px] bg-[#F3F4F6] rounded-xl ring-1 ring-black/[0.06] p-4">
             <div className="flex items-center gap-2 mb-1">
               <Boxes className="size-3.5 text-[#4B5563]" />
               <span className="text-sm font-semibold text-[#111827]">Stock Masters</span>
@@ -443,7 +443,7 @@ export default function TallyPage() {
           </div>
 
           {/* Ledger Masters */}
-          <div className="flex-1 min-w-[220px] bg-[#F3F4F6] rounded-xl ring-1 ring-black/[0.06] p-4">
+          <div className="flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px] bg-[#F3F4F6] rounded-xl ring-1 ring-black/[0.06] p-4">
             <div className="flex items-center gap-2 mb-1">
               <Users className="size-3.5 text-[#4B5563]" />
               <span className="text-sm font-semibold text-[#111827]">Ledger Masters</span>
@@ -531,7 +531,7 @@ export default function TallyPage() {
         {/* Email sub-form */}
         {showEmailForm && gstrJson && (
           <div className="mt-4 p-4 bg-[#F3F4F6] rounded-xl ring-1 ring-black/[0.06] flex flex-wrap items-end gap-3">
-            <div className="flex flex-col gap-0.5 flex-1 min-w-[220px]">
+            <div className="flex flex-col gap-0.5 flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px]">
               <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Accountant Email</label>
               <input
                 type="email"
@@ -602,7 +602,7 @@ export default function TallyPage() {
           </div>
         ) : (
           <div className="overflow-x-auto -mx-2">
-            <table className="w-full text-sm min-w-[480px]">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="bg-[#111827] border-b border-[#1F2937]">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">

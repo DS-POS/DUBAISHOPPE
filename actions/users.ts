@@ -93,18 +93,19 @@ export async function createStaffUser(data: {
   email: string
   role: UserRole
   pin: string
-  recovery_password: string
 }): Promise<void> {
   await requireAdmin()
 
   if (!/^\d{4}$/.test(data.pin)) throw new Error('PIN must be 4 digits')
-  if (data.recovery_password.length < 8) throw new Error('Recovery password must be 8+ characters')
 
   const adminClient = createAdminClient()
 
+  // Generate a strong random password — staff never uses it (PIN + magic link for recovery)
+  const randomPassword = `${crypto.randomUUID()}-${crypto.randomUUID()}`
+
   const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
     email: data.email,
-    password: data.recovery_password,
+    password: randomPassword,
     email_confirm: true,
     user_metadata: { name: data.name },
   })

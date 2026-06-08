@@ -7,6 +7,7 @@ import {
   SearchIcon, BanknoteIcon, SmartphoneIcon, CreditCardIcon,
   WalletIcon, BuildingIcon, ShoppingCartIcon, UserIcon,
   CreditCardIcon as PayIcon, FileTextIcon, ShieldCheckIcon,
+  ChevronDownIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { type CartItem, cartTotals } from './types'
@@ -34,6 +35,11 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
   const router = useRouter()
   const cart = initialCart
   const totals = cartTotals(cart)
+  const sortedCart = [...cart].sort((a, b) => {
+    const aGst = a.is_taxable && a.product.gst_rate > 0 ? 1 : 0
+    const bGst = b.is_taxable && b.product.gst_rate > 0 ? 1 : 0
+    return bGst - aGst
+  })
 
   // Customer fields
   const [customerName, setCustomerName] = useState(initialCustomer?.name ?? '')
@@ -49,7 +55,18 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Customer[]>([])
   const [showResults, setShowResults] = useState(false)
+  const [loadingAll, setLoadingAll] = useState(false)
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function dedupeCustomers(list: Customer[]): Customer[] {
+    const seen = new Set<string>()
+    return list.filter(c => {
+      const key = `${c.name.trim().toLowerCase()}|${(c.phone ?? '').trim()}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  }
 
   // Payment
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
@@ -97,13 +114,26 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
     searchTimeout.current = setTimeout(async () => {
       try {
         const results = await getCustomers(q)
-        setSearchResults(results)
+        setSearchResults(dedupeCustomers(results))
         setShowResults(true)
       } catch {
         // silently ignore
       }
     }, 300)
   }, [])
+
+  async function handleShowAll() {
+    setLoadingAll(true)
+    try {
+      const all = await getCustomers('')
+      setSearchResults(dedupeCustomers(all))
+      setShowResults(true)
+    } catch {
+      // silently ignore
+    } finally {
+      setLoadingAll(false)
+    }
+  }
 
   async function handleSubmit() {
     setSubmitting(true)
@@ -206,7 +236,7 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
   const sectionHeaderCls = 'flex items-center gap-2.5 px-5 py-3.5'
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
+    <div className="w-full max-w-3xl mx-auto space-y-4">
       {/* Cart Summary */}
       <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <div className={`${sectionHeaderCls} bg-gradient-to-r from-slate-800 to-slate-700`}>
@@ -218,7 +248,30 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
             {cart.length} item{cart.length !== 1 ? 's' : ''}
           </span>
         </div>
-        <div className="overflow-x-auto">
+        {/* Mobile: cart item cards */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {sortedCart.map(item => (
+            <div key={item._id} className="px-4 py-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm text-slate-900 leading-tight">{item.product.name}</p>
+                  {item.serial_number && <p className="text-xs text-slate-400 mt-0.5">S/N: {item.serial_number}</p>}
+                </div>
+                <p className="font-bold text-sm text-slate-900 tabular-nums shrink-0">₹{item.total.toFixed(2)}</p>
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-slate-500">
+                <span>Qty: <b>{item.quantity}</b></span>
+                <span>Rate: ₹{item.rate.toFixed(2)}</span>
+                {item.discount > 0 && <span>Disc: ₹{item.discount.toFixed(2)}</span>}
+                {item.is_taxable && item.total_gst > 0 && (
+                  <span className="text-blue-600">GST {item.product.gst_rate}%{item.cgst > 0 ? ` · CGST ₹${item.cgst.toFixed(2)}` : ''}{item.sgst > 0 ? ` · SGST ₹${item.sgst.toFixed(2)}` : ''}{item.igst > 0 ? ` · IGST ₹${item.igst.toFixed(2)}` : ''}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Desktop: table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="border-b border-slate-100 bg-slate-50">
               <tr>
@@ -230,7 +283,7 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {cart.map(item => (
+              {sortedCart.map(item => (
                 <>
                   <tr key={item._id}>
                     <td className="px-4 pt-3 pb-1">
@@ -324,8 +377,17 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
                   value={searchQuery}
                   onChange={e => handleSearch(e.target.value)}
                   onFocus={() => searchResults.length > 0 && setShowResults(true)}
-                  className={`${inputCls} pl-9`}
+                  className={`${inputCls} pl-9 pr-9`}
                 />
+                <button
+                  type="button"
+                  onClick={() => showResults ? setShowResults(false) : handleShowAll()}
+                  disabled={loadingAll}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  title="Browse all customers"
+                >
+                  <ChevronDownIcon className={`size-4 transition-transform ${showResults ? 'rotate-180' : ''}`} />
+                </button>
               </div>
               <button
                 type="button"
@@ -336,7 +398,7 @@ export function CheckoutForm({ initialCart, initialCustomer, creditLimit, credit
               </button>
             </div>
             {showResults && searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 rounded-xl border border-slate-200 bg-white shadow-xl max-h-48 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 rounded-xl border border-slate-200 bg-white shadow-xl max-h-56 overflow-y-auto">
                 {searchResults.map(c => (
                   <button
                     key={c.id}

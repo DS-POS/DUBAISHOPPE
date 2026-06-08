@@ -1,7 +1,7 @@
-// DS POS Service Worker — v1
-// Strategy: cache-first for static assets, network-first for API/pages
+// DS POS Service Worker — v2
+// Strategy: network-first for _next/static (prevents stale chunk bugs), network-first for API/pages
 
-const CACHE_NAME = 'ds-pos-v1'
+const CACHE_NAME = 'ds-pos-v2'
 const STATIC_ASSETS = [
   '/',
   '/dashboard',
@@ -43,9 +43,9 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return
   if (url.origin !== self.location.origin) return
 
-  // Next.js static chunks — cache first, very long-lived
+  // Next.js static chunks — network-first so code updates are never stale
   if (url.pathname.startsWith('/_next/static/')) {
-    event.respondWith(cacheFirst(request))
+    event.respondWith(networkFirstWithCache(request))
     return
   }
 

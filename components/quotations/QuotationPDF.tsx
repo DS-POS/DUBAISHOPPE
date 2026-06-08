@@ -77,7 +77,8 @@ const s = StyleSheet.create({
   // HEADER ROW — logo | store | bill-to
   headerRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 0 },
   logoCol: { alignItems: 'center', justifyContent: 'flex-start', paddingRight: 8, paddingTop: 2 },
-  logoImg: { width: 64, height: 64, objectFit: 'contain' },
+  logoImg: { width: 80, height: 80 },
+  logoClip: { width: 80, height: 52, overflow: 'hidden' },
   headerDividerV: { width: 0.5, backgroundColor: BORDER, marginHorizontal: 10, alignSelf: 'stretch' },
   storeCol: { flex: 1.1, paddingVertical: 2 },
   storeName: { fontSize: 12, fontFamily: 'SegoeUI', fontWeight: 'bold', color: DARK },
@@ -232,7 +233,9 @@ export function QuotationPDF({ quotation, items, customer, bankAccount, termsCon
         {/* Header: Logo | Store details | Bill To */}
         <View style={s.headerRow}>
           <View style={s.logoCol}>
-            <Image src={LOGO_SRC} style={s.logoImg} />
+            <View style={s.logoClip}>
+              <Image src={LOGO_SRC} style={s.logoImg} />
+            </View>
           </View>
           <View style={s.headerDividerV} />
           <View style={s.storeCol}>

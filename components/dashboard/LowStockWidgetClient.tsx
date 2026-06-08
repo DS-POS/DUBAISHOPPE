@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { ChevronDownIcon, AlertTriangleIcon } from 'lucide-react'
+import { AlertTriangleIcon } from 'lucide-react'
 
 export function LowStockWidgetClient({ children, count }: { children: ReactNode; count: number }) {
   const [isOpen, setIsOpen] = useState(true)

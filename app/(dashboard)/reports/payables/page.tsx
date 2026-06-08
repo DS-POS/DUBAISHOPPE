@@ -23,41 +23,70 @@ export default async function PayablesPage() {
         <div className="rounded-2xl border-2 border-dashed border-slate-200 p-16 text-center"><p className="font-semibold text-slate-600">No outstanding payables</p></div>
       ) : (
         <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-[#111827]">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Supplier</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">0–30</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">31–60</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">61–90</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">90+</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Total Due</th>
-                <th className="px-4 py-3 w-20" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {aging.map(row=>(
-                <tr key={row.supplier_name} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-semibold text-slate-900">{row.supplier_name}</td>
-                  <td className="px-4 py-3 text-right text-emerald-600 font-medium">{fmt(row.current)}</td>
-                  <td className="px-4 py-3 text-right text-amber-600 font-medium">{fmt(row.days_31_60)}</td>
-                  <td className="px-4 py-3 text-right text-orange-600 font-medium">{fmt(row.days_61_90)}</td>
-                  <td className="px-4 py-3 text-right text-red-600 font-medium">{fmt(row.over_90)}</td>
-                  <td className="px-4 py-3 text-right font-bold text-slate-900">{fmt(row.total_due)}</td>
-                  <td className="px-4 py-3">{row.supplier_id && <Link href={`/suppliers/${row.supplier_id}/ledger`} className="text-xs text-[#111827] font-medium hover:underline">Ledger →</Link>}</td>
+          {/* Mobile: compact cards */}
+          <div className="block md:hidden divide-y divide-slate-100">
+            {aging.map(row => (
+              <div key={row.supplier_name} className="px-4 py-3">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-semibold text-sm text-slate-900 truncate min-w-0 flex-1">{row.supplier_name}</p>
+                  <p className="font-bold text-sm text-red-600 tabular-nums shrink-0">{fmt(row.total_due)}</p>
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-slate-500">
+                  {row.current > 0 && <span className="text-emerald-600">0–30: {fmt(row.current)}</span>}
+                  {row.days_31_60 > 0 && <span className="text-amber-600">31–60: {fmt(row.days_31_60)}</span>}
+                  {row.days_61_90 > 0 && <span className="text-orange-600">61–90: {fmt(row.days_61_90)}</span>}
+                  {row.over_90 > 0 && <span className="text-red-600">90+: {fmt(row.over_90)}</span>}
+                </div>
+                {row.supplier_id && (
+                  <div className="mt-1.5">
+                    <Link href={`/suppliers/${row.supplier_id}/ledger`} className="text-xs font-semibold text-[#111827] underline">Ledger →</Link>
+                  </div>
+                )}
+              </div>
+            ))}
+            <div className="px-4 py-3 bg-slate-50 flex justify-between items-center">
+              <span className="font-bold text-xs text-slate-700 uppercase tracking-wide">Total</span>
+              <span className="font-bold text-sm text-red-600 tabular-nums">{fmt(totals.total_due)}</span>
+            </div>
+          </div>
+          {/* Desktop: full table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#111827]">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Supplier</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">0–30</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">31–60</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">61–90</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">90+</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Total Due</th>
+                  <th className="px-4 py-3 w-20" />
                 </tr>
-              ))}
-              <tr className="bg-slate-50 font-bold">
-                <td className="px-4 py-3 text-slate-900">Total</td>
-                <td className="px-4 py-3 text-right text-emerald-700">{fmt(totals.current)}</td>
-                <td className="px-4 py-3 text-right text-amber-700">{fmt(totals.days_31_60)}</td>
-                <td className="px-4 py-3 text-right text-orange-700">{fmt(totals.days_61_90)}</td>
-                <td className="px-4 py-3 text-right text-red-700">{fmt(totals.over_90)}</td>
-                <td className="px-4 py-3 text-right text-slate-900">{fmt(totals.total_due)}</td>
-                <td />
-              </tr>
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {aging.map(row=>(
+                  <tr key={row.supplier_name} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 font-semibold text-slate-900">{row.supplier_name}</td>
+                    <td className="px-4 py-3 text-right text-emerald-600 font-medium">{fmt(row.current)}</td>
+                    <td className="px-4 py-3 text-right text-amber-600 font-medium">{fmt(row.days_31_60)}</td>
+                    <td className="px-4 py-3 text-right text-orange-600 font-medium">{fmt(row.days_61_90)}</td>
+                    <td className="px-4 py-3 text-right text-red-600 font-medium">{fmt(row.over_90)}</td>
+                    <td className="px-4 py-3 text-right font-bold text-slate-900">{fmt(row.total_due)}</td>
+                    <td className="px-4 py-3">{row.supplier_id && <Link href={`/suppliers/${row.supplier_id}/ledger`} className="text-xs text-[#111827] font-medium hover:underline">Ledger →</Link>}</td>
+                  </tr>
+                ))}
+                <tr className="bg-slate-50 font-bold">
+                  <td className="px-4 py-3 text-slate-900">Total</td>
+                  <td className="px-4 py-3 text-right text-emerald-700">{fmt(totals.current)}</td>
+                  <td className="px-4 py-3 text-right text-amber-700">{fmt(totals.days_31_60)}</td>
+                  <td className="px-4 py-3 text-right text-orange-700">{fmt(totals.days_61_90)}</td>
+                  <td className="px-4 py-3 text-right text-red-700">{fmt(totals.over_90)}</td>
+                  <td className="px-4 py-3 text-right text-slate-900">{fmt(totals.total_due)}</td>
+                  <td />
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

@@ -32,7 +32,7 @@ export default async function CustomerStatementPage({ params }: { params: { id: 
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <p className="text-xs text-slate-500 uppercase tracking-wide">Total Invoiced</p>
           <p className="text-xl font-bold text-slate-900 mt-1">₹{formatINR(statement.total_invoiced)}</p>
@@ -60,13 +60,45 @@ export default async function CustomerStatementPage({ params }: { params: { id: 
             <h2 className="font-semibold text-slate-900">Transaction Ledger</h2>
             <p className="text-xs text-slate-500 mt-0.5">{statement.transactions.length} transactions</p>
           </div>
-          <div className="overflow-x-auto">
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-slate-100">
+            {statement.transactions.map((tx, i) => (
+              <div key={i} className={`px-4 py-3 ${tx.type === 'payment' ? 'bg-emerald-50/30' : ''}`}>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="min-w-0 flex-1">
+                    {tx.type === 'invoice' ? (
+                      <span className="font-mono text-xs font-semibold text-blue-600">{tx.reference}</span>
+                    ) : (
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Payment</span>
+                    )}
+                    <p className="text-xs text-slate-400 mt-0.5">{tx.date_display}</p>
+                  </div>
+                  <span className={`text-sm font-bold shrink-0 tabular-nums ${tx.balance > 0 ? 'text-red-600' : tx.balance < 0 ? 'text-emerald-600' : 'text-slate-500'}`}>
+                    ₹{formatINR(Math.abs(tx.balance))}{tx.balance < 0 && ' Cr'}
+                  </span>
+                </div>
+                <div className="flex gap-4 text-xs text-slate-500">
+                  {tx.debit > 0 && <span>Debit: <b className="text-red-600">₹{formatINR(tx.debit)}</b></span>}
+                  {tx.credit > 0 && <span>Credit: <b className="text-emerald-600">₹{formatINR(tx.credit)}</b></span>}
+                </div>
+                {tx.description && <p className="text-xs text-slate-400 mt-0.5 truncate">{tx.description}</p>}
+              </div>
+            ))}
+            <div className="px-4 py-3 bg-slate-50 flex justify-between items-center border-t-2 border-slate-200">
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Closing Balance</span>
+              <span className={`text-base font-bold tabular-nums ${statement.closing_balance > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                ₹{formatINR(Math.abs(statement.closing_balance))}{statement.closing_balance < 0 && ' Cr'}
+              </span>
+            </div>
+          </div>
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-[#111827]">
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Date</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Reference</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden md:table-cell">Description</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Description</th>
                   <th className="text-right px-5 py-3.5 text-xs font-semibold text-red-400 uppercase tracking-wide">Debit</th>
                   <th className="text-right px-5 py-3.5 text-xs font-semibold text-emerald-400 uppercase tracking-wide">Credit</th>
                   <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Balance</th>
@@ -83,7 +115,7 @@ export default async function CustomerStatementPage({ params }: { params: { id: 
                         <span className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Payment</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-xs text-slate-500 hidden md:table-cell max-w-xs truncate">{tx.description}</td>
+                    <td className="px-5 py-3 text-xs text-slate-500 max-w-xs truncate">{tx.description}</td>
                     <td className="px-5 py-3 text-right text-sm">
                       {tx.debit > 0 ? <span className="font-semibold text-red-600">₹{formatINR(tx.debit)}</span> : <span className="text-slate-300">—</span>}
                     </td>
