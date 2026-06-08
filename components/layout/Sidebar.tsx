@@ -10,32 +10,31 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
-interface NavItem { label: string; href: string; icon: React.ElementType; adminOnly?: boolean }
+interface NavItem { label: string; href: string; icon: React.ElementType; roles?: string[] }
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'New Sale', href: '/billing', icon: ShoppingCart },
   { label: 'Invoices', href: '/invoices', icon: FileText },
   { label: 'Quotations', href: '/quotations', icon: ClipboardList },
-  { label: 'Product Inventory', href: '/products', icon: Package },
-  { label: 'Supplier Invoices', href: '/stock-in', icon: PackagePlus },
-  { label: 'Stock Adjustments', href: '/stock-adjustments', icon: SlidersHorizontal },
+  { label: 'Product Inventory', href: '/products', icon: Package, roles: ['admin', 'manager'] },
+  { label: 'Supplier Invoices', href: '/stock-in', icon: PackagePlus, roles: ['admin', 'manager'] },
+  { label: 'Stock Adjustments', href: '/stock-adjustments', icon: SlidersHorizontal, roles: ['admin', 'manager'] },
   { label: 'Returns', href: '/returns', icon: RotateCcw },
-  { label: 'Purchase Orders', href: '/purchase-orders', icon: ClipboardCheck },
-  { label: 'Expenses', href: '/expenses', icon: Receipt },
-  { label: 'Store Loans', href: '/store-loans', icon: ArrowLeftRight },
+  { label: 'Purchase Orders', href: '/purchase-orders', icon: ClipboardCheck, roles: ['admin', 'manager'] },
+  { label: 'Expenses', href: '/expenses', icon: Receipt, roles: ['admin', 'manager'] },
+  { label: 'Store Loans', href: '/store-loans', icon: ArrowLeftRight, roles: ['admin', 'manager'] },
   { label: 'Customers', href: '/customers', icon: Users },
-  { label: 'Suppliers', href: '/suppliers', icon: Truck },
-  { label: 'Labels', href: '/labels', icon: Tag },
-  { label: 'Reports', href: '/reports', icon: BarChart3 },
-  { label: 'Tally Export', href: '/reports/tally', icon: FileDown, adminOnly: true },
-  { label: 'Settings', href: '/settings', icon: Settings, adminOnly: true },
+  { label: 'Suppliers', href: '/suppliers', icon: Truck, roles: ['admin', 'manager'] },
+  { label: 'Labels', href: '/labels', icon: Tag, roles: ['admin', 'manager'] },
+  { label: 'Reports', href: '/reports', icon: BarChart3, roles: ['admin', 'manager'] },
+  { label: 'Tally Export', href: '/reports/tally', icon: FileDown, roles: ['admin'] },
+  { label: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
 ]
 
 export default function Sidebar({ userRole }: { userRole: string }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const isAdmin = userRole === 'admin'
 
   useEffect(() => {
     const handler = () => setMobileOpen(true)
@@ -47,19 +46,15 @@ export default function Sidebar({ userRole }: { userRole: string }) {
     return (
       <div className="flex flex-col h-full bg-[#111827] text-white border-r border-white/[0.05]">
         {/* Logo area — white section */}
-        <div className="bg-white px-5 pt-4 pb-4 flex flex-col items-center gap-2 border-b border-slate-100">
-          <div className="w-16 h-16 flex items-center justify-center overflow-hidden flex-shrink-0" style={{ clipPath: 'inset(0 0 26% 0)' }}>
-            <img src="/DUBAI LOGO BR.png" alt="DS" className="w-16 h-16 object-contain object-top" />
-          </div>
-          <div className="text-center">
-            <p className="font-bold text-sm leading-tight tracking-wide text-[#111827]">DUBAI SHOPPE</p>
-            <p className="text-[10px] text-slate-500 mt-0.5">A Professional Camera Store</p>
+        <div className="bg-white px-4 py-2 flex items-center justify-center border-b border-slate-100">
+          <div className="w-16 overflow-hidden" style={{ clipPath: 'inset(0 0 26% 0)' }}>
+            <img src="/DUBAI LOGO BR.png" alt="Dubai Shoppe" className="w-16 object-contain object-top" />
           </div>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
-          {navItems.filter(item => !item.adminOnly || isAdmin).map(item => {
+          {navItems.filter(item => !item.roles || item.roles.includes(userRole)).map(item => {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (
               <Link

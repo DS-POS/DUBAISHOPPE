@@ -19,3 +19,8 @@ export async function requireAdmin(): Promise<void> {
   const role = await getUserRole()
   if (role !== 'admin') throw new Error('Admin access required')
 }
+
+export async function requireRole(allowed: UserRole[]): Promise<void> {
+  const role = await getUserRole()
+  if (!role || !allowed.includes(role)) throw new Error('Access denied')
+}
