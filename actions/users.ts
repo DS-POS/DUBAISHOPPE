@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import type { Profile, UserRole } from '@/types/database'
 import { requireAdmin } from '@/lib/get-user-role'
@@ -66,4 +67,23 @@ export async function setUserActive(userId: string, isActive: boolean): Promise<
   if (error) throw new Error(error.message)
 
   revalidatePath('/settings/users')
+}
+
+export async function setMyPin(pin: string): Promise<void> {
+  if (!/^\d{4}$/.test(pin)) throw new Error('PIN must be exactly 4 digits')
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const bcrypt = await import('bcryptjs')
+  const pin_hash = await bcrypt.hash(pin, 10)
+
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
+    .from('profiles')
+    .update({ pin_hash })
+    .eq('id', user.id)
+
+  if (error) throw new Error(error.message)
 }
