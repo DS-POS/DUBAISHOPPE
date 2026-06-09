@@ -60,7 +60,7 @@ export async function getInvoicePayments(invoiceId: string) {
     .select('*')
     .eq('invoice_id', invoiceId)
     .order('payment_date', { ascending: true })
-  if (error) throw new Error(error.message)
+  if (error) return []
   return data ?? []
 }
 
