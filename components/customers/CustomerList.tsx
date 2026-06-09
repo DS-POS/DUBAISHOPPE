@@ -72,12 +72,12 @@ export default function CustomerList({ initialCustomers }: Props) {
   function handleDelete(customer: Customer) {
     if (!window.confirm(`Delete customer ${customer.name}?`)) return
     startTransition(async () => {
-      try {
-        await deleteCustomer(customer.id)
+      const result = await deleteCustomer(customer.id)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
         setCustomers(prev => prev.filter(c => c.id !== customer.id))
         toast.success('Customer deleted')
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to delete customer')
       }
     })
   }

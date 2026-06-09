@@ -112,14 +112,18 @@ export async function getExpenseSummary(year: number, month: number): Promise<Ex
   }
 }
 
-export async function createExpenseCategory(name: string): Promise<ExpenseCategory> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('expense_categories')
-    .insert({ name: name.trim() })
-    .select()
-    .single()
-  if (error) throw new Error(error.message)
-  revalidatePath('/expenses')
-  return data as ExpenseCategory
+export async function createExpenseCategory(name: string): Promise<{ data?: ExpenseCategory; error?: string }> {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('expense_categories')
+      .insert({ name: name.trim() })
+      .select()
+      .single()
+    if (error) return { error: error.message }
+    revalidatePath('/expenses')
+    return { data: data as ExpenseCategory }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to create category' }
+  }
 }

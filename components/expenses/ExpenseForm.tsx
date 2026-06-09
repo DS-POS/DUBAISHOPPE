@@ -32,12 +32,16 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
     if (!trimmed) return
     setAddingCategory(true)
     try {
-      const cat = await createExpenseCategory(trimmed)
-      setLocalCategories(prev => [...prev, cat])
-      setForm(f => ({ ...f, category_id: cat.id }))
-      setNewCategoryName('')
-      setShowAddCategory(false)
-      toast.success(`Category "${cat.name}" created`)
+      const result = await createExpenseCategory(trimmed)
+      if (result.error) {
+        toast.error(result.error)
+      } else if (result.data) {
+        setLocalCategories(prev => [...prev, result.data!])
+        setForm(f => ({ ...f, category_id: result.data!.id }))
+        setNewCategoryName('')
+        setShowAddCategory(false)
+        toast.success(`Category "${result.data.name}" created`)
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create category')
     } finally {

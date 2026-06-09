@@ -92,14 +92,19 @@ export async function updateCustomer(id: string, formData: CustomerFormData): Pr
   redirect('/customers')
 }
 
-export async function deleteCustomer(id: string): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+export async function deleteCustomer(id: string): Promise<{ error?: string }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
 
-  const { error } = await supabase.from('customers').delete().eq('id', id)
-  if (error) throw new Error(error.message)
-  revalidatePath('/customers')
+    const { error } = await supabase.from('customers').delete().eq('id', id)
+    if (error) return { error: error.message }
+    revalidatePath('/customers')
+    return {}
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to delete customer' }
+  }
 }
 
 export async function createCustomerAndReturnId(formData: CustomerFormData): Promise<string> {
