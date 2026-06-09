@@ -7,7 +7,6 @@ import { getCustomerRefundsByGroup, getCustomerRefundsByInvoice } from '@/action
 import { InvoiceShareButtons } from '@/components/invoices/InvoiceShareButtons'
 import { RecordPaymentDialog } from '@/components/invoices/RecordPaymentDialog'
 import { RecordCustomerRefundButton } from '@/components/invoices/RecordCustomerRefundButton'
-import { DeleteInvoiceButton } from '@/components/invoices/DeleteInvoiceButton'
 import { ThermalReceipt } from '@/components/invoice/ThermalReceipt'
 import { PrintReceiptButton } from '@/components/invoice/PrintReceiptButton'
 import { format } from 'date-fns'
@@ -69,7 +68,6 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
                     ↩ Return
                   </Link>
                 )}
-                <DeleteInvoiceButton invoiceId={invoice.id} invoiceNo={invoice.invoice_no} />
               </div>
             </div>
           </div>
