@@ -18,12 +18,12 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      try {
-        await createStaffUser(form)
+      const result = await createStaffUser(form)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
         toast.success(`${form.name} added successfully`)
         onClose()
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to create staff')
       }
     })
   }

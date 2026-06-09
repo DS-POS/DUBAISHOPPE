@@ -94,6 +94,26 @@
 - Per-invoice Due suppressed for split orders — group balance is authoritative
 - `customer_refunds` table tracks when store physically refunds customer cash
 
+## Lesson 10: Supabase admin.createUser() fails with UUID-format passwords
+**Date:** 2026-06-09
+**Error:** `unexpected_failure | status=500 | code=unexpected_failure` from `adminClient.auth.admin.createUser()`
+**Root cause:** `${randomUUID()}-${randomUUID()}` as password triggers Supabase internal failure. UUID-format passwords (all lowercase hex + hyphens) are rejected internally — likely fails Supabase password strength/entropy check even via admin API.
+**What was tried (wrong paths):**
+- Dropped `on_auth_user_created` trigger → didn't fix it
+- Removed `user_metadata` → didn't fix it
+- Lowercased email → didn't fix it
+**What fixed it:** Changed password to `randomBytes(24).toString('base64') + 'Aa1!'`
+**Debugging method that found it:** Build a debug API route that tests the EXACT function call parameter-by-parameter in isolation:
+```typescript
+// Test A: fixed password → OK
+// Test B: UUID password → FAIL ← isolated the bug
+// Test C: randomBytes password → OK ← confirmed fix
+```
+**Rule:** For `unexpected_failure` from Supabase auth admin API:
+1. Build debug endpoint that clones the EXACT call with each parameter tested in isolation
+2. Never use UUID strings as passwords — use `randomBytes(24).toString('base64') + 'Aa1!'`
+3. Don't chase triggers/metadata/email before isolating the password variable
+
 ### What Is Actually Remaining (if any)
 - Bug fixes and QA as discovered in real use
 - Any NEW features the user requests beyond original spec

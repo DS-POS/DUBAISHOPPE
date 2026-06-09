@@ -98,6 +98,13 @@ export async function deleteCustomer(id: string): Promise<{ error?: string }> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
+    const { count } = await supabase
+      .from('invoices')
+      .select('id', { count: 'exact', head: true })
+      .eq('customer_id', id)
+    if ((count ?? 0) > 0)
+      return { error: `Cannot delete customer — they have ${count} invoice${count === 1 ? '' : 's'}. Remove invoices first or keep the customer.` }
+
     const { error } = await supabase.from('customers').delete().eq('id', id)
     if (error) return { error: error.message }
     revalidatePath('/customers')

@@ -16,9 +16,11 @@ const STATUS_STYLE: Record<string, string> = {
 
 interface Props {
   initialInvoices: SupplierInvoice[]
+  userRole?: string
 }
 
-export default function SupplierInvoiceList({ initialInvoices }: Props) {
+export default function SupplierInvoiceList({ initialInvoices, userRole }: Props) {
+  const isManager = userRole === 'manager'
   const [invoices, setInvoices] = useState<SupplierInvoice[]>(initialInvoices)
   const [search, setSearch] = useState('')
   const [fromDate, setFromDate] = useState('')
@@ -91,21 +93,26 @@ export default function SupplierInvoiceList({ initialInvoices }: Props) {
         <td className="px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">{format(parseISO(inv.purchase_date), 'dd MMM yyyy')}</td>
         <td className="px-5 py-3.5 text-sm text-right tabular-nums">
           <div className="font-semibold text-slate-900">₹{Number(inv.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-          {balance > 0 && <div className="text-red-500 text-xs">Due: ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>}
+          {!isManager && balance > 0 && <div className="text-red-500 text-xs">Due: ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>}
         </td>
-        <td className="px-5 py-3.5 text-center">
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${STATUS_STYLE[inv.payment_status]}`}>{inv.payment_status}</span>
-        </td>
+        {!isManager && (
+          <td className="px-5 py-3.5 text-center">
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${STATUS_STYLE[inv.payment_status]}`}>{inv.payment_status}</span>
+          </td>
+        )}
+        {isManager && <td />}
         <td className="px-5 py-3.5 text-right">
           <div className="flex items-center justify-end gap-2">
             <Link href={`/stock-in/${inv.id}`} className="text-xs font-medium text-[#4B5563] hover:underline">View →</Link>
-            <button
-              className="text-xs font-medium text-red-400 hover:text-red-600 disabled:opacity-50"
-              disabled={deletingId === inv.id}
-              onClick={() => handleDelete(inv)}
-            >
-              {deletingId === inv.id ? '…' : 'Delete'}
-            </button>
+            {!isManager && (
+              <button
+                className="text-xs font-medium text-red-400 hover:text-red-600 disabled:opacity-50"
+                disabled={deletingId === inv.id}
+                onClick={() => handleDelete(inv)}
+              >
+                {deletingId === inv.id ? '…' : 'Delete'}
+              </button>
+            )}
           </div>
         </td>
       </tr>
@@ -191,10 +198,10 @@ export default function SupplierInvoiceList({ initialInvoices }: Props) {
                         <div className="flex flex-col items-end gap-1 shrink-0">
                           <span className="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">{group.items.length} inv</span>
                           <p className="font-bold text-sm text-slate-900 tabular-nums">₹{groupTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                          {groupDue > 0.005
+                          {!isManager && (groupDue > 0.005
                             ? <span className="text-xs font-bold text-red-600 tabular-nums">Due ₹{groupDue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                             : allPaid ? <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-semibold">All Paid</span> : null
-                          }
+                          )}
                         </div>
                       </div>
                     </div>
@@ -206,11 +213,11 @@ export default function SupplierInvoiceList({ initialInvoices }: Props) {
                           <div className="min-w-0 flex-1">
                             <p className="font-mono text-xs font-semibold text-[#111827] truncate">{inv.purchase_invoice_no ?? '—'}</p>
                             <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.purchase_date), 'dd MMM yyyy')}</p>
-                            {balance > 0.005 && <p className="text-xs font-bold text-red-600 mt-0.5">Due ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
+                            {!isManager && balance > 0.005 && <p className="text-xs font-bold text-red-600 mt-0.5">Due ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0">
                             <p className="font-bold text-sm text-slate-900 tabular-nums">₹{Number(inv.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${STATUS_STYLE[inv.payment_status]}`}>{inv.payment_status}</span>
+                            {!isManager && <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${STATUS_STYLE[inv.payment_status]}`}>{inv.payment_status}</span>}
                             <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-[#111827] underline">View</Link>
                           </div>
                         </div>
@@ -229,11 +236,11 @@ export default function SupplierInvoiceList({ initialInvoices }: Props) {
                       <p className="font-mono text-xs font-semibold text-[#111827] truncate">{inv.purchase_invoice_no ?? '—'}</p>
                       <p className="text-sm font-semibold text-slate-800 mt-0.5 truncate">{inv.supplier_name ?? '—'}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.purchase_date), 'dd MMM yyyy')}</p>
-                      {balance > 0.005 && <p className="text-xs font-bold text-red-600 mt-0.5">Due ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
+                      {!isManager && balance > 0.005 && <p className="text-xs font-bold text-red-600 mt-0.5">Due ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       <p className="font-bold text-sm text-slate-900 tabular-nums">₹{Number(inv.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${STATUS_STYLE[inv.payment_status]}`}>{inv.payment_status}</span>
+                      {!isManager && <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${STATUS_STYLE[inv.payment_status]}`}>{inv.payment_status}</span>}
                       <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-[#111827] underline">View</Link>
                     </div>
                   </div>
@@ -252,7 +259,8 @@ export default function SupplierInvoiceList({ initialInvoices }: Props) {
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Supplier</th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">Date</th>
                   <th className="px-5 py-3.5 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Total</th>
-                  <th className="px-5 py-3.5 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Status</th>
+                  {!isManager && <th className="px-5 py-3.5 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Status</th>}
+                  {isManager && <th />}
                   <th className="px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider"></th>
                 </tr>
               </thead>
@@ -293,15 +301,15 @@ export default function SupplierInvoiceList({ initialInvoices }: Props) {
                           <td className="px-5 py-3" />
                           <td className="px-5 py-3 text-right whitespace-nowrap tabular-nums">
                             <p className="font-semibold text-slate-900">₹{groupTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                            {groupDue > 0.005 && <p className="text-red-500 text-xs">Due: ₹{groupDue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
+                            {!isManager && groupDue > 0.005 && <p className="text-red-500 text-xs">Due: ₹{groupDue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
                           </td>
                           <td className="px-5 py-3 text-center">
-                            {allPaid
+                            {!isManager && (allPaid
                               ? <span className="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-semibold">All Paid</span>
                               : groupDue > 0.005
                                 ? <span className="bg-red-100 text-red-700 text-xs px-2.5 py-1 rounded-full font-semibold">Due</span>
                                 : <span className="bg-yellow-100 text-yellow-700 text-xs px-2.5 py-1 rounded-full font-semibold">Partial</span>
-                            }
+                            )}
                           </td>
                           <td className="px-5 py-3" />
                         </tr>

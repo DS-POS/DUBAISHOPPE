@@ -7,6 +7,7 @@ import { getCustomerRefundsByGroup, getCustomerRefundsByInvoice } from '@/action
 import { InvoiceShareButtons } from '@/components/invoices/InvoiceShareButtons'
 import { RecordPaymentDialog } from '@/components/invoices/RecordPaymentDialog'
 import { RecordCustomerRefundButton } from '@/components/invoices/RecordCustomerRefundButton'
+import { DeleteInvoiceButton } from '@/components/invoices/DeleteInvoiceButton'
 import { ThermalReceipt } from '@/components/invoice/ThermalReceipt'
 import { PrintReceiptButton } from '@/components/invoice/PrintReceiptButton'
 import { format } from 'date-fns'
@@ -59,14 +60,17 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
                   customerPhone={customer?.phone ?? null}
                 />
               </div>
-              {invoice.status !== 'cancelled' && (
-                <Link
-                  href={`/invoices/${invoice.id}/return`}
-                  className="inline-flex items-center gap-1.5 border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  ↩ Return
-                </Link>
-              )}
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {invoice.status !== 'cancelled' && (
+                  <Link
+                    href={`/invoices/${invoice.id}/return`}
+                    className="inline-flex items-center gap-1.5 border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    ↩ Return
+                  </Link>
+                )}
+                <DeleteInvoiceButton invoiceId={invoice.id} invoiceNo={invoice.invoice_no} />
+              </div>
             </div>
           </div>
         </div>

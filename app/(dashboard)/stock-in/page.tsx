@@ -2,8 +2,14 @@ import Link from 'next/link'
 import { getSupplierInvoices } from '@/actions/supplier-invoices'
 import { Button } from '@/components/ui/button'
 import SupplierInvoiceList from '@/components/stock-in/SupplierInvoiceList'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function StockInPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single()
+  const userRole = (profile?.role as string) ?? 'staff'
+
   const invoices = await getSupplierInvoices()
 
   return (
@@ -28,7 +34,7 @@ export default async function StockInPage() {
       {/* Supplier Invoices */}
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-slate-700">Supplier Invoices</h2>
-        <SupplierInvoiceList initialInvoices={invoices} />
+        <SupplierInvoiceList initialInvoices={invoices} userRole={userRole} />
       </div>
     </div>
   )

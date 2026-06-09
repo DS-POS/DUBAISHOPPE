@@ -477,3 +477,60 @@ export async function getDashboardRevenueChart(days = 30): Promise<DailyRevenueP
     return { date: `${day} ${month}`, revenue: Math.round(vals.revenue * 100) / 100, invoices: vals.invoices }
   })
 }
+
+export async function deleteInvoice(id: string): Promise<{ error?: string }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    // Fetch items to restore stock + serials
+    const { data: items } = await supabase
+      .from('invoice_items')
+      .select('product_id, quantity, serial_number')
+      .eq('invoice_id', id)
+
+    // Restore stock for each product
+    for (const item of items ?? []) {
+      if (!item.product_id) continue
+      const { data: prod } = await supabase
+        .from('products')
+        .select('current_stock')
+        .eq('id', item.product_id)
+        .single()
+      if (prod) {
+        await supabase
+          .from('products')
+          .update({ current_stock: prod.current_stock + item.quantity })
+          .eq('id', item.product_id)
+      }
+      // Restore serial status
+      if (item.serial_number) {
+        await supabase
+          .from('product_serials')
+          .update({ status: 'available', invoice_id: null })
+          .eq('product_id', item.product_id)
+          .eq('serial_number', item.serial_number)
+      }
+    }
+
+    // Nullify quotation reference (no cascade on converted_invoice_id)
+    await supabase
+      .from('quotations')
+      .update({ converted_invoice_id: null })
+      .eq('converted_invoice_id', id)
+
+    // Delete sales_returns (may not have cascade)
+    await supabase.from('sales_returns').delete().eq('invoice_id', id)
+
+    // Delete invoice (cascades: invoice_items, invoice_payments, customer_refunds)
+    const { error } = await supabase.from('invoices').delete().eq('id', id)
+    if (error) return { error: error.message }
+
+    revalidatePath('/invoices')
+    revalidatePath('/customers')
+    return {}
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to delete invoice' }
+  }
+}

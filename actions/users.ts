@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import type { Profile, UserRole } from '@/types/database'
 import { requireAdmin } from '@/lib/get-user-role'
-import { randomUUID } from 'crypto'
+import { randomUUID, randomBytes } from 'crypto'
 
 export async function getProfiles(): Promise<Profile[]> {
   const supabase = await createClient()
@@ -31,7 +31,7 @@ export async function updateUserRole(userId: string, role: UserRole): Promise<vo
 
   const { error } = await supabase
     .from('profiles')
-    .update({ role })
+    .update({ role, is_active: true })
     .eq('id', userId)
   if (error) throw new Error(error.message)
 
@@ -94,49 +94,51 @@ export async function createStaffUser(data: {
   email: string
   role: UserRole
   pin: string
-}): Promise<void> {
-  await requireAdmin()
+}): Promise<{ error?: string }> {
+  try {
+    await requireAdmin()
 
-  if (!/^\d{4}$/.test(data.pin)) throw new Error('PIN must be 4 digits')
+    if (!/^\d{4}$/.test(data.pin)) return { error: 'PIN must be 4 digits' }
 
-  const adminClient = createAdminClient()
+    const adminClient = createAdminClient()
+    const randomPassword = randomBytes(24).toString('base64') + 'Aa1!'
 
-  // Generate a strong random password — staff never uses it (PIN + magic link for recovery)
-  const randomPassword = `${randomUUID()}-${randomUUID()}`
-
-  const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
-    email: data.email,
-    password: randomPassword,
-    email_confirm: true,
-    user_metadata: { name: data.name },
-  })
-
-  if (authError || !authData.user) {
-    throw new Error(authError?.message ?? 'Failed to create auth user')
-  }
-
-  const userId = authData.user.id
-
-  const bcrypt = await import('bcryptjs')
-  const pin_hash = await bcrypt.hash(data.pin, 10)
-
-  const { error: profileError } = await adminClient
-    .from('profiles')
-    .upsert({
-      id: userId,
-      name: data.name,
-      email: data.email,
-      role: data.role,
-      is_active: true,
-      pin_hash,
+    const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
+      email: data.email.toLowerCase().trim(),
+      password: randomPassword,
+      email_confirm: true,
     })
 
-  if (profileError) {
-    await adminClient.auth.admin.deleteUser(userId)
-    throw new Error(profileError.message)
-  }
+    if (authError || !authData.user) {
+      return { error: `[auth] ${authError?.message ?? 'Failed to create auth user'} | status=${authError?.status} code=${(authError as unknown as Record<string, unknown>)?.code ?? 'none'}` }
+    }
 
-  revalidatePath('/settings/users')
+    const userId = authData.user.id
+
+    const bcrypt = await import('bcryptjs')
+    const pin_hash = await bcrypt.hash(data.pin, 10)
+
+    const { error: profileError } = await adminClient
+      .from('profiles')
+      .upsert({
+        id: userId,
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        is_active: true,
+        pin_hash,
+      })
+
+    if (profileError) {
+      await adminClient.auth.admin.deleteUser(userId)
+      return { error: `[profile] ${profileError.message}` }
+    }
+
+    revalidatePath('/settings/users')
+    return {}
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to create staff' }
+  }
 }
 
 export async function resetStaffPin(userId: string, newPin: string): Promise<void> {
