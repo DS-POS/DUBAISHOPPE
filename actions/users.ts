@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import type { Profile, UserRole } from '@/types/database'
 import { requireAdmin } from '@/lib/get-user-role'
+import { randomUUID } from 'crypto'
 
 export async function getProfiles(): Promise<Profile[]> {
   const supabase = await createClient()
@@ -101,7 +102,7 @@ export async function createStaffUser(data: {
   const adminClient = createAdminClient()
 
   // Generate a strong random password — staff never uses it (PIN + magic link for recovery)
-  const randomPassword = `${crypto.randomUUID()}-${crypto.randomUUID()}`
+  const randomPassword = `${randomUUID()}-${randomUUID()}`
 
   const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
     email: data.email,
