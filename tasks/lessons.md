@@ -114,6 +114,29 @@
 2. Never use UUID strings as passwords — use `randomBytes(24).toString('base64') + 'Aa1!'`
 3. Don't chase triggers/metadata/email before isolating the password variable
 
+## Lesson 11: invoices.created_by FK must reference auth.users, not public.users
+**Date:** 2026-06-10
+**Error:** `createInvoice` server action fails silently in production. Next.js strips real error message → generic "An error occurred in the Server Components render" shown as Sonner toast.
+**Root cause:** Migration 001 created `invoices.created_by REFERENCES public.users(id)` and `stock_history.created_by REFERENCES public.users(id)`. But admin user may have been created in Supabase BEFORE migration 001 ran → admin exists in `auth.users` + `profiles` but NOT in `public.users`. FK violation on invoice insert.
+**What fixed it:** Run this SQL to fix FK constraints + backfill missing users:
+```sql
+ALTER TABLE public.invoices DROP CONSTRAINT IF EXISTS invoices_created_by_fkey;
+ALTER TABLE public.invoices ADD CONSTRAINT invoices_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+ALTER TABLE public.stock_history DROP CONSTRAINT IF EXISTS stock_history_created_by_fkey;
+ALTER TABLE public.stock_history ADD CONSTRAINT stock_history_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+ALTER TABLE public.stock_in DROP CONSTRAINT IF EXISTS stock_in_created_by_fkey;
+ALTER TABLE public.stock_in ADD CONSTRAINT stock_in_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+INSERT INTO public.users (id, email, name, role)
+SELECT au.id, au.email, COALESCE(au.raw_user_meta_data->>'name', split_part(au.email, '@', 1)), 'staff'
+FROM auth.users au LEFT JOIN public.users pu ON pu.id = au.id
+WHERE pu.id IS NULL ON CONFLICT (id) DO NOTHING;
+```
+**Rule:** Any `created_by` column that stores `auth.uid()` must reference `auth.users(id)`, NOT `public.users(id)`. Public.users is an auxiliary mirror — it can lag. Auth.users is the source of truth for authentication.
+**Debugging note:** Production Next.js strips real server action errors. When user sees generic error on button click, check Vercel logs OR temporarily add `console.error(err)` in server action + check Vercel Function logs to see actual DB error.
+
 ### What Is Actually Remaining (if any)
 - Bug fixes and QA as discovered in real use
 - Any NEW features the user requests beyond original spec

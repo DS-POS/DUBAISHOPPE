@@ -105,6 +105,9 @@ export async function deleteCustomer(id: string): Promise<{ error?: string }> {
     if ((count ?? 0) > 0)
       return { error: `Cannot delete customer — they have ${count} invoice${count === 1 ? '' : 's'}. Remove invoices first or keep the customer.` }
 
+    // Delete quotations linked to this customer before deleting customer
+    await supabase.from('quotations').delete().eq('customer_id', id)
+
     const { error } = await supabase.from('customers').delete().eq('id', id)
     if (error) return { error: error.message }
     revalidatePath('/customers')

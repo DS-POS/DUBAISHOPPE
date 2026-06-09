@@ -111,7 +111,7 @@ export default function Sidebar({ userRole }: { userRole: string }) {
   return (
     <>
       {/* Desktop sidebar */}
-      <div className="hidden md:block fixed top-0 left-0 bottom-0 w-60 z-30">
+      <div className="hidden md:block fixed top-0 left-0 bottom-0 w-56 z-30">
         <SidebarContent />
       </div>
 

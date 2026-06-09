@@ -98,7 +98,11 @@ export default function InvoiceList({ initialInvoices }: Props) {
       }
       map.get(key)!.invoices.push(inv)
     }
-    return Array.from(map.values()).sort((a, b) => b.invoices.length - a.invoices.length)
+    return Array.from(map.values()).sort((a, b) => {
+      const latestA = Math.max(...a.invoices.map(i => new Date(i.created_at).getTime()))
+      const latestB = Math.max(...b.invoices.map(i => new Date(i.created_at).getTime()))
+      return latestB - latestA
+    })
   }, [filtered, groupByCustomer])
 
   function clearFilters() {
@@ -169,7 +173,8 @@ export default function InvoiceList({ initialInvoices }: Props) {
           {inv.customers?.phone && <p className="text-xs text-slate-400 mt-0.5">{inv.customers.phone}</p>}
         </td>
         <td className="px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">
-          {format(parseISO(inv.created_at), 'dd MMM yyyy')}
+          <p>{format(parseISO(inv.created_at), 'dd MMM yyyy')}</p>
+          <p className="text-xs text-slate-400">{format(parseISO(inv.created_at), 'hh:mm a')}</p>
         </td>
         <td className="px-5 py-3.5 text-sm">
           {inv.payment_method === 'insurance' ? (
@@ -391,7 +396,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-bold text-[#111827] hover:underline">{inv.invoice_no}</Link>
-                              <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.created_at), 'dd MMM yyyy')}</p>
+                              <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.created_at), 'dd MMM yyyy, hh:mm a')}</p>
                               {inv.payment_method && (
                                 <span className="text-xs text-slate-400 capitalize">{inv.payment_method}</span>
                               )}
@@ -417,7 +422,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
                       <div className="min-w-0 flex-1">
                         <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-bold text-[#111827] hover:underline">{inv.invoice_no}</Link>
                         <p className="text-sm font-semibold text-slate-800 mt-0.5 truncate">{inv.customers?.name ?? 'Walk-in'}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.created_at), 'dd MMM yyyy')}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.created_at), 'dd MMM yyyy, hh:mm a')}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <p className="font-bold text-sm text-slate-900 tabular-nums">₹{inv.grand_total.toFixed(2)}</p>
