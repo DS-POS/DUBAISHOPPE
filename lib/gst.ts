@@ -15,9 +15,11 @@ export interface GSTCalculated {
   total: number
 }
 
+// rate is the per-unit price INCLUDING GST (what customer pays).
+// Back-calculate taxable value: taxable = (rate × qty - discount) / (1 + gst_rate/100)
 export function calculateLineGST(item: GSTLineItem, customerState: string): GSTCalculated {
-  const gross = item.rate * item.quantity
-  const net = gross - item.discount
+  const gross = item.rate * item.quantity  // incl-GST gross
+  const net = gross - item.discount        // incl-GST net after discount
 
   if (item.is_taxable === false) {
     return {
@@ -31,7 +33,10 @@ export function calculateLineGST(item: GSTLineItem, customerState: string): GSTC
   }
 
   const isIntraState = customerState.toLowerCase() === 'telangana'
-  const gst_amount = net * (item.gst_rate / 100)
+  // Back-calculate taxable base from incl-GST price
+  const divisor = 1 + item.gst_rate / 100
+  const taxable_amount = net / divisor
+  const gst_amount = net - taxable_amount
   let cgst = 0, sgst = 0, igst = 0
   if (isIntraState) {
     cgst = gst_amount / 2
@@ -40,12 +45,12 @@ export function calculateLineGST(item: GSTLineItem, customerState: string): GSTC
     igst = gst_amount
   }
   return {
-    taxable_amount: round2(net),
+    taxable_amount: round2(taxable_amount),
     cgst: round2(cgst),
     sgst: round2(sgst),
     igst: round2(igst),
     total_gst: round2(gst_amount),
-    total: round2(net + gst_amount),
+    total: round2(net),
   }
 }
 

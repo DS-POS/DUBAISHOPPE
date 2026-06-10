@@ -240,7 +240,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Product</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Qty</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Rate</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Rate (incl.GST)</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Disc.</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">GST%</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Total</th>
