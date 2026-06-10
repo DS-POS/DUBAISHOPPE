@@ -47,59 +47,59 @@ export default async function DashboardPage() {
   const statCards = (
     <div className={`grid gap-2 md:gap-4 ${isManager ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-5'}`}>
       {!isManager && (
-        <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-slate-200 shadow-sm card-hover">
-          <div className="inline-flex items-center justify-center bg-[#111827] text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
+        <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-5 ring-1 ring-slate-200/80 shadow-sm card-hover">
+          <div className="inline-flex items-center justify-center icon-gradient-blue text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
             <ShoppingCart className="size-3.5 md:size-4" />
           </div>
-          <p className="text-[10px] md:text-xs font-medium text-slate-500 uppercase tracking-wider">Today&apos;s Sales</p>
-          <p className="text-base md:text-2xl font-bold text-slate-900 mt-1 md:mt-2 truncate">₹{formatINR(stats.todayRevenue)}</p>
+          <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Today&apos;s Sales</p>
+          <p className="text-base md:text-2xl font-black text-slate-900 mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(stats.todayRevenue)}</p>
           <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">{stats.todayCount} {stats.todayCount === 1 ? 'invoice' : 'invoices'}</p>
-          <Link href="/invoices" className="text-[10px] md:text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
+          <Link href="/invoices" className="text-[10px] md:text-xs font-semibold text-blue-600 hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
         </div>
       )}
 
       {!isManager && (
-        <div className="bg-[#111827] rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-[#1F2937] shadow-sm card-hover">
+        <div className="rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm card-hover" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)', boxShadow: '0 4px 16px -4px rgba(15,23,42,0.4)' }}>
           <div className="inline-flex items-center justify-center bg-white/10 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
             <TrendingUp className="size-3.5 md:size-4" />
           </div>
-          <p className="text-[10px] md:text-xs font-medium text-slate-400 uppercase tracking-wider">Total Revenue</p>
-          <p className="text-base md:text-2xl font-bold text-white mt-1 md:mt-2 truncate">₹{formatINR(stats.totalRevenue)}</p>
-          <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1 truncate">₹{formatINR(stats.totalPaid)} paid</p>
-          <Link href="/invoices" className="text-[10px] md:text-xs font-medium text-slate-400 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
+          <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</p>
+          <p className="text-base md:text-2xl font-black text-white mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(stats.totalRevenue)}</p>
+          <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1 truncate tabular-nums">₹{formatINR(stats.totalPaid)} paid</p>
+          <Link href="/invoices" className="text-[10px] md:text-xs font-semibold text-slate-300 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
         </div>
       )}
 
-      <div className="bg-rose-50 rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-rose-100 shadow-sm card-hover">
-        <div className="inline-flex items-center justify-center bg-rose-600 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
+      <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-5 ring-1 ring-red-100 shadow-sm card-hover">
+        <div className="inline-flex items-center justify-center icon-gradient-red text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
           <AlertCircle className="size-3.5 md:size-4" />
         </div>
-        <p className="text-[10px] md:text-xs font-medium text-slate-500 uppercase tracking-wider">Customer Dues</p>
-        <p className="text-base md:text-2xl font-bold text-slate-900 mt-1 md:mt-2 truncate">₹{formatINR(stats.totalDue)}</p>
+        <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Customer Dues</p>
+        <p className="text-base md:text-2xl font-black text-slate-900 mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(stats.totalDue)}</p>
         <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">{stats.dueCount} pending</p>
-        <Link href="/invoices?status=pending" className="text-[10px] md:text-xs font-medium text-rose-600 hover:underline mt-2 md:mt-3 inline-block transition-colors">Collect →</Link>
+        <Link href="/invoices?status=pending" className="text-[10px] md:text-xs font-semibold text-red-600 hover:underline mt-2 md:mt-3 inline-block transition-colors">Collect →</Link>
       </div>
 
       {!isManager && (
-        <div className="bg-[#1F2937] rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-[#374151] shadow-sm card-hover">
+        <div className="rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm card-hover" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', boxShadow: '0 4px 16px -4px rgba(30,41,59,0.35)' }}>
           <div className="inline-flex items-center justify-center bg-white/10 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
             <Truck className="size-3.5 md:size-4" />
           </div>
-          <p className="text-[10px] md:text-xs font-medium text-slate-400 uppercase tracking-wider">Supplier Dues</p>
-          <p className="text-base md:text-2xl font-bold text-white mt-1 md:mt-2 truncate">₹{formatINR(supplierDueStats.totalDue)}</p>
+          <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Supplier Dues</p>
+          <p className="text-base md:text-2xl font-black text-white mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(supplierDueStats.totalDue)}</p>
           <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1">{supplierDueStats.dueCount} unpaid</p>
-          <Link href="/stock-in" className="text-[10px] md:text-xs font-medium text-slate-400 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">Pay →</Link>
+          <Link href="/stock-in" className="text-[10px] md:text-xs font-semibold text-slate-300 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">Pay →</Link>
         </div>
       )}
 
-      <div className={`bg-white rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-slate-200 shadow-sm card-hover ${isManager ? '' : 'col-span-2 lg:col-span-1'}`}>
-        <div className="inline-flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
+      <div className={`bg-white rounded-xl md:rounded-2xl p-3 md:p-5 ring-1 ring-slate-200/80 shadow-sm card-hover ${isManager ? '' : 'col-span-2 lg:col-span-1'}`}>
+        <div className="inline-flex items-center justify-center icon-gradient-dark text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
           <FileText className="size-3.5 md:size-4" />
         </div>
-        <p className="text-[10px] md:text-xs font-medium text-slate-500 uppercase tracking-wider">Total Invoices</p>
-        <p className="text-base md:text-2xl font-bold text-slate-900 mt-1 md:mt-2">{stats.totalInvoices}</p>
+        <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Invoices</p>
+        <p className="text-base md:text-2xl font-black text-slate-900 mt-1 md:mt-2 tabular-nums">{stats.totalInvoices}</p>
         <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">All time</p>
-        <Link href="/invoices" className="text-[10px] md:text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:underline mt-2 md:mt-3 inline-block transition-colors">View all →</Link>
+        <Link href="/invoices" className="text-[10px] md:text-xs font-semibold text-slate-600 hover:text-slate-900 hover:underline mt-2 md:mt-3 inline-block transition-colors">View all →</Link>
       </div>
     </div>
   )

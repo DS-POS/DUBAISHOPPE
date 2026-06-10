@@ -28,6 +28,10 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        heading: ['Rubik', 'Nunito Sans', 'sans-serif'],
+        body: ['Nunito Sans', 'Inter', 'sans-serif'],
+      },
       keyframes: {
         shake: {
           '0%, 100%': { transform: 'translateX(0)' },
@@ -36,9 +40,29 @@ const config: Config = {
           '60%': { transform: 'translateX(-4px)' },
           '80%': { transform: 'translateX(4px)' },
         },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(4px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        statusPulse: {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.6', transform: 'scale(0.85)' },
+        },
       },
       animation: {
         shake: 'shake 0.5s ease-in-out',
+        'fade-in': 'fadeIn 0.3s ease-out both',
+        'slide-up': 'slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+        'scale-in': 'scaleIn 0.2s ease-out both',
+        'status-pulse': 'statusPulse 2s ease-in-out infinite',
       },
     },
   },
