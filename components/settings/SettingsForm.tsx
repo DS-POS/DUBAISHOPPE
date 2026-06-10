@@ -89,9 +89,9 @@ function BankAccountCard({
 }
 
 export default function SettingsForm({ initialSettings }: SettingsFormProps) {
-  const [openBank, setOpenBank] = useState(true)
-  const [openTerms, setOpenTerms] = useState(true)
-  const [openStamp, setOpenStamp] = useState(true)
+  const [openBank, setOpenBank] = useState(false)
+  const [openTerms, setOpenTerms] = useState(false)
+  const [openStamp, setOpenStamp] = useState(false)
 
   const [banks, setBanks] = useState<BankAccount[]>(
     initialSettings.bank_accounts.length > 0
