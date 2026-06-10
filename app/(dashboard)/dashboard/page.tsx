@@ -10,6 +10,7 @@ import {
   CalendarIcon,
   ClockIcon,
 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 import { getInvoiceStats, getRecentDueInvoices, getDashboardRevenueChart } from '@/actions/invoices'
 import { getSupplierDueStats, getRecentDueSupplierInvoices } from '@/actions/supplier-invoices'
 import { getStoreLoanStats } from '@/actions/store-loans'
@@ -27,36 +28,47 @@ function formatINR(amount: number) {
 }
 
 export default async function DashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = user
+    ? await supabase.from('profiles').select('role').eq('id', user.id).single()
+    : { data: null }
+  const isManager = profile?.role === 'manager'
+
   const [stats, dueInvoices, supplierDueStats, dueSupplierInvoices, chartData, loanStats] = await Promise.all([
     getInvoiceStats(),
     getRecentDueInvoices(),
-    getSupplierDueStats(),
-    getRecentDueSupplierInvoices(),
-    getDashboardRevenueChart(30),
+    isManager ? Promise.resolve({ totalDue: 0, dueCount: 0 }) : getSupplierDueStats(),
+    isManager ? Promise.resolve([]) : getRecentDueSupplierInvoices(),
+    isManager ? Promise.resolve([]) : getDashboardRevenueChart(30),
     getStoreLoanStats(),
   ])
 
   const statCards = (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4">
-      <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-slate-200 shadow-sm card-hover">
-        <div className="inline-flex items-center justify-center bg-[#111827] text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
-          <ShoppingCart className="size-3.5 md:size-4" />
+    <div className={`grid gap-2 md:gap-4 ${isManager ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-5'}`}>
+      {!isManager && (
+        <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-slate-200 shadow-sm card-hover">
+          <div className="inline-flex items-center justify-center bg-[#111827] text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
+            <ShoppingCart className="size-3.5 md:size-4" />
+          </div>
+          <p className="text-[10px] md:text-xs font-medium text-slate-500 uppercase tracking-wider">Today&apos;s Sales</p>
+          <p className="text-base md:text-2xl font-bold text-slate-900 mt-1 md:mt-2 truncate">₹{formatINR(stats.todayRevenue)}</p>
+          <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">{stats.todayCount} {stats.todayCount === 1 ? 'invoice' : 'invoices'}</p>
+          <Link href="/invoices" className="text-[10px] md:text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
         </div>
-        <p className="text-[10px] md:text-xs font-medium text-slate-500 uppercase tracking-wider">Today&apos;s Sales</p>
-        <p className="text-base md:text-2xl font-bold text-slate-900 mt-1 md:mt-2 truncate">₹{formatINR(stats.todayRevenue)}</p>
-        <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">{stats.todayCount} {stats.todayCount === 1 ? 'invoice' : 'invoices'}</p>
-        <Link href="/invoices" className="text-[10px] md:text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
-      </div>
+      )}
 
-      <div className="bg-[#111827] rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-[#1F2937] shadow-sm card-hover">
-        <div className="inline-flex items-center justify-center bg-white/10 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
-          <TrendingUp className="size-3.5 md:size-4" />
+      {!isManager && (
+        <div className="bg-[#111827] rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-[#1F2937] shadow-sm card-hover">
+          <div className="inline-flex items-center justify-center bg-white/10 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
+            <TrendingUp className="size-3.5 md:size-4" />
+          </div>
+          <p className="text-[10px] md:text-xs font-medium text-slate-400 uppercase tracking-wider">Total Revenue</p>
+          <p className="text-base md:text-2xl font-bold text-white mt-1 md:mt-2 truncate">₹{formatINR(stats.totalRevenue)}</p>
+          <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1 truncate">₹{formatINR(stats.totalPaid)} paid</p>
+          <Link href="/invoices" className="text-[10px] md:text-xs font-medium text-slate-400 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
         </div>
-        <p className="text-[10px] md:text-xs font-medium text-slate-400 uppercase tracking-wider">Total Revenue</p>
-        <p className="text-base md:text-2xl font-bold text-white mt-1 md:mt-2 truncate">₹{formatINR(stats.totalRevenue)}</p>
-        <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1 truncate">₹{formatINR(stats.totalPaid)} paid</p>
-        <Link href="/invoices" className="text-[10px] md:text-xs font-medium text-slate-400 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
-      </div>
+      )}
 
       <div className="bg-rose-50 rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-rose-100 shadow-sm card-hover">
         <div className="inline-flex items-center justify-center bg-rose-600 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
@@ -68,17 +80,19 @@ export default async function DashboardPage() {
         <Link href="/invoices?status=pending" className="text-[10px] md:text-xs font-medium text-rose-600 hover:underline mt-2 md:mt-3 inline-block transition-colors">Collect →</Link>
       </div>
 
-      <div className="bg-[#1F2937] rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-[#374151] shadow-sm card-hover">
-        <div className="inline-flex items-center justify-center bg-white/10 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
-          <Truck className="size-3.5 md:size-4" />
+      {!isManager && (
+        <div className="bg-[#1F2937] rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-[#374151] shadow-sm card-hover">
+          <div className="inline-flex items-center justify-center bg-white/10 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
+            <Truck className="size-3.5 md:size-4" />
+          </div>
+          <p className="text-[10px] md:text-xs font-medium text-slate-400 uppercase tracking-wider">Supplier Dues</p>
+          <p className="text-base md:text-2xl font-bold text-white mt-1 md:mt-2 truncate">₹{formatINR(supplierDueStats.totalDue)}</p>
+          <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1">{supplierDueStats.dueCount} unpaid</p>
+          <Link href="/stock-in" className="text-[10px] md:text-xs font-medium text-slate-400 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">Pay →</Link>
         </div>
-        <p className="text-[10px] md:text-xs font-medium text-slate-400 uppercase tracking-wider">Supplier Dues</p>
-        <p className="text-base md:text-2xl font-bold text-white mt-1 md:mt-2 truncate">₹{formatINR(supplierDueStats.totalDue)}</p>
-        <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1">{supplierDueStats.dueCount} unpaid</p>
-        <Link href="/stock-in" className="text-[10px] md:text-xs font-medium text-slate-400 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">Pay →</Link>
-      </div>
+      )}
 
-      <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-slate-200 shadow-sm card-hover col-span-2 lg:col-span-1">
+      <div className={`bg-white rounded-xl md:rounded-2xl p-3 md:p-6 ring-1 ring-slate-200 shadow-sm card-hover ${isManager ? '' : 'col-span-2 lg:col-span-1'}`}>
         <div className="inline-flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
           <FileText className="size-3.5 md:size-4" />
         </div>
@@ -284,17 +298,17 @@ export default async function DashboardPage() {
         statCards={statCards}
         invoiceQuick={invoiceQuick}
         storeLoans={<StoreLoansWidget stats={loanStats} />}
-        revenueChart={
+        revenueChart={isManager ? null : (
           <RevenueChart
             data={chartData}
             totalRevenue={chartData.reduce((s, d) => s + d.revenue, 0)}
             days={30}
           />
-        }
+        )}
         lowStock={<LowStockWidget />}
         expenses={<ExpensesWidget />}
         customerDues={customerDues}
-        supplierPayments={supplierPayments}
+        supplierPayments={isManager ? null : supplierPayments}
         labelsQuick={<LabelsQuickWidget />}
         customersQuick={<CustomersQuickWidget />}
         suppliersQuick={<SuppliersQuickWidget />}
