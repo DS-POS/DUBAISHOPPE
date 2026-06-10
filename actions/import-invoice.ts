@@ -41,6 +41,17 @@ export async function importSupplierInvoice(payload: ImportInvoicePayload): Prom
 
     if (item.action === 'use_existing' && item.product_id) {
       productIdMap.set(i, item.product_id)
+      // Update cost_price, selling_price, and gst_rate for existing product
+      if (item.selling_price != null) {
+        await supabase
+          .from('products')
+          .update({
+            cost_price: item.unit_price,
+            selling_price: item.selling_price,
+            gst_rate: item.new_product_gst_rate,
+          })
+          .eq('id', item.product_id)
+      }
       continue
     }
 
@@ -69,14 +80,6 @@ export async function importSupplierInvoice(payload: ImportInvoicePayload): Prom
 
       if (productError) throw new Error(`Failed to create product "${item.new_product_name}": ${productError.message}`)
       productIdMap.set(i, newProduct.id)
-    }
-
-    // update selling_price (and cost_price) for existing products
-    if (item.action === 'use_existing' && item.product_id && item.selling_price != null) {
-      await supabase
-        .from('products')
-        .update({ selling_price: item.selling_price, cost_price: item.unit_price })
-        .eq('id', item.product_id)
     }
   }
 
