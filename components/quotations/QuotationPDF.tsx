@@ -82,7 +82,7 @@ const s = StyleSheet.create({
   headerDividerV: { width: 0.5, backgroundColor: BORDER, marginHorizontal: 10, alignSelf: 'stretch' },
   storeCol: { flex: 1.1, paddingVertical: 2 },
   storeName: { fontSize: 12, fontFamily: 'SegoeUI', fontWeight: 'bold', color: DARK },
-  storeTagline: { fontSize: 7, color: MUTED, marginTop: 1 },
+  storeTagline: { fontSize: 7, color: MUTED, marginTop: 1, marginBottom: 4, fontFamily: 'SegoeUI', fontWeight: 'bold' },
   storeDetail: { fontSize: 7.5, color: BODY, marginTop: 2 },
   gstnBadge: {
     backgroundColor: BG_MID, borderWidth: 0.5, borderColor: BORDER,
@@ -240,7 +240,7 @@ export function QuotationPDF({ quotation, items, customer, bankAccount, termsCon
           <View style={s.headerDividerV} />
           <View style={s.storeCol}>
             <Text style={s.storeName}>{STORE.name}</Text>
-            <Text style={s.storeTagline}>A Professional Camera Store</Text>
+            <Text style={s.storeTagline}>GEAR FOR PHOTO, VIDEO & CREATIVE PROFESSIONALS</Text>
             <Text style={s.storeDetail}>{STORE.address}</Text>
             <Text style={s.storeDetail}>{STORE.city}</Text>
             <Text style={s.storeDetail}>Ph: {STORE.phone}</Text>

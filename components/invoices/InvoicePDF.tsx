@@ -67,7 +67,7 @@ const s = StyleSheet.create({
   logoClip: { width: 110, height: 72, overflow: 'hidden', backgroundColor: '#ffffff' },
   headerDividerV: { width: 1, backgroundColor: '#D1D5DB', marginHorizontal: 12, alignSelf: 'stretch' },
   storeName: { fontSize: 14, fontFamily: 'SegoeUI', fontWeight: 'bold', color: DARK_GREEN },
-  storeTagline: { fontSize: 7, color: '#64748b', marginTop: 1 },
+  storeTagline: { fontSize: 7, color: '#64748b', marginTop: 1, marginBottom: 4, fontFamily: 'SegoeUI', fontWeight: 'bold' },
   storeDetail: { fontSize: 8, color: '#374151', marginTop: 2 },
   invoiceTitle: { fontSize: 20, fontFamily: 'SegoeUI', fontWeight: 'bold', color: GREEN, textAlign: 'right' },
   invoiceDetail: { fontSize: 8, color: '#64748b', textAlign: 'right', marginTop: 2 },
