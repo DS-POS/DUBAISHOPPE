@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { AddStaffDialog } from './AddStaffDialog'
@@ -12,7 +12,7 @@ export function AddStaffButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#111827] text-white text-sm font-semibold hover:bg-[#1F2937] transition-colors"
+        className="flex items-center gap-2 h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors"
       >
         <UserPlusIcon className="size-4" />
         Add Staff

@@ -1,4 +1,4 @@
-import { getPayablesAging } from '@/actions/supplier-invoices'
+﻿import { getPayablesAging } from '@/actions/supplier-invoices'
 import Link from 'next/link'
 
 const fmt = (n: number) => n > 0 ? `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '—'
@@ -39,7 +39,7 @@ export default async function PayablesPage() {
                 </div>
                 {row.supplier_id && (
                   <div className="mt-1.5">
-                    <Link href={`/suppliers/${row.supplier_id}/ledger`} className="text-xs font-semibold text-[#111827] underline">Ledger →</Link>
+                    <Link href={`/suppliers/${row.supplier_id}/ledger`} className="text-xs font-semibold text-slate-900 underline">Ledger →</Link>
                   </div>
                 )}
               </div>
@@ -52,7 +52,7 @@ export default async function PayablesPage() {
           {/* Desktop: full table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#111827]">
+              <thead className="bg-slate-900">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Supplier</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">0–30</th>
@@ -72,7 +72,7 @@ export default async function PayablesPage() {
                     <td className="px-4 py-3 text-right text-orange-600 font-medium">{fmt(row.days_61_90)}</td>
                     <td className="px-4 py-3 text-right text-red-600 font-medium">{fmt(row.over_90)}</td>
                     <td className="px-4 py-3 text-right font-bold text-slate-900">{fmt(row.total_due)}</td>
-                    <td className="px-4 py-3">{row.supplier_id && <Link href={`/suppliers/${row.supplier_id}/ledger`} className="text-xs text-[#111827] font-medium hover:underline">Ledger →</Link>}</td>
+                    <td className="px-4 py-3">{row.supplier_id && <Link href={`/suppliers/${row.supplier_id}/ledger`} className="text-xs text-slate-900 font-medium hover:underline">Ledger →</Link>}</td>
                   </tr>
                 ))}
                 <tr className="bg-slate-50 font-bold">

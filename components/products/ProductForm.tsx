@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React, { useRef, useState, useTransition } from 'react'
 import { useForm, type Resolver } from 'react-hook-form'
@@ -240,7 +240,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Basic Info */}
       <Card className="p-6">
-        <h2 className="text-base font-semibold text-[#0F172A] mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
+        <h2 className="text-base font-semibold text-slate-950 mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
           Basic Information
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -382,7 +382,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
                   <Button
                     type="button"
                     size="sm"
-                    className="bg-[#111827] text-white hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200"
+                    className="bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] transition-all duration-200"
                     onClick={handleAddCategory}
                     disabled={isAddingCategory}
                   >
@@ -405,7 +405,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
 
       {/* Pricing */}
       <Card className="p-6">
-        <h2 className="text-base font-semibold text-[#0F172A] mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
+        <h2 className="text-base font-semibold text-slate-950 mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
           Pricing &amp; Tax
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -469,7 +469,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
 
       {/* Inventory */}
       <Card className="p-6">
-        <h2 className="text-base font-semibold text-[#0F172A] mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
+        <h2 className="text-base font-semibold text-slate-950 mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
           Inventory &amp; Status
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -521,13 +521,13 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
 
       {/* Image Upload */}
       <Card className="p-6">
-        <h2 className="text-base font-semibold text-[#0F172A] mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
+        <h2 className="text-base font-semibold text-slate-950 mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
           Product Image
         </h2>
         <div className="flex flex-col sm:flex-row gap-4 items-start">
           {/* Preview */}
           <div
-            className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-slate-50 shrink-0 overflow-hidden cursor-pointer hover:border-[#111827] transition-colors"
+            className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-slate-50 shrink-0 overflow-hidden cursor-pointer hover:border-slate-900 transition-colors"
             onClick={() => fileInputRef.current?.click()}
           >
             {imageUrl ? (
@@ -584,7 +584,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
       {/* Barcode Preview */}
       {barcodePreview && (
         <Card className="p-6">
-          <h2 className="text-base font-semibold text-[#0F172A] mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
+          <h2 className="text-base font-semibold text-slate-950 mb-4" style={{ fontFamily: 'Rubik, sans-serif' }}>
             Barcode Preview
           </h2>
           <div className="flex justify-center">
@@ -603,7 +603,7 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
         <Button
           type="submit"
           disabled={isPending || imageUploading}
-          className="bg-[#111827] text-white hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 min-w-[120px]"
+          className="bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 min-w-[120px]"
         >
           {isPending ? (
             <><Loader2Icon className="size-4 animate-spin mr-2" /> Saving...</>

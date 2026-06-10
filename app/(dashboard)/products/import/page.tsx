@@ -1,4 +1,4 @@
-import { getProducts } from '@/actions/products'
+﻿import { getProducts } from '@/actions/products'
 import { ProductBulkImport } from '@/components/products/ProductBulkImport'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,7 @@ export default async function ImportProductsPage() {
     <div className="space-y-6">
       <div>
         <h1
-          className="text-2xl font-bold text-[#111827]"
+          className="text-2xl font-bold text-slate-900"
           style={{ fontFamily: 'Rubik, sans-serif' }}
         >
           Import Products

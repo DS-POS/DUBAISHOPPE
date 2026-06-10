@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -73,7 +73,7 @@ export default function CheckoutPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-[#0F172A]" style={{ fontFamily: 'Rubik, sans-serif' }}>
+        <h1 className="text-2xl font-bold text-slate-950" style={{ fontFamily: 'Rubik, sans-serif' }}>
           Checkout
         </h1>
         <p className="text-slate-500 text-sm mt-1">Review cart, enter customer details and confirm payment</p>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition, useRef } from 'react'
 import { toast } from 'sonner'
@@ -31,13 +31,13 @@ function BankAccountCard({
     onChange(index, field, e.target.value)
 
   return (
-    <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-[#E5E7EB] hover:bg-[#D1D5DB] transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-200 hover:bg-slate-300 transition-colors"
       >
-        <span className="text-sm font-semibold text-[#111827]">
+        <span className="text-sm font-semibold text-slate-900">
           Account {index + 1}{account.bank_name ? ` — ${account.bank_name}` : ''}
         </span>
         <div className="flex items-center gap-2">
@@ -52,7 +52,7 @@ function BankAccountCard({
               <Trash2 className="w-3.5 h-3.5" />
             </span>
           )}
-          {open ? <ChevronUp className="w-4 h-4 text-[#4B5563]" /> : <ChevronDown className="w-4 h-4 text-[#4B5563]" />}
+          {open ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
         </div>
       </button>
       {open && (
@@ -64,22 +64,22 @@ function BankAccountCard({
             ['ifsc', 'IFSC Code', 'e.g. ICIC0006650'],
           ] as [keyof BankAccount, string, string][]).map(([key, label, placeholder]) => (
             <div key={key} className="space-y-1">
-              <Label className="text-[#111827] text-xs">{label}</Label>
+              <Label className="text-slate-900 text-xs">{label}</Label>
               <Input
                 value={account[key]}
                 onChange={f(key)}
                 placeholder={placeholder}
-                className="border-[#E5E7EB] bg-white focus-visible:ring-[#111827]/20 h-9 text-sm"
+                className="border-slate-200 bg-white focus-visible:ring-slate-900/20 h-9 text-sm"
               />
             </div>
           ))}
           <div className="space-y-1 sm:col-span-2">
-            <Label className="text-[#111827] text-xs">Branch</Label>
+            <Label className="text-slate-900 text-xs">Branch</Label>
             <Input
               value={account.branch}
               onChange={f('branch')}
               placeholder="e.g. Siddiambar Bazar, Hyderabad"
-              className="border-[#E5E7EB] bg-white focus-visible:ring-[#111827]/20 h-9 text-sm"
+              className="border-slate-200 bg-white focus-visible:ring-slate-900/20 h-9 text-sm"
             />
           </div>
         </div>
@@ -170,16 +170,16 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
     <div className="space-y-6 max-w-3xl">
 
       {/* Bank Details */}
-      <Card className="border border-[#E5E7EB] bg-[#F3F4F6]">
+      <Card className="border border-slate-200 bg-slate-100">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-semibold text-[#111827]" style={{ fontFamily: 'Rubik, sans-serif' }}>
+              <CardTitle className="text-base font-semibold text-slate-900">
                 Bank Details
               </CardTitle>
-              <p className="text-xs text-[#4B5563] mt-0.5">Up to {MAX_BANK_ACCOUNTS} accounts — choose per quotation</p>
+              <p className="text-xs text-slate-500 mt-0.5">Up to {MAX_BANK_ACCOUNTS} accounts — choose per quotation</p>
             </div>
-            <span className="text-xs text-[#4B5563]">{banks.length}/{MAX_BANK_ACCOUNTS}</span>
+            <span className="text-xs text-slate-500">{banks.length}/{MAX_BANK_ACCOUNTS}</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -198,14 +198,14 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
               variant="outline"
               size="sm"
               onClick={handleAddBank}
-              className="border-[#D1D5DB] text-[#111827] hover:bg-[#E5E7EB]"
+              className="border-slate-300 text-slate-900 hover:bg-slate-200"
             >
               <Plus className="w-4 h-4 mr-1" />
               Add Bank Account
             </Button>
           )}
           <div className="flex justify-end pt-2">
-            <Button onClick={handleSaveBank} disabled={isSavingBank} className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white">
+            <Button onClick={handleSaveBank} disabled={isSavingBank} className="bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white">
               {isSavingBank && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Save Bank Details
             </Button>
@@ -214,22 +214,22 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
       </Card>
 
       {/* Terms & Conditions */}
-      <Card className="border border-[#E5E7EB] bg-[#F3F4F6]">
+      <Card className="border border-slate-200 bg-slate-100">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold text-[#111827]" style={{ fontFamily: 'Rubik, sans-serif' }}>
+          <CardTitle className="text-base font-semibold text-slate-900">
             Terms &amp; Conditions
           </CardTitle>
-          <p className="text-xs text-[#4B5563]">Shown on quotation PDFs as a bullet list</p>
+          <p className="text-xs text-slate-500">Shown on quotation PDFs as a bullet list</p>
         </CardHeader>
         <CardContent className="space-y-3">
           {terms.map((term, index) => (
             <div key={index} className="flex gap-2 items-center">
-              <span className="text-[#4B5563] text-sm shrink-0">•</span>
+              <span className="text-slate-500 text-sm shrink-0">•</span>
               <Input
                 value={term}
                 onChange={e => setTerms(prev => prev.map((t, i) => i === index ? e.target.value : t))}
                 placeholder="Enter term..."
-                className="border-[#E5E7EB] bg-white focus-visible:ring-[#111827]/20 flex-1"
+                className="border-slate-200 bg-white focus-visible:ring-slate-900/20 flex-1"
               />
               <Button variant="ghost" size="icon"
                 onClick={() => setTerms(prev => prev.filter((_, i) => i !== index))}
@@ -240,11 +240,11 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
             </div>
           ))}
           <Button variant="outline" size="sm" onClick={() => setTerms(prev => [...prev, ''])}
-            className="border-[#D1D5DB] text-[#111827] hover:bg-[#E5E7EB]">
+            className="border-slate-300 text-slate-900 hover:bg-slate-200">
             <Plus className="w-4 h-4 mr-1" />Add Term
           </Button>
           <div className="flex justify-end pt-2">
-            <Button onClick={handleSaveTerms} disabled={isSavingTerms} className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white">
+            <Button onClick={handleSaveTerms} disabled={isSavingTerms} className="bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white">
               {isSavingTerms && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Save Terms
             </Button>
@@ -253,23 +253,23 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
       </Card>
 
       {/* Company Stamp */}
-      <Card className="border border-[#E5E7EB] bg-[#F3F4F6]">
+      <Card className="border border-slate-200 bg-slate-100">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold text-[#111827]" style={{ fontFamily: 'Rubik, sans-serif' }}>
+          <CardTitle className="text-base font-semibold text-slate-900">
             Company Stamp
           </CardTitle>
-          <p className="text-xs text-[#4B5563]">Stamp shown on quotation PDFs</p>
+          <p className="text-xs text-slate-500">Stamp shown on quotation PDFs</p>
         </CardHeader>
         <CardContent className="space-y-3">
           {stampUrl && (
-            <div className="border border-[#E5E7EB] rounded-md p-2 bg-white inline-block">
+            <div className="border border-slate-200 rounded-md p-2 bg-white inline-block">
               <Image src={stampUrl} alt="Stamp" width={100} height={100} className="object-contain" unoptimized />
             </div>
           )}
           <div className="flex items-center gap-2">
             <input ref={stampInputRef} type="file" accept="image/*" className="hidden" onChange={handleUploadStamp} />
             <Button variant="outline" size="sm" onClick={() => stampInputRef.current?.click()}
-              disabled={isUploadingStamp} className="border-[#D1D5DB] text-[#111827] hover:bg-[#E5E7EB]">
+              disabled={isUploadingStamp} className="border-slate-300 text-slate-900 hover:bg-slate-200">
               {isUploadingStamp ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
               {stampUrl ? 'Replace Stamp' : 'Upload Stamp'}
             </Button>

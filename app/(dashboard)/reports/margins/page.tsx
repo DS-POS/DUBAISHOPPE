@@ -1,4 +1,4 @@
-import { getProductMargins } from '@/actions/reports-financial'
+﻿import { getProductMargins } from '@/actions/reports-financial'
 import { DateRangeFilter } from '@/components/reports/DateRangeFilter'
 
 interface Props { searchParams: Promise<{ from?: string; to?: string }> }
@@ -42,7 +42,7 @@ export default async function MarginsPage({ searchParams }: Props) {
           {/* Desktop: full table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#111827]">
+              <thead className="bg-slate-900">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Product</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Qty</th>

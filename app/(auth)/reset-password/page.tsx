@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111827] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
           <p className="text-slate-400 mt-1 text-sm">Dubai Shoppe — Camera Store</p>
         </div>
         <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-xl font-semibold text-[#111827] mb-6" style={{ fontFamily: 'Rubik,sans-serif' }}>New Password</h2>
+          <h2 className="text-xl font-semibold text-slate-900 mb-6" style={{ fontFamily: 'Rubik,sans-serif' }}>New Password</h2>
 
           {!ready ? (
             <div className="text-center py-6">
@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
                   className="mt-1"
                 />
               </div>
-              <Button type="submit" disabled={loading} className="w-full bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white font-semibold py-2.5">
+              <Button type="submit" disabled={loading} className="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white font-semibold py-2.5">
                 {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Updating...</> : 'Update Password'}
               </Button>
             </form>

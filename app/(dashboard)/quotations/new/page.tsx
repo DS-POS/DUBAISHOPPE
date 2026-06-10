@@ -1,4 +1,4 @@
-import { getProducts } from '@/actions/products'
+﻿import { getProducts } from '@/actions/products'
 import { getCustomers } from '@/actions/customers'
 import { getSettings } from '@/actions/settings'
 import QuotationForm from '@/components/quotations/QuotationForm'
@@ -14,7 +14,7 @@ export default async function NewQuotationPage() {
     <div className="space-y-5">
       <div>
         <h1
-          className="text-2xl font-bold text-[#111827]"
+          className="text-2xl font-bold text-slate-900"
           style={{ fontFamily: 'Rubik, sans-serif' }}
         >
           New Quotation

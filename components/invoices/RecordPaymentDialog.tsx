@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
@@ -69,7 +69,7 @@ export function RecordPaymentDialog({ invoiceId, grandTotal, amountPaid, payment
       {/* Payment History Table */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm text-[#0F172A]">Payment History</h3>
+          <h3 className="font-semibold text-sm text-slate-950">Payment History</h3>
           {invoiceStatus !== 'paid' && dueAmount > 0 && (
             <Button size="sm" onClick={() => setOpen(true)}>
               <PlusIcon className="size-3.5 mr-1" />

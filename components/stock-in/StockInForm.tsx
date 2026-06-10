@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -224,7 +224,7 @@ export default function StockInForm({ products }: Props) {
           </Button>
           <div className="text-sm font-semibold text-slate-800 tabular-nums">
             Total:{' '}
-            <span className="text-[#4B5563]">
+            <span className="text-slate-500">
               ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </span>
           </div>
@@ -244,7 +244,7 @@ export default function StockInForm({ products }: Props) {
         <Button
           type="submit"
           disabled={submitting}
-          className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white"
+          className="bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white"
         >
           {submitting ? 'Saving...' : 'Save Invoice'}
         </Button>

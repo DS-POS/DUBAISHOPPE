@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -75,7 +75,7 @@ export function StockAdjustmentsListClient({ adjustments }: { adjustments: Adj[]
             <div className="flex items-center gap-3 mt-2">
               <button
                 onClick={() => router.push(`/stock-adjustments/${adj.id}`)}
-                className="text-xs font-semibold text-[#111827] underline"
+                className="text-xs font-semibold text-slate-900 underline"
               >
                 View
               </button>
@@ -93,7 +93,7 @@ export function StockAdjustmentsListClient({ adjustments }: { adjustments: Adj[]
       {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-[#111827] border-b border-[#1F2937]">
+          <thead className="bg-slate-900 border-b border-slate-800">
             <tr>
               <th className="px-4 py-3 text-left font-semibold text-slate-300 text-xs uppercase tracking-wider">Product</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-300 text-xs uppercase tracking-wider">Type</th>
@@ -104,10 +104,10 @@ export function StockAdjustmentsListClient({ adjustments }: { adjustments: Adj[]
             </tr>
           </thead>
           <tbody>
-            {items.map((adj, i) => (
-              <tr key={adj.id} className={`border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
+            {items.map((adj) => (
+              <tr key={adj.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70 transition-colors">
                 <td className="px-4 py-3">
-                  <p className="font-semibold text-[#111827]">{adj.products?.name ?? '—'}</p>
+                  <p className="font-semibold text-slate-900">{adj.products?.name ?? '—'}</p>
                   <p className="text-xs text-slate-500">{adj.products?.sku}</p>
                 </td>
                 <td className="px-4 py-3">
@@ -128,7 +128,7 @@ export function StockAdjustmentsListClient({ adjustments }: { adjustments: Adj[]
                   <div className="flex items-center justify-end gap-3">
                     <button
                       onClick={() => router.push(`/stock-adjustments/${adj.id}`)}
-                      className="text-xs font-medium text-[#4B5563] hover:underline"
+                      className="text-xs font-medium text-slate-500 hover:underline"
                     >
                       View
                     </button>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -153,7 +153,7 @@ export function QuotationActions({
           type="button"
           onClick={handleConvert}
           disabled={converting}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white shadow-sm disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white shadow-sm disabled:opacity-50"
         >
           <FileCheckIcon className="size-4" />
           {converting ? 'Converting…' : 'Convert to Invoice'}

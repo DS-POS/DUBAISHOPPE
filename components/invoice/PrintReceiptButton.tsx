@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { PrinterIcon } from 'lucide-react'
 
 interface Props {
@@ -11,7 +11,7 @@ export function PrintReceiptButton({ invoiceId }: Props) {
       href={`/api/invoices/${invoiceId}/pdf`}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-[#111827] text-sm font-semibold shadow-sm hover:bg-slate-100 active:scale-[0.98] transition-all"
+      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-slate-900 text-sm font-semibold shadow-sm hover:bg-slate-100 active:scale-[0.98] transition-all"
     >
       <PrinterIcon className="size-4" />
       Print Invoice

@@ -112,7 +112,7 @@ export default function CustomerList({ initialCustomers }: Props) {
             CSV
           </button>
           <Link href="/customers/new">
-            <span className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white font-semibold px-3 py-2 rounded-xl shadow-sm text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer">
+            <span className="bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white font-semibold px-3 py-2 rounded-xl shadow-sm text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer">
               <PlusIcon className="size-3.5" />
               Add
             </span>
@@ -129,7 +129,7 @@ export default function CustomerList({ initialCustomers }: Props) {
             placeholder="Search by name, phone, or business..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] placeholder:text-slate-400"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm shadow-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 placeholder:text-slate-400"
           />
         </div>
       </div>
@@ -151,7 +151,7 @@ export default function CustomerList({ initialCustomers }: Props) {
             </div>
             {!search.trim() && (
               <Link href="/customers/new">
-                <span className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm text-sm inline-flex items-center gap-1.5 cursor-pointer mt-1">
+                <span className="bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm text-sm inline-flex items-center gap-1.5 cursor-pointer mt-1">
                   <PlusIcon className="size-4" />
                   Add First Customer
                 </span>

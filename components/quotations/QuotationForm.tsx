@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -245,7 +245,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
                 type="button"
                 onClick={() => { setAddingCustomer(true); setNewCust({ ...emptyNewCust }) }}
                 title="Add new customer"
-                className="h-9 px-3 bg-[#111827] hover:bg-[#1F2937] active:scale-95 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all duration-150 shadow-sm"
+                className="h-9 px-3 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all duration-150 shadow-sm"
               >
                 <UserPlusIcon className="size-3.5" />
                 New
@@ -272,7 +272,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
                     key={i}
                     className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 cursor-pointer transition-all ${
                       selectedBankIndex === i
-                        ? 'border-[#111827] bg-[#F3F4F6]'
+                        ? 'border-slate-900 bg-slate-100'
                         : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
@@ -292,7 +292,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
                   </label>
                 ))}
                 <label className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 cursor-pointer transition-all ${
-                  selectedBankIndex === null ? 'border-[#111827] bg-[#F3F4F6]' : 'border-slate-200 bg-white hover:border-slate-300'
+                  selectedBankIndex === null ? 'border-slate-900 bg-slate-100' : 'border-slate-200 bg-white hover:border-slate-300'
                 }`}>
                   <input
                     type="radio"
@@ -310,9 +310,9 @@ export default function QuotationForm({ products, customers, settings, initialQu
 
         {/* Inline add customer form */}
         {addingCustomer && (
-          <div className="mt-4 rounded-xl border border-slate-200 bg-[#F3F4F6] p-4">
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-100 p-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-[#111827] uppercase tracking-wider">New Customer</span>
+              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">New Customer</span>
               <button type="button" onClick={() => setAddingCustomer(false)} className="text-slate-400 hover:text-slate-600">
                 <XIcon className="size-3.5" />
               </button>
@@ -332,7 +332,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
                     type="text"
                     value={newCust[key as keyof typeof newCust]}
                     onChange={e => setNewCust(p => ({ ...p, [key]: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 h-8 text-xs outline-none focus:ring-1 focus:ring-[#111827]/20 focus:border-[#111827]"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 h-8 text-xs outline-none focus:ring-1 focus:ring-slate-900/20 focus:border-slate-900"
                   />
                 </div>
               ))}
@@ -341,7 +341,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
                 <select
                   value={newCust.state}
                   onChange={e => setNewCust(p => ({ ...p, state: e.target.value }))}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-2.5 h-8 text-xs outline-none focus:ring-1 focus:ring-[#111827]/20 focus:border-[#111827]"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-2.5 h-8 text-xs outline-none focus:ring-1 focus:ring-slate-900/20 focus:border-slate-900"
                 >
                   {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -353,7 +353,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
                 Cancel
               </button>
               <button type="button" onClick={handleAddCustomer} disabled={savingCust}
-                className="px-4 h-8 rounded-lg bg-[#111827] hover:bg-[#1F2937] disabled:opacity-50 text-white text-xs font-semibold transition-colors">
+                className="px-4 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-semibold transition-colors">
                 {savingCust ? 'Saving…' : 'Add & Select'}
               </button>
             </div>
@@ -415,7 +415,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
               type="date"
               value={quotationDate}
               onChange={e => setQuotationDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] transition-all"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition-all"
             />
           </div>
           <div className="space-y-1.5">
@@ -424,7 +424,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
               type="date"
               value={validUntil}
               onChange={e => setValidUntil(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] transition-all"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition-all"
             />
           </div>
           <div className="space-y-1.5">
@@ -434,7 +434,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
               onChange={e => setNotes(e.target.value)}
               rows={3}
               placeholder="Optional notes for the customer…"
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] transition-all resize-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition-all resize-none"
             />
           </div>
           <CartSummary {...totals} itemCount={cart.length} />
@@ -442,7 +442,7 @@ export default function QuotationForm({ products, customers, settings, initialQu
             type="button"
             onClick={handleSave}
             disabled={cart.length === 0 || saving}
-            className="w-full h-12 bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed text-white text-base font-bold rounded-xl shadow-sm flex items-center justify-center gap-2"
+            className="w-full h-12 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed text-white text-base font-bold rounded-xl shadow-sm flex items-center justify-center gap-2"
           >
             <SaveIcon className="size-5" />
             {saving ? (isEdit ? 'Updating…' : 'Saving…') : (isEdit ? 'Update Quotation' : 'Save Quotation')}

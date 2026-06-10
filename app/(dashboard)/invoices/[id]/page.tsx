@@ -37,7 +37,7 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
     <div className="space-y-4 w-full max-w-full md:max-w-4xl">
       {/* Header */}
       <div className="rounded-2xl overflow-hidden shadow-sm">
-        <div className="bg-gradient-to-r from-[#111827] via-[#1e2d40] to-[#1a3a5c] px-6 py-5">
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 px-6 py-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <Link href="/invoices" className="text-sm text-slate-400 hover:text-white flex items-center gap-1 mb-2 transition-colors">
@@ -155,7 +155,7 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
           {/* Desktop: table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#111827]">
+              <thead className="bg-slate-900">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">#</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Product</th>

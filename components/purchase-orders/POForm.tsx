@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -104,7 +104,7 @@ export function POForm({ products, suppliers }: Props) {
               <select
                 value={supplierId}
                 onChange={e => selectSupplier(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20"
               >
                 <option value="">— Select or type below —</option>
                 {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -112,15 +112,15 @@ export function POForm({ products, suppliers }: Props) {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700">Supplier Name *</label>
-              <input value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="Supplier name" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20" />
+              <input value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="Supplier name" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20" />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700">Expected Delivery Date</label>
-              <input type="date" value={expectedDate} onChange={e => setExpectedDate(e.target.value)} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20" />
+              <input type="date" value={expectedDate} onChange={e => setExpectedDate(e.target.value)} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20" />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700">Notes</label>
-              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20" />
+              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20" />
             </div>
           </div>
         </div>
@@ -145,7 +145,7 @@ export function POForm({ products, suppliers }: Props) {
                 <select
                   value={line.product_id ?? ''}
                   onChange={e => selectProduct(line._id, e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20"
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/20"
                 >
                   <option value="">Select…</option>
                   {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -157,7 +157,7 @@ export function POForm({ products, suppliers }: Props) {
                   value={line.product_name}
                   onChange={e => updateLine(line._id, 'product_name', e.target.value)}
                   placeholder="Name"
-                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20"
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/20"
                 />
               </div>
               <div className="col-span-2">
@@ -190,7 +190,7 @@ export function POForm({ products, suppliers }: Props) {
           <p className="text-lg font-black text-slate-900">Total: ₹{totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
           <div className="flex gap-3">
             <button type="button" onClick={() => router.back()} className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 font-medium">Cancel</button>
-            <button type="button" onClick={handleSubmit} disabled={isPending} className="px-6 py-2.5 bg-[#111827] hover:bg-[#1F2937] disabled:opacity-50 text-white rounded-xl text-sm font-semibold">
+            <button type="button" onClick={handleSubmit} disabled={isPending} className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl text-sm font-semibold">
               {isPending ? 'Creating…' : 'Create Purchase Order'}
             </button>
           </div>

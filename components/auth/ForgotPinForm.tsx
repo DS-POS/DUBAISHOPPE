@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -41,7 +41,7 @@ export function ForgotPinForm() {
           </svg>
         </div>
         <div>
-          <h3 className="font-bold text-[#111827] text-lg">Check your email</h3>
+          <h3 className="font-bold text-slate-900 text-lg">Check your email</h3>
           <p className="text-sm text-slate-500 mt-1">
             We sent a PIN reset link to <span className="font-semibold text-slate-700">{email}</span>
           </p>
@@ -63,13 +63,13 @@ export function ForgotPinForm() {
           id="email" type="email" required value={email}
           onChange={e => setEmail(e.target.value)}
           placeholder="your@email.com"
-          className="w-full h-11 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+          className="w-full h-11 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
         />
       </div>
       {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
       <button
         type="submit" disabled={loading}
-        className="w-full h-11 bg-[#111827] hover:bg-[#1F2937] text-white font-semibold rounded-xl transition-all disabled:opacity-50"
+        className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl transition-all disabled:opacity-50"
       >
         {loading ? 'Sending…' : 'Send PIN Reset Link'}
       </button>

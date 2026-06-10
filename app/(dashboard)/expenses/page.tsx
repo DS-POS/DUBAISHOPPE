@@ -1,4 +1,4 @@
-import { getExpenses, getExpenseSummary } from '@/actions/expenses'
+﻿import { getExpenses, getExpenseSummary } from '@/actions/expenses'
 import { PlusIcon, ReceiptIcon } from 'lucide-react'
 import Link from 'next/link'
 
@@ -16,7 +16,7 @@ export default async function ExpensesPage() {
           <h1 className="text-2xl font-bold text-slate-900">Expenses</h1>
           <p className="text-sm text-slate-500 mt-0.5">This month: <span className="font-semibold text-slate-700">₹{summary.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></p>
         </div>
-        <Link href="/expenses/new" className="flex items-center gap-2 px-4 py-2.5 bg-[#111827] text-white rounded-xl text-sm font-semibold hover:bg-[#1F2937] transition-colors">
+        <Link href="/expenses/new" className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors">
           <PlusIcon className="size-4" />Add Expense
         </Link>
       </div>
@@ -41,7 +41,7 @@ export default async function ExpensesPage() {
       ) : (
         <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-[#111827]">
+            <thead className="bg-slate-900">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Category</th>
@@ -52,7 +52,7 @@ export default async function ExpensesPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {expenses.map(exp => (
-                <tr key={exp.id} className="hover:bg-slate-50">
+                <tr key={exp.id} className="hover:bg-slate-50/70 transition-colors">
                   <td className="px-4 py-3 text-slate-600">{new Date(exp.date + 'T00:00:00').toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}</td>
                   <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-medium">{exp.expense_categories?.name ?? '—'}</span></td>
                   <td className="px-4 py-3 text-slate-700">{exp.description}</td>

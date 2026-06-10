@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111827] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
             <Link href="/login" className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors">
               <ArrowLeftIcon className="size-4 text-slate-600" />
             </Link>
-            <h2 className="text-xl font-semibold text-[#111827]" style={{ fontFamily: 'Rubik,sans-serif' }}>Reset Password</h2>
+            <h2 className="text-xl font-semibold text-slate-900" style={{ fontFamily: 'Rubik,sans-serif' }}>Reset Password</h2>
           </div>
 
           {sent ? (
@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
               </div>
               <p className="font-semibold text-slate-900 mb-1">Check your email</p>
               <p className="text-sm text-slate-500">Password reset link sent to <span className="font-medium text-slate-700">{email}</span></p>
-              <Link href="/login" className="mt-5 inline-block text-sm font-medium text-[#111827] hover:underline">
+              <Link href="/login" className="mt-5 inline-block text-sm font-medium text-slate-900 hover:underline">
                 Back to Sign In
               </Link>
             </div>
@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
                   className="mt-1"
                 />
               </div>
-              <Button type="submit" disabled={loading} className="w-full bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white font-semibold py-2.5">
+              <Button type="submit" disabled={loading} className="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white font-semibold py-2.5">
                 {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : 'Send Reset Link'}
               </Button>
             </form>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo, Fragment } from 'react'
 import { format } from 'date-fns'
@@ -98,7 +98,7 @@ export function QuotationList({ quotations }: Props) {
               {isOpen && group.items.map(q => (
                 <div key={q.id} className="px-4 py-3 pl-11 bg-white border-l-2 border-blue-200 flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="font-mono text-xs font-bold text-[#111827]">{q.quotation_no}</p>
+                    <p className="font-mono text-xs font-bold text-slate-900">{q.quotation_no}</p>
                     <p className="text-xs text-slate-400 mt-0.5">{format(new Date(q.quotation_date ?? q.created_at), 'dd MMM yyyy')}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
@@ -115,7 +115,7 @@ export function QuotationList({ quotations }: Props) {
       {/* Desktop: full table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-[#111827] border-b border-[#1F2937]">
+          <thead className="bg-slate-900 border-b border-slate-800">
             <tr>
               <th className="px-3 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider w-8">#</th>
               <th className="px-5 py-3.5 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">
@@ -194,7 +194,7 @@ export function QuotationList({ quotations }: Props) {
                     >
                       <td className="px-3 py-2.5 text-xs text-slate-300 text-center tabular-nums">{i + 1}</td>
                       <td className="px-5 py-2.5" />
-                      <td className="pl-12 pr-4 py-2.5 font-mono font-semibold text-[#111827] whitespace-nowrap">
+                      <td className="pl-12 pr-4 py-2.5 font-mono font-semibold text-slate-900 whitespace-nowrap">
                         {q.quotation_no}
                       </td>
                       <td className="px-5 py-2.5 text-slate-500 text-xs whitespace-nowrap">

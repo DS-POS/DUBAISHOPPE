@@ -1,4 +1,4 @@
-import { getProducts } from '@/actions/products'
+﻿import { getProducts } from '@/actions/products'
 import { getSuppliers } from '@/actions/suppliers'
 import { POForm } from '@/components/purchase-orders/POForm'
 
@@ -11,7 +11,7 @@ export default async function NewPurchaseOrderPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#111827]">New Purchase Order</h1>
+        <h1 className="text-2xl font-bold text-slate-900">New Purchase Order</h1>
         <p className="text-slate-500 text-sm mt-1">Create a purchase order to send to a supplier.</p>
       </div>
       <POForm

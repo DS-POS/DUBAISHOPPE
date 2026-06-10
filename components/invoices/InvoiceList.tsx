@@ -164,7 +164,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
           {rowNum !== undefined ? rowNum : ''}
         </td>
         <td className="px-5 py-3.5 text-sm whitespace-nowrap">
-          <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-semibold text-[#4B5563] hover:text-[#111827] hover:underline">
+          <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-semibold text-slate-500 hover:text-slate-900 hover:underline">
             {inv.invoice_no}
           </Link>
         </td>
@@ -212,7 +212,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
     <div className="space-y-4 w-full max-w-full">
       {/* Colored Page Header */}
       <div className="rounded-2xl overflow-hidden shadow-sm">
-        <div className="bg-gradient-to-r from-[#111827] via-[#1e2d40] to-[#1a3a5c] px-4 py-4 sm:px-6 sm:py-5">
+        <div className="bg-gradient-to-r from-slate-900 via-[#1e2d40] to-[#1a3a5c] px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div>
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Invoices</h1>
@@ -259,17 +259,17 @@ export default function InvoiceList({ initialInvoices }: Props) {
               placeholder="Search invoice or customer..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] placeholder:text-slate-400"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm shadow-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 placeholder:text-slate-400"
             />
           </div>
           <div className="flex gap-2">
             <div className="flex items-center gap-1.5 flex-1 sm:flex-none">
               <label className="text-xs text-slate-500 whitespace-nowrap">From</label>
-              <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="h-10 flex-1 sm:w-32 rounded-xl border border-slate-200 bg-white px-2 text-xs shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]" />
+              <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="h-10 flex-1 sm:w-32 rounded-xl border border-slate-200 bg-white px-2 text-xs shadow-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900" />
             </div>
             <div className="flex items-center gap-1.5 flex-1 sm:flex-none">
               <label className="text-xs text-slate-500 whitespace-nowrap">To</label>
-              <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="h-10 flex-1 sm:w-32 rounded-xl border border-slate-200 bg-white px-2 text-xs shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]" />
+              <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="h-10 flex-1 sm:w-32 rounded-xl border border-slate-200 bg-white px-2 text-xs shadow-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900" />
             </div>
           </div>
           <div className="flex gap-2">
@@ -334,12 +334,12 @@ export default function InvoiceList({ initialInvoices }: Props) {
               </p>
             </div>
             {!hasActiveFilters && statusFilter === 'all' && (
-              <Link href="/billing" className="text-sm text-[#4B5563] hover:text-[#111827] hover:underline font-medium">
+              <Link href="/billing" className="text-sm text-slate-500 hover:text-slate-900 hover:underline font-medium">
                 Start billing →
               </Link>
             )}
             {(hasActiveFilters || statusFilter !== 'all') && (
-              <button onClick={() => { clearFilters(); setStatusFilter('all') }} className="text-sm text-[#4B5563] hover:text-[#111827] hover:underline font-medium">
+              <button onClick={() => { clearFilters(); setStatusFilter('all') }} className="text-sm text-slate-500 hover:text-slate-900 hover:underline font-medium">
                 Clear filters
               </button>
             )}
@@ -395,7 +395,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
                         <div key={inv.id} className="px-4 py-3 pl-11 bg-white border-l-2 border-blue-200">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
-                              <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-bold text-[#111827] hover:underline">{inv.invoice_no}</Link>
+                              <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-bold text-slate-900 hover:underline">{inv.invoice_no}</Link>
                               <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.created_at), 'dd MMM yyyy, hh:mm a')}</p>
                               {inv.payment_method && (
                                 <span className="text-xs text-slate-400 capitalize">{inv.payment_method}</span>
@@ -420,7 +420,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
                   <div key={inv.id} className="px-4 py-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-bold text-[#111827] hover:underline">{inv.invoice_no}</Link>
+                        <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-bold text-slate-900 hover:underline">{inv.invoice_no}</Link>
                         <p className="text-sm font-semibold text-slate-800 mt-0.5 truncate">{inv.customers?.name ?? 'Walk-in'}</p>
                         <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.created_at), 'dd MMM yyyy, hh:mm a')}</p>
                       </div>
@@ -439,7 +439,7 @@ export default function InvoiceList({ initialInvoices }: Props) {
           {/* Desktop: full table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#111827] border-b border-[#1F2937]">
+              <thead className="bg-slate-900 border-b border-slate-800">
                 <tr>
                   <th className="px-3 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider w-8">#</th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">Invoice No</th>

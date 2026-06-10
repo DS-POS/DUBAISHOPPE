@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -80,7 +80,7 @@ export function StockAdjustmentForm({ products }: Props) {
             onFocus={() => setShowDropdown(true)}
             onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
             placeholder="Search product by name or SKU…"
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 pr-9 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 pr-9 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
           />
           <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
           {showDropdown && !productId && filteredProducts.length > 0 && (
@@ -111,7 +111,7 @@ export function StockAdjustmentForm({ products }: Props) {
               onClick={() => setAdjType(t.value)}
               className={`rounded-xl border px-3 py-2.5 text-xs font-semibold text-left transition-all ${
                 adjType === t.value
-                  ? 'border-[#111827] bg-[#111827] text-white'
+                  ? 'border-slate-900 bg-slate-900 text-white'
                   : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
               }`}
             >
@@ -130,7 +130,7 @@ export function StockAdjustmentForm({ products }: Props) {
           min={1}
           value={qty}
           onChange={e => setQty(Math.max(1, parseInt(e.target.value) || 1))}
-          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
         />
         {projectedStock !== null && (
           <p className={`text-xs font-medium ${projectedStock < 0 ? 'text-red-600' : 'text-slate-500'}`}>
@@ -150,7 +150,7 @@ export function StockAdjustmentForm({ products }: Props) {
           onChange={e => setNotes(e.target.value)}
           rows={3}
           placeholder="Reason for adjustment, reference number, etc."
-          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] resize-none"
+          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 resize-none"
         />
       </div>
 
@@ -162,7 +162,7 @@ export function StockAdjustmentForm({ products }: Props) {
         <button
           type="submit"
           disabled={isPending || !productId || (projectedStock !== null && projectedStock < 0)}
-          className="flex-1 rounded-xl bg-[#111827] py-2.5 text-sm font-semibold text-white hover:bg-[#1F2937] disabled:opacity-50 transition-colors"
+          className="flex-1 rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors"
         >
           {isPending ? 'Saving…' : 'Save Adjustment'}
         </button>

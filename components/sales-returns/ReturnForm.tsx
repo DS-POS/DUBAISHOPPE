@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -165,7 +165,7 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
             value={reason}
             onChange={e => setReason(e.target.value)}
             placeholder="e.g. Defective product, Wrong item, Customer changed mind"
-            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20"
+            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20"
           />
         </div>
         <div className="space-y-1.5">
@@ -176,7 +176,7 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
                 key={m.value}
                 type="button"
                 onClick={() => setRefundMethod(m.value)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors text-left ${refundMethod === m.value ? 'bg-[#111827] text-white border-[#111827]' : 'border-slate-200 text-slate-600 hover:border-slate-400'}`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors text-left ${refundMethod === m.value ? 'bg-slate-900 text-white border-slate-900' : 'border-slate-200 text-slate-600 hover:border-slate-400'}`}
               >
                 {m.label}
                 {m.description && <span className={`block text-xs font-normal ${refundMethod === m.value ? 'text-slate-300' : 'text-slate-400'}`}>{m.description}</span>}
@@ -190,7 +190,7 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
             value={notes}
             onChange={e => setNotes(e.target.value)}
             rows={2}
-            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 resize-none"
+            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 resize-none"
           />
         </div>
       </div>
@@ -210,7 +210,7 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
           type="button"
           onClick={handleSubmit}
           disabled={isPending || selectedItems.length === 0}
-          className="px-6 py-2.5 bg-[#111827] hover:bg-[#1F2937] disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-all"
+          className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-all"
         >
           {isPending ? 'Processing…' : 'Process Return'}
         </button>

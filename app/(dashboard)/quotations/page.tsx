@@ -32,10 +32,7 @@ export default async function QuotationsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1
-            className="text-2xl font-bold text-[#111827]"
-            style={{ fontFamily: 'Rubik, sans-serif' }}
-          >
+          <h1 className="text-2xl font-bold text-slate-900">
             Quotations
           </h1>
           <p className="text-slate-500 text-sm mt-1">
@@ -44,7 +41,7 @@ export default async function QuotationsPage({
         </div>
         <Link
           href="/quotations/new"
-          className="inline-flex items-center gap-2 bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all duration-200"
+          className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all duration-200"
         >
           <PlusIcon className="size-4" />
           New Quotation
@@ -57,7 +54,7 @@ export default async function QuotationsPage({
           href="/quotations"
           className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
             activeStatus === 'all'
-              ? 'bg-white border border-b-white border-slate-200 text-[#111827] -mb-px'
+              ? 'bg-white border border-b-white border-slate-200 text-slate-900 -mb-px'
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
@@ -69,7 +66,7 @@ export default async function QuotationsPage({
             href={`/quotations?status=${tab}`}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg capitalize transition-colors ${
               activeStatus === tab
-                ? 'bg-white border border-b-white border-slate-200 text-[#111827] -mb-px'
+                ? 'bg-white border border-b-white border-slate-200 text-slate-900 -mb-px'
                 : 'text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -83,7 +80,7 @@ export default async function QuotationsPage({
           <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <FileTextIcon className="size-8 text-slate-400" />
           </div>
-          <p className="font-semibold text-[#111827]">No quotations found</p>
+          <p className="font-semibold text-slate-900">No quotations found</p>
           <p className="text-sm text-slate-500 mt-1">
             {activeStatus === 'all'
               ? 'Create your first quotation to get started'
@@ -92,7 +89,7 @@ export default async function QuotationsPage({
           {activeStatus === 'all' && (
             <Link
               href="/quotations/new"
-              className="mt-4 inline-flex items-center gap-2 bg-[#111827] hover:bg-[#1F2937] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all"
+              className="mt-4 inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all"
             >
               <PlusIcon className="size-4" />
               New Quotation

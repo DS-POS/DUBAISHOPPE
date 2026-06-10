@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -150,7 +150,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
 
         {cart.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-16 text-center">
-            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
               <ShoppingCartIcon className="size-8 text-slate-400" />
             </div>
             <p className="font-semibold text-slate-700">Cart is empty</p>
@@ -196,7 +196,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
                         min={1}
                         onChange={e => updateQty(item._id, Math.max(1, parseInt(e.target.value) || 1))}
                         onFocus={e => e.target.select()}
-                        className="w-10 text-center text-sm font-semibold border border-slate-200 rounded-lg h-7 bg-white outline-none focus:ring-2 focus:ring-[#111827]/20"
+                        className="w-10 text-center text-sm font-semibold border border-slate-200 rounded-lg h-7 bg-white outline-none focus:ring-2 focus:ring-slate-900/20"
                       />
                       <button type="button" onClick={() => updateQty(item._id, item.quantity + 1)} className="size-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 font-bold text-sm">+</button>
                     </div>
@@ -209,7 +209,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
                         step={0.01}
                         onChange={e => updateRate(item._id, parseFloat(e.target.value) || 0)}
                         onFocus={e => e.target.select()}
-                        className="w-24 pl-5 pr-2 py-1.5 text-sm border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-[#111827]/20"
+                        className="w-24 pl-5 pr-2 py-1.5 text-sm border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-900/20"
                       />
                     </div>
                     <div className="flex items-center gap-1">
@@ -224,7 +224,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
                         min={0}
                         onChange={e => updateDiscountRaw(item._id, parseFloat(e.target.value) || 0)}
                         onFocus={e => e.target.select()}
-                        className="w-16 px-2 py-1.5 text-sm border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-[#111827]/20"
+                        className="w-16 px-2 py-1.5 text-sm border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-900/20"
                       />
                     </div>
                     {item.is_taxable && item.total_gst > 0 && (
@@ -236,7 +236,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
             </div>
             {/* Desktop: table */}
             <table className="hidden md:table w-full text-sm">
-              <thead className="bg-[#111827] border-b border-[#1F2937]">
+              <thead className="bg-slate-900 border-b border-slate-800">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Product</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Qty</th>
@@ -267,7 +267,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
       </div>
 
       {/* Right: Sidebar */}
-      <div className="w-full lg:w-[320px] shrink-0 space-y-4">
+      <div className="w-full lg:w-80 shrink-0 space-y-4">
         <div className="space-y-2">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</p>
           <CustomerSelector
@@ -276,9 +276,12 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
             onSelect={handleCustomerChange}
           />
           {customer && (
-            <p className="text-xs text-slate-400 px-1">
-              State: {customer.state} → GST: {customer.state === 'Telangana' ? 'CGST + SGST' : 'IGST'}
-            </p>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-full border border-slate-200 w-fit">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+              <p className="text-xs text-slate-500 font-medium">
+                {customer.state} → {customer.state === 'Telangana' ? 'CGST + SGST' : 'IGST'}
+              </p>
+            </div>
           )}
           {creditStatus && creditStatus.credit_limit > 0 && (
             <div className={`rounded-xl p-3 text-sm ${creditStatus.over_limit ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'}`}>
@@ -308,7 +311,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
           type="button"
           onClick={handleCheckout}
           disabled={cart.length === 0}
-          className="w-full h-14 bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed text-white text-base font-bold rounded-2xl shadow-lg shadow-slate-900/25 transition-all duration-200 flex items-center justify-center gap-2.5 ring-1 ring-white/[0.08]"
+          className="w-full h-14 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed text-white text-base font-bold rounded-2xl shadow-lg shadow-indigo-500/25 transition-all duration-200 flex items-center justify-center gap-2.5"
         >
           <ShoppingCartIcon className="size-5" />
           Proceed to Checkout

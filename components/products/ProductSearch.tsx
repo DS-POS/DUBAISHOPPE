@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React from 'react'
 import { SearchIcon } from 'lucide-react'
@@ -34,7 +34,7 @@ export function ProductSearch({
             placeholder="Search by name, SKU, barcode..."
             value={searchValue}
             onChange={e => onSearchChange(e.target.value)}
-            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] placeholder:text-slate-400"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm shadow-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 placeholder:text-slate-400"
           />
         </div>
 
@@ -43,7 +43,7 @@ export function ProductSearch({
           <select
             value={categoryValue}
             onChange={e => onCategoryChange(e.target.value)}
-            className="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
           >
             <option value="all">All Categories</option>
             {categories.map(cat => (
@@ -55,7 +55,7 @@ export function ProductSearch({
           <select
             value={statusValue}
             onChange={e => onStatusChange(e.target.value)}
-            className="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -102,7 +102,7 @@ export function StoreLoanForm({ products }: StoreLoanFormProps) {
             value={form.store_name}
             onChange={e => setForm(f => ({ ...f, store_name: e.target.value }))}
             placeholder="e.g. SR Store, City Camera"
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
             required
           />
         </div>
@@ -113,7 +113,7 @@ export function StoreLoanForm({ products }: StoreLoanFormProps) {
             value={form.person_name}
             onChange={e => setForm(f => ({ ...f, person_name: e.target.value }))}
             placeholder="Who came / who you went to"
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
             required
           />
         </div>
@@ -135,7 +135,7 @@ export function StoreLoanForm({ products }: StoreLoanFormProps) {
             onFocus={() => setShowProductDropdown(true)}
             onBlur={() => setTimeout(() => setShowProductDropdown(false), 150)}
             placeholder="Search inventory or type custom item..."
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] pr-8"
+            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 pr-8"
             required
           />
           <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
@@ -179,7 +179,7 @@ export function StoreLoanForm({ products }: StoreLoanFormProps) {
               setForm(f => ({ ...f, quantity: isNaN(v) || v < 1 ? 1 : v }))
             }}
             onFocus={e => e.target.select()}
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
             required
           />
         </div>
@@ -195,7 +195,7 @@ export function StoreLoanForm({ products }: StoreLoanFormProps) {
             onChange={e => setForm(f => ({ ...f, price: e.target.value ? parseFloat(e.target.value) : null }))}
             onFocus={e => e.target.select()}
             placeholder="Estimated item value"
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
           />
         </div>
       </div>
@@ -208,7 +208,7 @@ export function StoreLoanForm({ products }: StoreLoanFormProps) {
             type="date"
             value={form.loan_date}
             onChange={e => setForm(f => ({ ...f, loan_date: e.target.value }))}
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
             required
           />
         </div>
@@ -220,7 +220,7 @@ export function StoreLoanForm({ products }: StoreLoanFormProps) {
             type="date"
             value={form.expected_return_date ?? ''}
             onChange={e => setForm(f => ({ ...f, expected_return_date: e.target.value || null }))}
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
           />
         </div>
       </div>
@@ -235,7 +235,7 @@ export function StoreLoanForm({ products }: StoreLoanFormProps) {
           onChange={e => setForm(f => ({ ...f, notes: e.target.value || null }))}
           placeholder="Any additional details..."
           rows={3}
-          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] resize-none"
+          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 resize-none"
         />
       </div>
 
@@ -250,7 +250,7 @@ export function StoreLoanForm({ products }: StoreLoanFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 px-4 py-2.5 rounded-xl bg-[#111827] text-white text-sm font-semibold hover:bg-[#1F2937] disabled:opacity-50 transition-colors"
+          className="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors"
         >
           {loading ? 'Saving...' : 'Record Loan'}
         </button>

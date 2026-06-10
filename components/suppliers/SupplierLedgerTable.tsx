@@ -1,4 +1,4 @@
-import type { LedgerTransaction } from '@/actions/supplier-invoices'
+﻿import type { LedgerTransaction } from '@/actions/supplier-invoices'
 
 interface Props {
   transactions: LedgerTransaction[]
@@ -18,7 +18,7 @@ export function SupplierLedgerTable({ transactions, totalInvoiced, totalPaid, cl
         <div className="p-4"><p className="text-xs text-slate-500">Balance Due</p><p className={`text-lg font-bold mt-0.5 ${closingBalance > 0 ? 'text-red-600' : 'text-slate-400'}`}>{fmt(closingBalance)}</p></div>
       </div>
       <table className="w-full text-sm">
-        <thead className="bg-[#111827]">
+        <thead className="bg-slate-900">
           <tr>
             <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
             <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Reference</th>

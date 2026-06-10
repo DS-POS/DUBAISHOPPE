@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React, { useState, useMemo, useRef } from 'react'
 import dynamic from 'next/dynamic'
@@ -245,25 +245,25 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
 
   return (
     <div
-      className="min-h-screen bg-[#F3F4F6] p-4 md:p-6"
+      className="min-h-screen bg-slate-100 p-4 md:p-6"
       style={{ fontFamily: 'Rubik, sans-serif' }}
     >
       {/* Page Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#111827] flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm">
               <Tag className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#111827]">Label Generator</h1>
-              <p className="text-sm text-[#4B5563] mt-0.5">Print shelf labels with barcode for any product</p>
+              <h1 className="text-2xl font-bold text-slate-900">Label Generator</h1>
+              <p className="text-sm text-slate-500 mt-0.5">Print shelf labels with barcode for any product</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={selectAll}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E7EB] bg-white text-sm font-medium text-slate-700 hover:bg-[#E5E7EB] transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-200 transition"
             >
               <CheckSquare className="w-4 h-4" />
               Select All
@@ -271,7 +271,7 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
             {selected.size > 0 && (
               <button
                 onClick={clearSelection}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E7EB] bg-white text-sm font-medium text-slate-500 hover:bg-[#E5E7EB] transition"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-500 hover:bg-slate-200 transition"
               >
                 <Square className="w-4 h-4" />
                 Clear
@@ -285,10 +285,10 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
         {/* LEFT COLUMN — Search & Queue */}
         <div className="flex flex-col gap-4">
           {/* Search */}
-          <div className="bg-white rounded-2xl shadow-sm border border-[#E5E7EB] p-4">
-            <h2 className="text-sm font-semibold text-[#111827] mb-3">Search Products</h2>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+            <h2 className="text-sm font-semibold text-slate-900 mb-3">Search Products</h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
                 ref={searchRef}
                 type="text"
@@ -297,7 +297,7 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
                 onFocus={() => setShowResults(true)}
                 onBlur={() => setTimeout(() => setShowResults(false), 180)}
                 placeholder="Search by name, SKU, or barcode..."
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#E5E7EB] bg-[#F3F4F6] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] transition"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition"
               />
               {search && (
                 <button
@@ -311,19 +311,19 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
 
             {/* Search Results Dropdown */}
             {showResults && searchResults.length > 0 && (
-              <div className="mt-2 border border-[#E5E7EB] rounded-xl overflow-hidden shadow-lg z-10 bg-white">
+              <div className="mt-2 border border-slate-200 rounded-xl overflow-hidden shadow-lg z-10 bg-white">
                 {searchResults.map(product => (
                   <button
                     key={product.id}
                     onMouseDown={() => addToQueue(product)}
-                    className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-[#E5E7EB] transition text-left border-b border-[#E5E7EB] last:border-0"
+                    className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-slate-200 transition text-left border-b border-slate-200 last:border-0"
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-slate-800 truncate">{product.name}</p>
                       <p className="text-xs text-slate-500 font-mono">{product.sku}</p>
                     </div>
                     <div className="text-right ml-3 flex-shrink-0">
-                      <p className="text-sm font-bold text-[#111827]">{formatPrice(product.selling_price)}</p>
+                      <p className="text-sm font-bold text-slate-900">{formatPrice(product.selling_price)}</p>
                       <p className="text-xs text-slate-400">Stock: {product.current_stock}</p>
                     </div>
                   </button>
@@ -331,19 +331,19 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
               </div>
             )}
             {showResults && search.trim() && searchResults.length === 0 && (
-              <div className="mt-2 border border-[#E5E7EB] rounded-xl px-4 py-3 text-sm text-slate-500 bg-white text-center">
+              <div className="mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-500 bg-white text-center">
                 No products found
               </div>
             )}
           </div>
 
           {/* Label Queue */}
-          <div className="bg-white rounded-2xl shadow-sm border border-[#E5E7EB] p-4 flex-1">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex-1">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-[#111827]">
+              <h2 className="text-sm font-semibold text-slate-900">
                 Label Queue
                 {queue.length > 0 && (
-                  <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#111827] text-white text-xs font-bold">
+                  <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-900 text-white text-xs font-bold">
                     {queue.length}
                   </span>
                 )}
@@ -360,8 +360,8 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
 
             {queue.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="w-14 h-14 rounded-full bg-[#E5E7EB] flex items-center justify-center mb-3">
-                  <Tag className="w-7 h-7 text-[#4B5563]" />
+                <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center mb-3">
+                  <Tag className="w-7 h-7 text-slate-500" />
                 </div>
                 <p className="text-sm text-slate-500">Search and add products above</p>
                 <p className="text-xs text-slate-400 mt-1">Set quantity per product to print multiple labels</p>
@@ -371,7 +371,7 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
                 {queue.map(item => (
                   <div
                     key={item.product.id}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-[#E5E7EB] bg-[#F3F4F6] hover:border-[#111827]/50 transition"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-100 hover:border-slate-900/50 transition"
                   >
                     {/* Info */}
                     <div className="flex-1 min-w-0">
@@ -383,7 +383,7 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <button
                         onClick={() => updateQuantity(item.product.id, -1)}
-                        className="w-7 h-7 rounded-lg border border-[#E5E7EB] bg-white hover:bg-[#E5E7EB] flex items-center justify-center transition text-slate-600"
+                        className="w-7 h-7 rounded-lg border border-slate-200 bg-white hover:bg-slate-200 flex items-center justify-center transition text-slate-600"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
@@ -392,11 +392,11 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
                         min={1}
                         value={item.quantity}
                         onChange={e => setQuantityDirect(item.product.id, e.target.value)}
-                        className="w-12 text-center text-sm font-bold border border-[#E5E7EB] rounded-lg bg-white py-1 focus:outline-none focus:ring-1 focus:ring-[#111827]/20"
+                        className="w-12 text-center text-sm font-bold border border-slate-200 rounded-lg bg-white py-1 focus:outline-none focus:ring-1 focus:ring-slate-900/20"
                       />
                       <button
                         onClick={() => updateQuantity(item.product.id, 1)}
-                        className="w-7 h-7 rounded-lg border border-[#E5E7EB] bg-white hover:bg-[#E5E7EB] flex items-center justify-center transition text-slate-600"
+                        className="w-7 h-7 rounded-lg border border-slate-200 bg-white hover:bg-slate-200 flex items-center justify-center transition text-slate-600"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -419,7 +419,7 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
           <button
             onClick={handlePrint}
             disabled={queue.length === 0}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-white bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm text-sm"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-white bg-slate-900 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm text-sm"
           >
             <Printer className="w-4 h-4" />
             Print Labels
@@ -433,8 +433,8 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
 
         {/* RIGHT COLUMN — Preview */}
         <div className="flex flex-col gap-4">
-          <div className="bg-white rounded-2xl shadow-sm border border-[#E5E7EB] p-4">
-            <h2 className="text-sm font-semibold text-[#111827] mb-4">Label Preview</h2>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+            <h2 className="text-sm font-semibold text-slate-900 mb-4">Label Preview</h2>
 
             {previewProduct ? (
               <div className="flex flex-col items-center">
@@ -527,11 +527,11 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div
-                  className="border border-dashed border-slate-200 rounded-sm bg-[#E5E7EB] flex flex-col items-center justify-center"
+                  className="border border-dashed border-slate-200 rounded-sm bg-slate-200 flex flex-col items-center justify-center"
                   style={{ width: '189px', minHeight: '106px' }}
                 >
-                  <Tag className="w-8 h-8 text-[#D1D5DB] mb-2" />
-                  <p className="text-xs text-[#4B5563]">Label preview</p>
+                  <Tag className="w-8 h-8 text-slate-300 mb-2" />
+                  <p className="text-xs text-slate-500">Label preview</p>
                 </div>
                 <p className="text-xs text-slate-400 mt-3">Add a product to see the label preview</p>
               </div>
@@ -539,9 +539,9 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
           </div>
 
           {/* Label info card */}
-          <div className="bg-[#E5E7EB] rounded-2xl border border-[#E5E7EB] p-4">
-            <h3 className="text-xs font-semibold text-[#111827] uppercase tracking-wide mb-2">Label Specs</h3>
-            <ul className="text-xs text-[#4B5563] space-y-1">
+          <div className="bg-slate-200 rounded-2xl border border-slate-200 p-4">
+            <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wide mb-2">Label Specs</h3>
+            <ul className="text-xs text-slate-500 space-y-1">
               <li>Size: 50mm × 28mm per label</li>
               <li>Layout: 2 labels per row</li>
               <li>Barcode: Code128 (auto-generated)</li>
@@ -555,9 +555,9 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
       {/* Batch Select Product Grid */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-[#111827]">
+          <h2 className="text-sm font-semibold text-slate-900">
             Batch Select
-            <span className="ml-2 text-xs font-normal text-[#4B5563]">— tick products to print one label each</span>
+            <span className="ml-2 text-xs font-normal text-slate-500">— tick products to print one label each</span>
           </h2>
           {selected.size > 0 && (
             <span className="text-xs text-slate-500">{selected.size} selected</span>
@@ -572,8 +572,8 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
                 onClick={() => toggleSelect(product.id)}
                 className={`relative flex flex-col items-start p-3 rounded-xl border text-left transition ${
                   isSelected
-                    ? 'border-[#111827] bg-[#111827] text-white'
-                    : 'border-[#E5E7EB] bg-white text-slate-800 hover:border-[#111827]/40'
+                    ? 'border-slate-900 bg-slate-900 text-white'
+                    : 'border-slate-200 bg-white text-slate-800 hover:border-slate-900/40'
                 }`}
               >
                 <div className={`absolute top-2 right-2 ${isSelected ? 'text-white' : 'text-slate-300'}`}>
@@ -585,7 +585,7 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
                 <p className={`text-xs font-mono mt-1 ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>
                   {product.sku}
                 </p>
-                <p className={`text-sm font-bold mt-1 ${isSelected ? 'text-white' : 'text-[#111827]'}`}>
+                <p className={`text-sm font-bold mt-1 ${isSelected ? 'text-white' : 'text-slate-900'}`}>
                   {formatPrice(product.selling_price)}
                 </p>
               </button>
@@ -596,11 +596,11 @@ export function LabelPrinter({ products }: LabelPrinterProps) {
 
       {/* Sticky Bottom Bar for Batch Print */}
       {selected.size > 0 && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-[#111827] text-white rounded-2xl px-6 py-3 flex items-center gap-4 shadow-2xl">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white rounded-2xl px-6 py-3 flex items-center gap-4 shadow-2xl">
           <span className="text-sm font-medium">{selected.size} item{selected.size !== 1 ? 's' : ''} selected</span>
           <button
             onClick={handleBatchPrint}
-            className="px-4 py-1.5 bg-white text-[#111827] rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors"
+            className="px-4 py-1.5 bg-white text-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors"
           >
             Print {selected.size} Labels
           </button>

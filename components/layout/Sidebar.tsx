@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -51,7 +51,7 @@ export default function Sidebar({ userRole }: { userRole: string }) {
             <img src="/DUBAI LOGO BR.png" alt="Dubai Shoppe" className="w-14 object-contain object-top" />
           </div>
           <div className="min-w-0">
-            <p className="text-[#0f172a] font-black text-sm leading-tight truncate" style={{ fontFamily: 'Rubik, sans-serif' }}>Dubai Shoppe</p>
+            <p className="text-slate-950 font-black text-sm leading-tight truncate" style={{ fontFamily: 'Rubik, sans-serif' }}>Dubai Shoppe</p>
             <p className="text-slate-500 text-[10px] font-medium truncate">POS System</p>
           </div>
         </div>

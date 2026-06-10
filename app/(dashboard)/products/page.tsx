@@ -38,10 +38,7 @@ export default async function ProductsPage({ searchParams }: { searchParams?: { 
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1
-            className="text-2xl font-bold text-[#111827]"
-            style={{ fontFamily: 'Rubik, sans-serif' }}
-          >
+          <h1 className="text-2xl font-bold text-slate-900">
             Product Inventory
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -56,7 +53,7 @@ export default async function ProductsPage({ searchParams }: { searchParams?: { 
             </Button>
           </Link>
           <Link href="/products/new">
-            <Button className="bg-[#111827] text-white hover:bg-[#1F2937] gap-1.5">
+            <Button className="bg-slate-900 text-white hover:bg-slate-800 gap-1.5">
               <PlusIcon className="size-4" />
               Add Product
             </Button>
@@ -67,31 +64,31 @@ export default async function ProductsPage({ searchParams }: { searchParams?: { 
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <Card className="p-2.5 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 text-center sm:text-left">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-[#111827]/10 shrink-0">
-            <PackageIcon className="size-4 sm:size-5 text-[#4B5563]" />
+          <div className="p-1.5 sm:p-2 rounded-lg icon-gradient-dark shrink-0">
+            <PackageIcon className="size-4 sm:size-5 text-white" />
           </div>
           <div>
-            <p className="text-xl sm:text-2xl font-bold text-[#111827] leading-tight">{products.length}</p>
+            <p className="text-xl sm:text-2xl font-black tabular-nums text-slate-900 leading-tight">{products.length}</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Total Products</p>
           </div>
         </Card>
 
         <Card className="p-2.5 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 text-center sm:text-left">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-[#111827]/10 shrink-0">
-            <CheckCircleIcon className="size-4 sm:size-5 text-[#4B5563]" />
+          <div className="p-1.5 sm:p-2 rounded-lg icon-gradient-blue shrink-0">
+            <CheckCircleIcon className="size-4 sm:size-5 text-white" />
           </div>
           <div>
-            <p className="text-xl sm:text-2xl font-bold text-[#111827] leading-tight">{activeCount}</p>
+            <p className="text-xl sm:text-2xl font-black tabular-nums text-slate-900 leading-tight">{activeCount}</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Active Products</p>
           </div>
         </Card>
 
         <Card className="p-2.5 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 text-center sm:text-left">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-amber-500/10 shrink-0">
-            <AlertTriangleIcon className="size-4 sm:size-5 text-amber-500" />
+          <div className="p-1.5 sm:p-2 rounded-lg icon-gradient-amber shrink-0">
+            <AlertTriangleIcon className="size-4 sm:size-5 text-white" />
           </div>
           <div>
-            <p className="text-xl sm:text-2xl font-bold text-[#111827] leading-tight">{lowStockCount}</p>
+            <p className="text-xl sm:text-2xl font-black tabular-nums text-slate-900 leading-tight">{lowStockCount}</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Low Stock Items</p>
           </div>
         </Card>
@@ -101,7 +98,7 @@ export default async function ProductsPage({ searchParams }: { searchParams?: { 
       <div className="flex gap-2 flex-wrap">
         <Link
           href="/products"
-          className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${!isLowStockFilter ? 'bg-[#111827] text-white border-[#111827]' : 'border-slate-200 text-slate-600 hover:border-slate-400'}`}
+          className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${!isLowStockFilter ? 'bg-slate-900 text-white border-slate-900' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
         >
           All Products ({products.length})
         </Link>

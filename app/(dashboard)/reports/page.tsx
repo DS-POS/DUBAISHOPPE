@@ -62,24 +62,22 @@ function SummaryCard({
   value,
   sub,
   bg,
-  iconBg,
-  iconColor,
+  iconClass,
 }: {
   icon: React.ReactNode
   label: string
   value: string
   sub?: string
   bg: string
-  iconBg: string
-  iconColor: string
+  iconClass: string
 }) {
   return (
     <div className={`${bg} rounded-2xl ring-1 ring-black/[0.06] shadow-sm p-5`}>
-      <div className={`inline-flex items-center justify-center ${iconBg} ${iconColor} rounded-xl p-2 mb-3`}>
+      <div className={`inline-flex items-center justify-center ${iconClass} rounded-xl p-2 mb-3`}>
         {icon}
       </div>
-      <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider">{label}</p>
-      <p className="text-2xl font-bold text-[#111827] mt-1" style={{ fontFamily: 'Rubik, sans-serif' }}>
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</p>
+      <p className="text-2xl font-bold text-slate-900 mt-1">
         {value}
       </p>
       {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
@@ -105,16 +103,16 @@ function DailyChart({ data }: { data: ReportData['dailyRevenue'] }) {
             >
               {/* Tooltip */}
               <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
-                <div className="bg-[#111827] text-white text-[10px] font-medium px-2 py-1 rounded-lg whitespace-nowrap shadow">
+                <div className="bg-slate-900 text-white text-[10px] font-medium px-2 py-1 rounded-lg whitespace-nowrap shadow">
                   {formatDateDisplay(d.date)}: ₹{formatINR(d.amount)}
                 </div>
-                <div className="border-4 border-transparent border-t-[#111827]" />
+                <div className="border-4 border-transparent border-t-slate-900" />
               </div>
               <div
                 className="w-full rounded-t min-h-[2px] transition-all"
                 style={{
                   height: `${Math.max(pct, d.amount > 0 ? 4 : 1)}%`,
-                  backgroundColor: d.amount > 0 ? '#111827' : '#E5E7EB',
+                  backgroundColor: d.amount > 0 ? '#1e293b' : '#E5E7EB',
                 }}
               />
             </div>
@@ -302,19 +300,19 @@ export default function ReportsPage() {
   ]
 
   return (
-    <div className="space-y-6 pb-16" style={{ fontFamily: 'Rubik, sans-serif' }}>
+    <div className="space-y-6 pb-16">
 
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827]">Reports</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Reports</h1>
           <p className="text-sm text-slate-500 mt-0.5">Business performance &amp; export</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={exportExcel}
             disabled={!data || isPending}
-            className="inline-flex items-center gap-2 bg-[#111827] hover:bg-[#1F2937] disabled:opacity-40 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all duration-200"
+            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all duration-200"
           >
             <Download className="size-4" />
             Export Excel
@@ -342,7 +340,7 @@ export default function ReportsPage() {
             { href: '/reports/payables', label: 'Accounts Payable', desc: 'Supplier balances' },
           ].map(r => (
             <Link key={r.href} href={r.href}
-              className="flex flex-col gap-0.5 rounded-xl border border-slate-200 px-4 py-3 hover:bg-slate-50 hover:border-[#111827]/30 transition-colors">
+              className="flex flex-col gap-0.5 rounded-xl border border-slate-200 px-4 py-3 hover:bg-slate-50 hover:border-slate-900/30 transition-colors">
               <span className="text-sm font-semibold text-slate-900">{r.label}</span>
               <span className="text-xs text-slate-400">{r.desc}</span>
             </Link>
@@ -360,7 +358,7 @@ export default function ReportsPage() {
                 key={btn.key}
                 onClick={() => setQuickRange(btn.key)}
                 disabled={isPending}
-                className="text-xs font-medium px-3 py-1.5 rounded-full bg-slate-100 hover:bg-[#111827] hover:text-white disabled:opacity-40 text-slate-600 ring-1 ring-slate-200 transition-all duration-150"
+                className="text-xs font-medium px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-900 hover:text-white disabled:opacity-40 text-slate-600 ring-1 ring-slate-200 transition-all duration-150"
               >
                 {btn.label}
               </button>
@@ -375,7 +373,7 @@ export default function ReportsPage() {
                 type="date"
                 value={from}
                 onChange={e => setFrom(e.target.value)}
-                className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-white"
+                className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 bg-white"
               />
             </div>
             <div className="flex flex-col gap-0.5">
@@ -384,13 +382,13 @@ export default function ReportsPage() {
                 type="date"
                 value={to}
                 onChange={e => setTo(e.target.value)}
-                className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-white"
+                className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 bg-white"
               />
             </div>
             <button
               onClick={() => fetchData(from, to)}
               disabled={isPending}
-              className="mt-5 inline-flex items-center gap-2 bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-sm transition-all duration-200"
+              className="mt-5 inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-sm transition-all duration-200"
             >
               <RefreshCw className={`size-4 ${isPending ? 'animate-spin' : ''}`} />
               Apply
@@ -410,7 +408,7 @@ export default function ReportsPage() {
       {isPending && !data && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-[#F3F4F6] rounded-2xl ring-1 ring-black/[0.06] shadow-sm p-5 animate-pulse h-28" />
+            <div key={i} className="bg-slate-100 rounded-2xl ring-1 ring-black/[0.06] shadow-sm p-5 animate-pulse h-28" />
           ))}
         </div>
       )}
@@ -424,9 +422,8 @@ export default function ReportsPage() {
               label="Total Revenue"
               value={`₹${formatINR(data.totalRevenue)}`}
               sub={`Avg ₹${formatINR(data.averageOrderValue)} / order`}
-              bg="bg-[#F3F4F6]"
-              iconBg="bg-[#E5E7EB]"
-              iconColor="text-[#4B5563]"
+              bg="bg-white"
+              iconClass="icon-gradient-blue text-white"
             />
             <SummaryCard
               icon={<FileText className="size-4" />}
@@ -434,8 +431,7 @@ export default function ReportsPage() {
               value={String(data.totalInvoices)}
               sub={`${from} – ${to}`}
               bg="bg-white"
-              iconBg="bg-slate-100"
-              iconColor="text-slate-500"
+              iconClass="icon-gradient-dark text-white"
             />
             <SummaryCard
               icon={<CheckCircle className="size-4" />}
@@ -443,17 +439,15 @@ export default function ReportsPage() {
               value={`₹${formatINR(data.totalPaid)}`}
               sub={`${data.totalRevenue > 0 ? ((data.totalPaid / data.totalRevenue) * 100).toFixed(1) : 0}% of revenue`}
               bg="bg-emerald-50"
-              iconBg="bg-emerald-100"
-              iconColor="text-emerald-600"
+              iconClass="icon-gradient-emerald text-white"
             />
             <SummaryCard
               icon={<AlertCircle className="size-4" />}
               label="Outstanding Due"
               value={`₹${formatINR(data.totalDue)}`}
               sub={data.totalDue > 0 ? 'Pending collection' : 'All cleared!'}
-              bg={data.totalDue > 0 ? 'bg-rose-50' : 'bg-[#F3F4F6]'}
-              iconBg={data.totalDue > 0 ? 'bg-rose-100' : 'bg-[#E5E7EB]'}
-              iconColor={data.totalDue > 0 ? 'text-rose-600' : 'text-[#4B5563]'}
+              bg={data.totalDue > 0 ? 'bg-rose-50' : 'bg-white'}
+              iconClass={data.totalDue > 0 ? 'icon-gradient-red text-white' : 'icon-gradient-dark text-white'}
             />
           </div>
 
@@ -463,8 +457,8 @@ export default function ReportsPage() {
             {/* Daily Revenue Chart */}
             <div className="lg:col-span-2 bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm p-5">
               <div className="flex items-center gap-2 mb-4">
-                <BarChart2 className="size-4 text-[#4B5563]" />
-                <h2 className="font-bold text-[#111827] text-sm uppercase tracking-wide">Daily Revenue</h2>
+                <BarChart2 className="size-4 text-slate-500" />
+                <h2 className="font-bold text-slate-900 text-sm uppercase tracking-wide">Daily Revenue</h2>
               </div>
               {data.dailyRevenue.every(d => d.amount === 0) ? (
                 <div className="flex items-center justify-center h-28 text-slate-400 text-sm">
@@ -476,8 +470,8 @@ export default function ReportsPage() {
             </div>
 
             {/* Payment Breakdown */}
-            <div className="bg-[#F3F4F6] rounded-2xl ring-1 ring-black/[0.06] shadow-sm p-5">
-              <h2 className="font-bold text-[#111827] text-sm uppercase tracking-wide mb-4">Payment Methods</h2>
+            <div className="bg-slate-50 rounded-2xl ring-1 ring-black/[0.06] shadow-sm p-5">
+              <h2 className="font-bold text-slate-900 text-sm uppercase tracking-wide mb-4">Payment Methods</h2>
               <PaymentBreakdown data={data.paymentBreakdown} total={data.totalRevenue} />
             </div>
           </div>
@@ -488,7 +482,7 @@ export default function ReportsPage() {
             {/* Top Products */}
             <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b border-slate-100">
-                <h2 className="font-bold text-[#111827]">Top Products</h2>
+                <h2 className="font-bold text-slate-900">Top Products</h2>
                 <p className="text-xs text-slate-400 mt-0.5">By revenue in selected period</p>
               </div>
               {data.topProducts.length === 0 ? (
@@ -497,7 +491,7 @@ export default function ReportsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-[#111827] border-b border-[#1F2937]">
+                      <tr className="bg-slate-900 border-b border-slate-800">
                         <th className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide w-8">#</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">Product</th>
                         <th className="text-right px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">Qty</th>
@@ -506,14 +500,14 @@ export default function ReportsPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {data.topProducts.map((p, idx) => (
-                        <tr key={p.product_name} className="hover:bg-[#F3F4F6] transition-colors">
+                        <tr key={p.product_name} className="hover:bg-slate-50 transition-colors">
                           <td className="px-4 py-3 text-xs font-bold text-slate-400">{idx + 1}</td>
                           <td className="px-4 py-3">
                             <p className="font-medium text-slate-800 text-sm truncate max-w-[180px]">{p.product_name}</p>
                             {p.sku && <p className="text-xs text-slate-400 font-mono">{p.sku}</p>}
                           </td>
                           <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{p.quantity}</td>
-                          <td className="px-4 py-3 text-right font-semibold text-[#111827] tabular-nums">
+                          <td className="px-4 py-3 text-right font-semibold text-slate-900 tabular-nums">
                             ₹{formatINR(p.revenue)}
                           </td>
                         </tr>
@@ -525,9 +519,9 @@ export default function ReportsPage() {
             </div>
 
             {/* Top Customers */}
-            <div className="bg-[#E5E7EB] rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#E5E7EB]">
-                <h2 className="font-bold text-[#111827]">Top Customers</h2>
+            <div className="bg-slate-100 rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-200">
+                <h2 className="font-bold text-slate-900">Top Customers</h2>
                 <p className="text-xs text-slate-400 mt-0.5">By spend in selected period</p>
               </div>
               {data.topCustomers.length === 0 ? (
@@ -536,22 +530,22 @@ export default function ReportsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-[#D1D5DB] border-b border-[#D1D5DB]">
+                      <tr className="bg-slate-200 border-b border-slate-200">
                         <th className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide w-8">#</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">Customer</th>
                         <th className="text-right px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">Invoices</th>
                         <th className="text-right px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">Spend</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#E5E7EB]">
+                    <tbody className="divide-y divide-slate-200">
                       {data.topCustomers.map((c, idx) => (
-                        <tr key={c.customer_name} className="hover:bg-[#D1D5DB]/60 transition-colors">
+                        <tr key={c.customer_name} className="hover:bg-slate-200/60 transition-colors">
                           <td className="px-4 py-3 text-xs font-bold text-slate-400">{idx + 1}</td>
                           <td className="px-4 py-3 font-medium text-slate-800 text-sm truncate max-w-[180px]">
                             {c.customer_name}
                           </td>
                           <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{c.invoice_count}</td>
-                          <td className="px-4 py-3 text-right font-semibold text-[#111827] tabular-nums">
+                          <td className="px-4 py-3 text-right font-semibold text-slate-900 tabular-nums">
                             ₹{formatINR(c.total_spend)}
                           </td>
                         </tr>
@@ -567,20 +561,20 @@ export default function ReportsPage() {
           <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
               <div>
-                <h2 className="font-bold text-[#111827]">All Invoices</h2>
+                <h2 className="font-bold text-slate-900">All Invoices</h2>
                 <p className="text-xs text-slate-400 mt-0.5">{data.invoices.length} invoices in selected period</p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={exportExcel}
-                  className="text-xs font-medium text-[#4B5563] hover:underline"
+                  className="text-xs font-medium text-slate-600 hover:underline"
                 >
                   Export Excel
                 </button>
                 <span className="text-slate-300">|</span>
                 <button
                   onClick={exportCSV}
-                  className="text-xs font-medium text-[#4B5563] hover:underline"
+                  className="text-xs font-medium text-slate-600 hover:underline"
                 >
                   Export CSV
                 </button>
@@ -594,7 +588,7 @@ export default function ReportsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-[#111827] border-b border-[#1F2937]">
+                    <tr className="bg-slate-900 border-b border-slate-800">
                       <th className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">Invoice</th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden sm:table-cell">Date</th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">Customer</th>
@@ -611,7 +605,7 @@ export default function ReportsPage() {
                     {data.invoices.map(inv => {
                       const due = Math.max(0, inv.grand_total - inv.amount_paid)
                       return (
-                        <tr key={inv.invoice_no} className="hover:bg-[#F3F4F6] transition-colors">
+                        <tr key={inv.invoice_no} className="hover:bg-slate-50 transition-colors">
                           <td className="px-4 py-3 font-mono text-xs font-semibold text-slate-900">
                             {inv.invoice_no}
                           </td>
@@ -630,7 +624,7 @@ export default function ReportsPage() {
                           <td className="px-4 py-3 text-right text-slate-600 tabular-nums hidden lg:table-cell">
                             ₹{formatINR(inv.total_gst)}
                           </td>
-                          <td className="px-4 py-3 text-right font-bold text-[#111827] tabular-nums">
+                          <td className="px-4 py-3 text-right font-bold text-slate-900 tabular-nums">
                             ₹{formatINR(inv.grand_total)}
                           </td>
                           <td className="px-4 py-3 text-right text-emerald-600 tabular-nums hidden md:table-cell">

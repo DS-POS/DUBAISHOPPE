@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Props { basePath: string }
@@ -28,14 +28,14 @@ export function DateRangeFilter({ basePath }: Props) {
     <div className="flex items-center gap-2 flex-wrap">
       {presets.map(p => (
         <button key={p.label} onClick={() => apply(p.f, p.t)}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${from===p.f&&to===p.t ? 'bg-[#111827] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${from===p.f&&to===p.t ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
           {p.label}
         </button>
       ))}
       <div className="flex items-center gap-2 ml-1">
-        <input type="date" value={from} onChange={e => apply(e.target.value, to)} className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-[#111827]/20" />
+        <input type="date" value={from} onChange={e => apply(e.target.value, to)} className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-slate-900/20" />
         <span className="text-xs text-slate-400">to</span>
-        <input type="date" value={to} onChange={e => apply(from, e.target.value)} className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-[#111827]/20" />
+        <input type="date" value={to} onChange={e => apply(from, e.target.value)} className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-slate-900/20" />
       </div>
     </div>
   )

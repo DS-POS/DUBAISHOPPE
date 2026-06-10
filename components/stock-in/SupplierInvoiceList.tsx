@@ -103,7 +103,7 @@ export default function SupplierInvoiceList({ initialInvoices, userRole }: Props
         {isManager && <td />}
         <td className="px-5 py-3.5 text-right">
           <div className="flex items-center justify-end gap-2">
-            <Link href={`/stock-in/${inv.id}`} className="text-xs font-medium text-[#4B5563] hover:underline">View →</Link>
+            <Link href={`/stock-in/${inv.id}`} className="text-xs font-medium text-slate-500 hover:text-slate-900 hover:underline">View →</Link>
             {!isManager && (
               <button
                 className="text-xs font-medium text-red-400 hover:text-red-600 disabled:opacity-50"
@@ -130,17 +130,17 @@ export default function SupplierInvoiceList({ initialInvoices, userRole }: Props
               placeholder="Search supplier or invoice…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] placeholder:text-slate-400"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 placeholder:text-slate-400"
             />
           </div>
           <div className="flex gap-2">
             <div className="flex items-center gap-1.5 flex-1">
               <label className="text-xs text-slate-500 whitespace-nowrap">From</label>
-              <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="h-10 flex-1 rounded-xl border border-slate-200 bg-white px-2 text-xs outline-none focus:ring-2 focus:ring-[#111827]/20" />
+              <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="h-10 flex-1 rounded-xl border border-slate-200 bg-white px-2 text-xs outline-none focus:ring-2 focus:ring-slate-900/20" />
             </div>
             <div className="flex items-center gap-1.5 flex-1">
               <label className="text-xs text-slate-500 whitespace-nowrap">To</label>
-              <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="h-10 flex-1 rounded-xl border border-slate-200 bg-white px-2 text-xs outline-none focus:ring-2 focus:ring-[#111827]/20" />
+              <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="h-10 flex-1 rounded-xl border border-slate-200 bg-white px-2 text-xs outline-none focus:ring-2 focus:ring-slate-900/20" />
             </div>
             {(search || fromDate || toDate) && (
               <button onClick={() => { setSearch(''); setFromDate(''); setToDate('') }} className="h-10 px-3 rounded-xl border border-slate-200 bg-white text-slate-500 text-xs hover:bg-slate-50 transition-colors">Clear</button>
@@ -211,14 +211,14 @@ export default function SupplierInvoiceList({ initialInvoices, userRole }: Props
                       return (
                         <div key={inv.id} className="px-4 py-3 pl-11 bg-white border-l-2 border-slate-300 flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
-                            <p className="font-mono text-xs font-semibold text-[#111827] truncate">{inv.purchase_invoice_no ?? '—'}</p>
+                            <p className="font-mono text-xs font-semibold text-slate-900 truncate">{inv.purchase_invoice_no ?? '—'}</p>
                             <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.purchase_date), 'dd MMM yyyy')}</p>
                             {!isManager && balance > 0.005 && <p className="text-xs font-bold text-red-600 mt-0.5">Due ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0">
                             <p className="font-bold text-sm text-slate-900 tabular-nums">₹{Number(inv.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
                             {!isManager && <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${STATUS_STYLE[inv.payment_status]}`}>{inv.payment_status}</span>}
-                            <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-[#111827] underline">View</Link>
+                            <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-slate-700 hover:text-slate-900 underline">View</Link>
                           </div>
                         </div>
                       )
@@ -233,7 +233,7 @@ export default function SupplierInvoiceList({ initialInvoices, userRole }: Props
                 return (
                   <div key={inv.id} className="px-4 py-3 flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="font-mono text-xs font-semibold text-[#111827] truncate">{inv.purchase_invoice_no ?? '—'}</p>
+                      <p className="font-mono text-xs font-semibold text-slate-900 truncate">{inv.purchase_invoice_no ?? '—'}</p>
                       <p className="text-sm font-semibold text-slate-800 mt-0.5 truncate">{inv.supplier_name ?? '—'}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.purchase_date), 'dd MMM yyyy')}</p>
                       {!isManager && balance > 0.005 && <p className="text-xs font-bold text-red-600 mt-0.5">Due ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>}
@@ -241,7 +241,7 @@ export default function SupplierInvoiceList({ initialInvoices, userRole }: Props
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       <p className="font-bold text-sm text-slate-900 tabular-nums">₹{Number(inv.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
                       {!isManager && <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${STATUS_STYLE[inv.payment_status]}`}>{inv.payment_status}</span>}
-                      <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-[#111827] underline">View</Link>
+                      <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-slate-700 hover:text-slate-900 underline">View</Link>
                     </div>
                   </div>
                 )
@@ -252,7 +252,7 @@ export default function SupplierInvoiceList({ initialInvoices, userRole }: Props
           {/* Desktop: full table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#111827] border-b border-[#1F2937]">
+              <thead className="bg-slate-900 border-b border-slate-800">
                 <tr>
                   <th className="px-3 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider w-8">#</th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Invoice No</th>

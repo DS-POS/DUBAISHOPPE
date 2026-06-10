@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -71,7 +71,7 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-slate-700">Date</label>
-          <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]" required />
+          <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900" required />
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-slate-700">Category</label>
@@ -82,7 +82,7 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
                 if (e.target.value === '__add__') { setShowAddCategory(true); return }
                 setForm(f => ({ ...f, category_id: e.target.value }))
               }}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-white"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 bg-white"
               required
             >
               <option value="__add__">+ Add Category</option>
@@ -112,16 +112,16 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
       </div>
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-700">Description</label>
-        <input type="text" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="e.g. Monthly salary for June" className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]" required />
+        <input type="text" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="e.g. Monthly salary for June" className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900" required />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-slate-700">Amount (₹)</label>
-          <input type="number" value={form.amount || ''} min={0.01} step={0.01} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} onFocus={e => e.target.select()} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]" required />
+          <input type="number" value={form.amount || ''} min={0.01} step={0.01} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} onFocus={e => e.target.select()} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900" required />
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-slate-700">Payment Method</label>
-          <select value={form.payment_method} onChange={e => setForm(f => ({ ...f, payment_method: e.target.value as CreateExpenseData['payment_method'] }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-white">
+          <select value={form.payment_method} onChange={e => setForm(f => ({ ...f, payment_method: e.target.value as CreateExpenseData['payment_method'] }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 bg-white">
             <option value="cash">Cash</option>
             <option value="upi">UPI</option>
             <option value="card">Card</option>
@@ -132,11 +132,11 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
       </div>
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-700">Reference No. <span className="text-slate-400 font-normal">(optional)</span></label>
-        <input type="text" value={form.reference_no} onChange={e => setForm(f => ({ ...f, reference_no: e.target.value }))} placeholder="Cheque no., UPI ref, etc." className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]" />
+        <input type="text" value={form.reference_no} onChange={e => setForm(f => ({ ...f, reference_no: e.target.value }))} placeholder="Cheque no., UPI ref, etc." className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900" />
       </div>
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={() => router.back()} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-        <button type="submit" disabled={loading} className="flex-1 px-4 py-2.5 rounded-xl bg-[#111827] text-white text-sm font-semibold hover:bg-[#1F2937] disabled:opacity-50 transition-colors">{loading ? 'Saving...' : 'Save Expense'}</button>
+        <button type="submit" disabled={loading} className="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors">{loading ? 'Saving...' : 'Save Expense'}</button>
       </div>
     </form>
   )

@@ -27,13 +27,13 @@ export default async function PurchaseOrderDetailPage({ params }: { params: { id
       <div className="flex items-start justify-between gap-4">
         <div>
           <Link href="/purchase-orders" className="text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1 mb-2">← Purchase Orders</Link>
-          <h1 className="text-2xl font-bold text-[#111827]">{po.po_no}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{po.po_no}</h1>
           <p className="text-slate-500 text-sm mt-1">{format(new Date(po.created_at), 'dd MMM yyyy, hh:mm a')}</p>
         </div>
         <span className={`text-xs font-semibold px-3 py-1.5 rounded-full capitalize ${STATUS_STYLE[po.status]}`}>{po.status}</span>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-2">
+      <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm p-5 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-slate-500">Supplier</span>
           <span className="font-semibold text-slate-900">{po.supplier_name ?? '—'}</span>
@@ -52,19 +52,19 @@ export default async function PurchaseOrderDetailPage({ params }: { params: { id
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase">Product</th>
-              <th className="text-center px-4 py-3 text-xs font-semibold text-slate-600 uppercase">Qty</th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-slate-600 uppercase">Unit Cost</th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-slate-600 uppercase">Total</th>
+            <tr className="bg-slate-900">
+              <th className="text-left px-4 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider">Product</th>
+              <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider">Qty</th>
+              <th className="text-right px-4 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider">Unit Cost</th>
+              <th className="text-right px-4 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider">Total</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {items.map(item => (
-              <tr key={item.id}>
+              <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
                 <td className="px-4 py-3">
                   <p className="font-medium text-slate-900">{item.product_name}</p>
                   {item.sku && <p className="text-xs text-slate-400">{item.sku}</p>}
@@ -76,9 +76,9 @@ export default async function PurchaseOrderDetailPage({ params }: { params: { id
             ))}
           </tbody>
           <tfoot>
-            <tr className="border-t border-slate-200 bg-slate-50">
-              <td colSpan={3} className="px-4 py-3 text-right font-semibold text-slate-700">Total</td>
-              <td className="px-4 py-3 text-right text-lg font-bold text-slate-900">₹{formatINR(po.total_amount)}</td>
+            <tr className="border-t-2 border-slate-100 bg-slate-50/60">
+              <td colSpan={3} className="px-4 py-3.5 text-right font-semibold text-slate-700">Total</td>
+              <td className="px-4 py-3.5 text-right text-lg font-bold text-slate-900">₹{formatINR(po.total_amount)}</td>
             </tr>
           </tfoot>
         </table>

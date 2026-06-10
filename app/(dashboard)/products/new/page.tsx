@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { ArrowLeftIcon } from 'lucide-react'
 
 import { ProductForm } from '@/components/products/ProductForm'
@@ -20,7 +20,7 @@ export default async function NewProductPage() {
 
       <div>
         <h1
-          className="text-2xl font-bold text-[#111827]"
+          className="text-2xl font-bold text-slate-900"
           style={{ fontFamily: 'Rubik, sans-serif' }}
         >
           Add Product

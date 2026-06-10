@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef } from 'react'
 import { SearchIcon, CameraIcon, XIcon, PackageIcon } from 'lucide-react'
@@ -104,10 +104,10 @@ export function ProductSearch({ products, onAdd }: ProductSearchProps) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search product by name, SKU or barcode…"
+            placeholder="Search products or scan barcode..."
             autoFocus
             autoComplete="off"
-            className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-10 text-sm font-medium shadow-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] placeholder:text-slate-400 transition-all"
+            className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-10 text-sm font-medium shadow-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-slate-400 transition-all"
           />
           {query && (
             <button

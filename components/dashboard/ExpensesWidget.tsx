@@ -1,4 +1,4 @@
-import { getExpenseSummary } from '@/actions/expenses'
+﻿import { getExpenseSummary } from '@/actions/expenses'
 import { TrendingDownIcon } from 'lucide-react'
 import Link from 'next/link'
 
@@ -16,7 +16,7 @@ export async function ExpensesWidget() {
           </div>
           <span className="text-sm font-semibold text-slate-700">Expenses This Month</span>
         </div>
-        <Link href="/expenses" className="text-xs text-[#111827] font-medium hover:underline">View all</Link>
+        <Link href="/expenses" className="text-xs text-slate-900 font-medium hover:underline">View all</Link>
       </div>
       <p className="text-2xl font-black text-slate-900">₹{summary.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
       <div className="mt-3 space-y-1">

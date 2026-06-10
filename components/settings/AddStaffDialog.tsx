@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
@@ -32,7 +32,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 className="font-bold text-lg text-[#111827]">Add Staff Member</h2>
+          <h2 className="font-bold text-lg text-slate-900">Add Staff Member</h2>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-700">
             <XIcon className="size-5" />
           </button>
@@ -45,7 +45,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
               type="text" required value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Ahmed Ali"
-              className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20"
+              className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/20"
             />
           </div>
 
@@ -56,7 +56,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
               type="email" required value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               placeholder="staff@dubaishoppe.com"
-              className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20"
+              className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/20"
             />
           </div>
 
@@ -65,7 +65,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
             <select
               value={form.role}
               onChange={e => setForm(f => ({ ...f, role: e.target.value as UserRole }))}
-              className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 bg-white"
+              className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 bg-white"
             >
               <option value="cashier">Cashier — Sales only</option>
               <option value="manager">Manager — Sales, stock, reports</option>
@@ -81,7 +81,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
               value={form.pin}
               onChange={e => setForm(f => ({ ...f, pin: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
               placeholder="1234"
-              className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm text-center tracking-widest outline-none focus:ring-2 focus:ring-[#111827]/20"
+              className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm text-center tracking-widest outline-none focus:ring-2 focus:ring-slate-900/20"
             />
             <p className="text-xs text-slate-400 mt-1">Tell staff this PIN in person. They can change it anytime via Forgot PIN.</p>
           </div>
@@ -92,7 +92,7 @@ export function AddStaffDialog({ onClose }: { onClose: () => void }) {
               Cancel
             </button>
             <button type="submit" disabled={isPending || form.pin.length !== 4}
-              className="flex-1 h-10 rounded-xl bg-[#111827] text-white text-sm font-semibold hover:bg-[#1F2937] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+              className="flex-1 h-10 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
               <UserPlusIcon className="size-4" />
               {isPending ? 'Creating…' : 'Add Staff'}
             </button>

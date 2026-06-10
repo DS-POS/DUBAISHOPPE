@@ -8,7 +8,7 @@ import { deleteSupplier } from '@/actions/suppliers'
 import type { Supplier } from '@/types/database'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { PlusIcon, SearchIcon, DownloadIcon } from 'lucide-react'
+import { PlusIcon, SearchIcon, DownloadIcon, TruckIcon } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { format, parseISO } from 'date-fns'
 
@@ -80,7 +80,7 @@ export default function SupplierList({ initialSuppliers }: Props) {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex-1">
-          <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A]" style={{ fontFamily: 'Rubik, sans-serif' }}>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
             Suppliers
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
@@ -120,7 +120,7 @@ export default function SupplierList({ initialSuppliers }: Props) {
             CSV
           </Button>
           <Link href="/suppliers/new">
-            <Button className="bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white h-9 text-xs sm:text-sm">
+            <Button className="bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white h-9 text-xs sm:text-sm">
               <PlusIcon className="size-3.5 mr-1.5" />
               Add
             </Button>
@@ -129,15 +129,34 @@ export default function SupplierList({ initialSuppliers }: Props) {
       </div>
 
       {suppliers.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-12 text-center">
-          <p className="text-muted-foreground">No suppliers yet.</p>
-          <Link href="/suppliers/new">
-            <Button className="mt-4 bg-[#111827] hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 text-white">Add First Supplier</Button>
-          </Link>
+        <div className="rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-sm p-12 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+              <TruckIcon className="size-6 text-slate-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-700 text-sm">No suppliers yet</p>
+              <p className="text-sm text-slate-400 mt-0.5">Add your first supplier to get started</p>
+            </div>
+            <Link href="/suppliers/new">
+              <Button className="bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white mt-1">
+                <PlusIcon className="size-4 mr-1.5" />
+                Add First Supplier
+              </Button>
+            </Link>
+          </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-12 text-center">
-          <p className="text-muted-foreground">No suppliers match &quot;{search}&quot;.</p>
+        <div className="rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-sm p-12 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+              <TruckIcon className="size-6 text-slate-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-700 text-sm">No suppliers match your search</p>
+              <p className="text-sm text-slate-400 mt-0.5">Try a different search term</p>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
@@ -151,7 +170,7 @@ export default function SupplierList({ initialSuppliers }: Props) {
                   {s.phone && <p className="text-xs text-slate-400 mt-0.5">{s.phone}</p>}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Link href={`/suppliers/${s.id}`} className="text-xs font-semibold text-[#111827] underline">View</Link>
+                  <Link href={`/suppliers/${s.id}`} className="text-xs font-semibold text-slate-900 underline">View</Link>
                   <Link href={`/suppliers/${s.id}/edit`} className="text-xs text-slate-500 hover:underline">Edit</Link>
                 </div>
               </div>
@@ -160,7 +179,7 @@ export default function SupplierList({ initialSuppliers }: Props) {
           {/* Desktop: table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#111827] border-b border-[#1F2937]">
+              <thead className="bg-slate-900 border-b border-slate-800">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">Name</th>
                   <th className="px-4 py-3 text-left font-semibold text-slate-300 uppercase tracking-wide text-xs">Business Name</th>
@@ -171,16 +190,16 @@ export default function SupplierList({ initialSuppliers }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((s, i) => (
-                  <tr key={s.id} className={`${i % 2 === 0 ? 'bg-[#F3F4F6]' : 'bg-[#E5E7EB]/40'} hover:bg-[#D1D5DB]/60 transition-colors cursor-pointer`}>
+                {filtered.map((s) => (
+                  <tr key={s.id} className="bg-white hover:bg-slate-50/70 transition-colors cursor-pointer">
                     <td className="px-4 py-3 font-medium">{s.name}</td>
                     <td className="px-4 py-3 text-muted-foreground">{s.business_name ?? '—'}</td>
                     <td className="px-4 py-3 text-muted-foreground">{s.phone ?? '—'}</td>
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{s.gstin ?? '—'}</td>
                     <td className="px-4 py-3 text-muted-foreground">{s.state}</td>
                     <td className="px-4 py-3 text-right space-x-3">
-                      <Link href={`/suppliers/${s.id}`} className="text-xs text-[#4B5563] hover:text-[#111827] font-semibold transition-colors">View</Link>
-                      <Link href={`/suppliers/${s.id}/edit`} className="text-xs text-slate-500 hover:text-[#1F2937] transition-colors">Edit</Link>
+                      <Link href={`/suppliers/${s.id}`} className="text-xs text-slate-600 hover:text-slate-900 font-semibold transition-colors">View</Link>
+                      <Link href={`/suppliers/${s.id}/edit`} className="text-xs text-slate-500 hover:text-slate-700 transition-colors">Edit</Link>
                       <button onClick={() => handleDelete(s)} className="text-xs text-destructive hover:underline">Delete</button>
                     </td>
                   </tr>

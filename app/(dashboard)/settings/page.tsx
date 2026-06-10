@@ -10,10 +10,7 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1
-          className="text-2xl font-bold text-[#111827]"
-          style={{ fontFamily: 'Rubik, sans-serif' }}
-        >
+        <h1 className="text-2xl font-bold text-slate-900">
           Settings
         </h1>
         <p className="text-slate-500 text-sm mt-1">

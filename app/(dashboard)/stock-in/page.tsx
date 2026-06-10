@@ -16,7 +16,7 @@ export default async function StockInPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827]" style={{ fontFamily: 'Rubik, sans-serif' }}>
+          <h1 className="text-2xl font-bold text-slate-900">
             Supplier Invoices
           </h1>
           <p className="text-slate-500 text-sm mt-1">All supplier invoices and stock received</p>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -34,7 +34,7 @@ export function QuotationRowActions({ quotationId, status }: QuotationRowActions
     <div className="flex items-center justify-end gap-1">
       <Link
         href={`/quotations/${quotationId}`}
-        className="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-[#111827] hover:bg-slate-100 rounded-lg transition-colors"
+        className="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
       >
         View
       </Link>

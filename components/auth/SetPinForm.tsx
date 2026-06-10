@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -43,7 +43,7 @@ export function SetPinForm() {
           value={pin}
           onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
           placeholder="••••"
-          className="w-full h-11 rounded-xl border border-slate-200 px-4 text-sm text-center tracking-widest text-lg outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+          className="w-full h-11 rounded-xl border border-slate-200 px-4 text-sm text-center tracking-widest text-lg outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
         />
       </div>
       <div>
@@ -55,12 +55,12 @@ export function SetPinForm() {
           value={confirm}
           onChange={e => setConfirm(e.target.value.replace(/\D/g, '').slice(0, 4))}
           placeholder="••••"
-          className="w-full h-11 rounded-xl border border-slate-200 px-4 text-sm text-center tracking-widest text-lg outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+          className="w-full h-11 rounded-xl border border-slate-200 px-4 text-sm text-center tracking-widest text-lg outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
         />
       </div>
       <button
         type="submit" disabled={loading || pin.length !== 4 || confirm.length !== 4}
-        className="w-full h-11 bg-[#111827] hover:bg-[#1F2937] text-white font-semibold rounded-xl transition-all disabled:opacity-50"
+        className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl transition-all disabled:opacity-50"
       >
         {loading ? 'Saving…' : 'Set New PIN'}
       </button>

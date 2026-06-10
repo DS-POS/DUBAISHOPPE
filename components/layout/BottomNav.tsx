@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, ShoppingCart, FileText, Package, Menu } from 'lucide-react'
@@ -30,13 +30,13 @@ export default function BottomNav() {
               href={tab.href}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors active:bg-slate-50',
-                isActive ? 'text-[#111827]' : 'text-slate-400'
+                isActive ? 'text-slate-900' : 'text-slate-400'
               )}
             >
               <tab.icon
                 className={cn(
                   'w-5 h-5',
-                  isActive ? 'text-[#111827]' : 'text-slate-400'
+                  isActive ? 'text-slate-900' : 'text-slate-400'
                 )}
               />
               {tab.label}

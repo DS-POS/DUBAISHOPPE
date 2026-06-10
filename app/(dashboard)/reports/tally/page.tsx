@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useTransition } from 'react'
 import {
@@ -121,11 +121,11 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-start gap-3 mb-5">
-      <div className="mt-0.5 inline-flex items-center justify-center bg-[#E5E7EB] text-[#4B5563] rounded-xl p-2 shrink-0">
+      <div className="mt-0.5 inline-flex items-center justify-center bg-slate-200 text-slate-500 rounded-xl p-2 shrink-0">
         {icon}
       </div>
       <div>
-        <h2 className="font-bold text-[#111827] text-base">{title}</h2>
+        <h2 className="font-bold text-slate-900 text-base">{title}</h2>
         <p className="text-xs text-slate-400 mt-0.5">{description}</p>
       </div>
     </div>
@@ -151,7 +151,7 @@ function DateRangePicker({
           type="date"
           value={from}
           onChange={e => onFromChange(e.target.value)}
-          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#111827]/20 bg-[#F3F4F6]"
+          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/20 bg-slate-100"
         />
       </div>
       <div className="flex flex-col gap-0.5">
@@ -160,7 +160,7 @@ function DateRangePicker({
           type="date"
           value={to}
           onChange={e => onToChange(e.target.value)}
-          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#111827]/20 bg-[#F3F4F6]"
+          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/20 bg-slate-100"
         />
       </div>
     </div>
@@ -180,7 +180,7 @@ function ExportButton({
     <button
       onClick={onClick}
       disabled={loading}
-      className="inline-flex items-center gap-2 bg-[#111827] hover:bg-[#1F2937] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98]"
+      className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98]"
     >
       {loading ? (
         <Loader2 className="size-4 animate-spin" />
@@ -372,7 +372,7 @@ export default function TallyPage() {
       {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827]">Tally Export</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Tally Export</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             Export data in Tally-compatible XML format for accountant import
           </p>
@@ -429,10 +429,10 @@ export default function TallyPage() {
         <div className="flex flex-wrap gap-3">
 
           {/* Stock Masters */}
-          <div className="flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px] bg-[#F3F4F6] rounded-xl ring-1 ring-black/[0.06] p-4">
+          <div className="flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px] bg-slate-100 rounded-xl ring-1 ring-black/[0.06] p-4">
             <div className="flex items-center gap-2 mb-1">
-              <Boxes className="size-3.5 text-[#4B5563]" />
-              <span className="text-sm font-semibold text-[#111827]">Stock Masters</span>
+              <Boxes className="size-3.5 text-slate-500" />
+              <span className="text-sm font-semibold text-slate-900">Stock Masters</span>
             </div>
             <p className="text-xs text-slate-400 mb-4">
               All active products with opening balances, HSN codes, and GST rates
@@ -443,10 +443,10 @@ export default function TallyPage() {
           </div>
 
           {/* Ledger Masters */}
-          <div className="flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px] bg-[#F3F4F6] rounded-xl ring-1 ring-black/[0.06] p-4">
+          <div className="flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px] bg-slate-100 rounded-xl ring-1 ring-black/[0.06] p-4">
             <div className="flex items-center gap-2 mb-1">
-              <Users className="size-3.5 text-[#4B5563]" />
-              <span className="text-sm font-semibold text-[#111827]">Ledger Masters</span>
+              <Users className="size-3.5 text-slate-500" />
+              <span className="text-sm font-semibold text-slate-900">Ledger Masters</span>
             </div>
             <p className="text-xs text-slate-400 mb-4">
               Customers (Sundry Debtors) and suppliers (Sundry Creditors) with GSTIN
@@ -482,7 +482,7 @@ export default function TallyPage() {
                     setGstrSummary(null)
                     setGstrJson(null)
                   }}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg bg-[#E5E7EB] text-[#111827] hover:bg-[#D1D5DB] border border-[#D1D5DB] transition-colors"
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-200 text-slate-900 hover:bg-slate-300 border border-[#D1D5DB] transition-colors"
                 >
                   {labels[q]}
                 </button>
@@ -507,7 +507,7 @@ export default function TallyPage() {
             value={gstrGstin}
             onChange={e => setGstrGstin(e.target.value)}
             placeholder="36XXXXXXXXXXXXX"
-            className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#111827]/20 bg-[#F3F4F6] max-w-xs font-mono"
+            className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/20 bg-slate-100 max-w-xs font-mono"
           />
         </div>
 
@@ -520,7 +520,7 @@ export default function TallyPage() {
           {gstrJson && (
             <button
               onClick={() => setShowEmailForm(v => !v)}
-              className="inline-flex items-center gap-2 border border-[#4B5563] text-[#111827] hover:bg-[#E5E7EB] text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 border border-[#4B5563] text-slate-900 hover:bg-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
             >
               <Mail className="size-4" />
               Email to Accountant
@@ -530,7 +530,7 @@ export default function TallyPage() {
 
         {/* Email sub-form */}
         {showEmailForm && gstrJson && (
-          <div className="mt-4 p-4 bg-[#F3F4F6] rounded-xl ring-1 ring-black/[0.06] flex flex-wrap items-end gap-3">
+          <div className="mt-4 p-4 bg-slate-100 rounded-xl ring-1 ring-black/[0.06] flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-0.5 flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px]">
               <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Accountant Email</label>
               <input
@@ -538,13 +538,13 @@ export default function TallyPage() {
                 value={acctEmail}
                 onChange={e => setAcctEmail(e.target.value)}
                 placeholder="accountant@example.com"
-                className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-white"
+                className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 bg-white"
               />
             </div>
             <button
               onClick={handleSendGstEmail}
               disabled={emailPending}
-              className="inline-flex items-center gap-2 bg-[#111827] hover:bg-[#1F2937] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98]"
+              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98]"
             >
               {emailPending ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
               Send Email
@@ -565,9 +565,9 @@ export default function TallyPage() {
               { label: 'Total SGST',      value: gstrSummary.totalSGST,    suffix: '₹', isAmount: true },
               { label: 'Grand Total',     value: gstrSummary.grandTotal,   suffix: '₹', isAmount: true },
             ].map(item => (
-              <div key={item.label} className="bg-[#F3F4F6] rounded-xl ring-1 ring-black/[0.06] p-3">
+              <div key={item.label} className="bg-slate-100 rounded-xl ring-1 ring-black/[0.06] p-3">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">{item.label}</p>
-                <p className="text-base font-bold text-[#111827] tabular-nums">
+                <p className="text-base font-bold text-slate-900 tabular-nums">
                   {item.isAmount
                     ? `₹${Number(item.value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     : item.value}
@@ -604,7 +604,7 @@ export default function TallyPage() {
           <div className="overflow-x-auto -mx-2">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#111827] border-b border-[#1F2937]">
+                <tr className="bg-slate-900 border-b border-slate-800">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">
                     Type
                   </th>
@@ -618,8 +618,8 @@ export default function TallyPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {logs.map(log => (
-                  <tr key={log.id} className="hover:bg-[#F3F4F6] transition-colors">
-                    <td className="px-4 py-3 font-medium text-[#111827]">
+                  <tr key={log.id} className="hover:bg-slate-100 transition-colors">
+                    <td className="px-4 py-3 font-medium text-slate-900">
                       {humanExportType(log.export_type)}
                     </td>
                     <td className="px-4 py-3 text-slate-500 text-xs tabular-nums">

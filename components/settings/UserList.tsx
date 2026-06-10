@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
@@ -31,7 +31,7 @@ function ResetPinModal({ user, onClose }: { user: Profile; onClose: () => void }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
-        <h3 className="font-bold text-lg text-[#111827]">Reset PIN — {user.name}</h3>
+        <h3 className="font-bold text-lg text-slate-900">Reset PIN — {user.name}</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">New PIN (4 digits)</label>
@@ -41,7 +41,7 @@ function ResetPinModal({ user, onClose }: { user: Profile; onClose: () => void }
               onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               placeholder="••••"
               autoFocus
-              className="w-full h-11 rounded-xl border border-slate-200 px-3 text-center text-xl tracking-widest outline-none focus:ring-2 focus:ring-[#111827]/20"
+              className="w-full h-11 rounded-xl border border-slate-200 px-3 text-center text-xl tracking-widest outline-none focus:ring-2 focus:ring-slate-900/20"
             />
           </div>
           <div className="flex gap-3">
@@ -50,7 +50,7 @@ function ResetPinModal({ user, onClose }: { user: Profile; onClose: () => void }
               Cancel
             </button>
             <button type="submit" disabled={isPending || pin.length !== 4}
-              className="flex-1 h-10 rounded-xl bg-[#111827] text-white text-sm font-semibold hover:bg-[#1F2937] disabled:opacity-50">
+              className="flex-1 h-10 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 disabled:opacity-50">
               {isPending ? 'Saving…' : 'Reset PIN'}
             </button>
           </div>
@@ -91,7 +91,7 @@ export function UserList({ profiles, currentUserId }: Props) {
     <>
       <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-[#111827]">
+          <thead className="bg-slate-900">
             <tr>
               <th className="px-4 py-3 text-left font-semibold text-slate-300 text-xs uppercase tracking-wider">User</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-300 text-xs uppercase tracking-wider">Role</th>
@@ -100,11 +100,11 @@ export function UserList({ profiles, currentUserId }: Props) {
             </tr>
           </thead>
           <tbody>
-            {profiles.map((profile, i) => {
+            {profiles.map((profile) => {
               const isSelf = profile.id === currentUserId
               return (
                 <tr key={profile.id}
-                  className={`border-b border-slate-100 last:border-0 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
+                  className="border-b border-slate-100 last:border-0 bg-white hover:bg-slate-50/60 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
@@ -113,7 +113,7 @@ export function UserList({ profiles, currentUserId }: Props) {
                           : <UserIcon className="size-4 text-slate-400" />}
                       </div>
                       <div>
-                        <p className="font-semibold text-[#111827]">{profile.name || profile.email || 'Unknown'}</p>
+                        <p className="font-semibold text-slate-900">{profile.name || profile.email || 'Unknown'}</p>
                         {profile.email && <p className="text-xs text-slate-400">{profile.email}</p>}
                         {isSelf && <span className="text-xs text-blue-500 font-medium">You</span>}
                         {!profile.pin_hash && (

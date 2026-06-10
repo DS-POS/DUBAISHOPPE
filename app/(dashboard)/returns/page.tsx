@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { format } from 'date-fns'
 import { getSalesReturns } from '@/actions/sales-returns'
 import { DeleteReturnButton } from '@/components/sales-returns/DeleteReturnButton'
@@ -18,32 +18,35 @@ export default async function ReturnsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#111827]">Sales Returns</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Sales Returns</h1>
         <p className="text-slate-500 text-sm mt-1">{returns.length} return{returns.length !== 1 ? 's' : ''} processed</p>
       </div>
 
       {returns.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 p-12 text-center">
-          <p className="text-slate-500 font-medium">No returns yet.</p>
-          <p className="text-slate-400 text-sm mt-1">Process a return from an invoice detail page.</p>
+        <div className="rounded-2xl border-2 border-dashed border-slate-200 p-16 text-center">
+          <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl text-slate-400">↩</span>
+          </div>
+          <p className="font-semibold text-slate-700">No returns yet</p>
+          <p className="text-slate-400 text-sm mt-1">Process a return from an invoice detail page</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl ring-1 ring-slate-200 overflow-hidden">
+        <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[#111827]">
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Return No</th>
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Invoice</th>
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden sm:table-cell">Reason</th>
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden md:table-cell">Refund</th>
-                <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Amount</th>
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide hidden sm:table-cell">Date</th>
-                <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Actions</th>
+              <tr className="bg-slate-900">
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider">Return No</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider">Invoice</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell">Reason</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider hidden md:table-cell">Refund</th>
+                <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider">Amount</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell">Date</th>
+                <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {returns.map(ret => (
-                <tr key={ret.id} className="hover:bg-slate-50">
+                <tr key={ret.id} className="hover:bg-slate-50/70 transition-colors">
                   <td className="px-5 py-3.5 font-mono text-xs font-medium text-slate-900">{ret.return_no}</td>
                   <td className="px-5 py-3.5 font-mono text-xs text-slate-600">{ret.invoices?.invoice_no ?? '—'}</td>
                   <td className="px-5 py-3.5 text-slate-600 hidden sm:table-cell max-w-xs truncate">{ret.reason}</td>

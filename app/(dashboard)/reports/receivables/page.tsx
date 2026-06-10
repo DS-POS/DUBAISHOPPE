@@ -1,4 +1,4 @@
-import { getReceivablesAging } from '@/actions/customers'
+﻿import { getReceivablesAging } from '@/actions/customers'
 import Link from 'next/link'
 
 const fmt = (n: number) => n > 0 ? `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '—'
@@ -41,7 +41,7 @@ export default async function ReceivablesPage() {
                   {row.over_90 > 0 && <span className="text-red-600">90+: {fmt(row.over_90)}</span>}
                 </div>
                 <div className="flex items-center gap-3 mt-2">
-                  <Link href={`/customers/${row.customer_id}/statement`} className="text-xs font-semibold text-[#111827] underline">Statement →</Link>
+                  <Link href={`/customers/${row.customer_id}/statement`} className="text-xs font-semibold text-slate-900 underline">Statement →</Link>
                   {row.phone && (
                     <a href={`https://wa.me/91${row.phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Dear ${row.customer_name}, you have an outstanding balance of ₹${row.total_due.toLocaleString('en-IN')}. Please contact us. - Dubai Shoppe`)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 font-semibold">WA</a>
                   )}
@@ -56,7 +56,7 @@ export default async function ReceivablesPage() {
           {/* Desktop: full table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#111827]">
+              <thead className="bg-slate-900">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Customer</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Phone</th>
@@ -79,7 +79,7 @@ export default async function ReceivablesPage() {
                     <td className="px-4 py-3 text-right text-red-600 font-medium">{fmt(row.over_90)}</td>
                     <td className="px-4 py-3 text-right font-bold text-slate-900">{fmt(row.total_due)}</td>
                     <td className="px-4 py-3 flex gap-2 justify-end items-center">
-                      <Link href={`/customers/${row.customer_id}/statement`} className="text-xs text-[#111827] font-medium hover:underline whitespace-nowrap">Statement →</Link>
+                      <Link href={`/customers/${row.customer_id}/statement`} className="text-xs text-slate-900 font-medium hover:underline whitespace-nowrap">Statement →</Link>
                       {row.phone && (
                         <a href={`https://wa.me/91${row.phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Dear ${row.customer_name}, you have an outstanding balance of ₹${row.total_due.toLocaleString('en-IN')}. Please contact us. - Dubai Shoppe`)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 font-medium hover:underline">WA</a>
                       )}

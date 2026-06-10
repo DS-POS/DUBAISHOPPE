@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
@@ -159,24 +159,24 @@ export function ProductBulkImport({ existingSkusArr }: Props) {
     return (
       <Card>
         <CardHeader className="pb-2">
-          <h2 className="text-base font-semibold text-[#111827]">Upload File</h2>
+          <h2 className="text-base font-semibold text-slate-900">Upload File</h2>
           <p className="text-sm text-slate-500">Supported formats: .xlsx, .xls, .csv</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div
             className={`border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors ${
-              dragging ? 'border-[#111827] bg-[#111827]/5' : 'border-slate-200 hover:border-[#111827]/50'
+              dragging ? 'border-slate-900 bg-slate-900/5' : 'border-slate-200 hover:border-slate-900/50'
             }`}
             onClick={() => fileInputRef.current?.click()}
             onDragOver={e => { e.preventDefault(); setDragging(true) }}
             onDragLeave={() => setDragging(false)}
             onDrop={handleDrop}
           >
-            <div className="p-3 rounded-full bg-[#111827]/10">
-              <UploadIcon className="size-6 text-[#111827]" />
+            <div className="p-3 rounded-full bg-slate-900/10">
+              <UploadIcon className="size-6 text-slate-900" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-[#111827]">Drop your file here, or click to browse</p>
+              <p className="text-sm font-medium text-slate-900">Drop your file here, or click to browse</p>
               <p className="text-xs text-slate-400 mt-1">.xlsx, .xls, .csv — max 10 MB</p>
             </div>
             <input
@@ -221,17 +221,17 @@ export function ProductBulkImport({ existingSkusArr }: Props) {
               <div className="flex flex-wrap gap-4 text-sm">
                 <span className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full bg-green-500 inline-block" />
-                  <span className="font-medium text-[#111827]">{newCount}</span>
+                  <span className="font-medium text-slate-900">{newCount}</span>
                   <span className="text-slate-500">new</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full bg-yellow-400 inline-block" />
-                  <span className="font-medium text-[#111827]">{existsCount}</span>
+                  <span className="font-medium text-slate-900">{existsCount}</span>
                   <span className="text-slate-500">duplicate</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full bg-red-500 inline-block" />
-                  <span className="font-medium text-[#111827]">{invalidCount}</span>
+                  <span className="font-medium text-slate-900">{invalidCount}</span>
                   <span className="text-slate-500">invalid</span>
                 </span>
               </div>
@@ -243,7 +243,7 @@ export function ProductBulkImport({ existingSkusArr }: Props) {
         {existsCount > 0 && (
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className="text-sm font-medium text-[#111827] mb-2">Duplicate SKU handling</p>
+              <p className="text-sm font-medium text-slate-900 mb-2">Duplicate SKU handling</p>
               <div className="flex gap-3">
                 <label className="flex items-center gap-2 cursor-pointer text-sm">
                   <input
@@ -293,7 +293,7 @@ export function ProductBulkImport({ existingSkusArr }: Props) {
                   return (
                     <tr key={row._rowIndex} className="hover:bg-slate-50/60">
                       <td className="px-4 py-2.5 text-slate-400">{row._rowIndex}</td>
-                      <td className="px-4 py-2.5 font-medium text-[#111827] max-w-[180px] truncate">
+                      <td className="px-4 py-2.5 font-medium text-slate-900 max-w-[180px] truncate">
                         {row.name || <span className="text-red-400 italic">missing</span>}
                       </td>
                       <td className="px-4 py-2.5 font-mono text-xs text-slate-600">
@@ -337,7 +337,7 @@ export function ProductBulkImport({ existingSkusArr }: Props) {
             Cancel
           </Button>
           <Button
-            className="bg-[#111827] text-white hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200 gap-1.5"
+            className="bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 gap-1.5"
             onClick={handleImport}
             disabled={loading || validRows.length === 0}
           >
@@ -356,7 +356,7 @@ export function ProductBulkImport({ existingSkusArr }: Props) {
             <CheckCircleIcon className="size-6 text-green-600" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-[#111827]">Import Complete</h2>
+            <h2 className="text-base font-semibold text-slate-900">Import Complete</h2>
             <p className="text-sm text-slate-500">Your products have been processed.</p>
           </div>
         </div>
@@ -392,7 +392,7 @@ export function ProductBulkImport({ existingSkusArr }: Props) {
 
         <div className="flex gap-2 pt-1">
           <Link href="/products" className="flex-1">
-            <Button className="w-full bg-[#111827] text-white hover:bg-[#1F2937] active:scale-[0.98] transition-all duration-200">
+            <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] transition-all duration-200">
               Go to Product Inventory
             </Button>
           </Link>

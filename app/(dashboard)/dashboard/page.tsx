@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import {
   ShoppingCart,
@@ -116,7 +116,7 @@ export default async function DashboardPage() {
             <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 truncate">{stats.todayCount} · ₹{formatINR(stats.todayRevenue)}</p>
           </div>
         </div>
-        <Link href="/invoices" className="flex-shrink-0 text-[10px] md:text-xs font-semibold text-[#111827] bg-slate-100 hover:bg-slate-200 px-2 md:px-3 py-1 md:py-1.5 rounded-lg transition-colors">View</Link>
+        <Link href="/invoices" className="flex-shrink-0 text-[10px] md:text-xs font-semibold text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 md:px-3 py-1 md:py-1.5 rounded-lg transition-colors">View</Link>
       </div>
 
       <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-5 ring-1 ring-rose-100 shadow-sm flex items-center justify-between gap-2">
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
           <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-600 text-xs font-bold">{stats.dueCount}</span>
           <h2 className="font-semibold text-slate-900">Outstanding Customer Dues</h2>
         </div>
-        <Link href="/invoices?status=pending" className="text-xs text-[#4B5563] font-medium hover:text-[#111827] hover:underline transition-colors">View all</Link>
+        <Link href="/invoices?status=pending" className="text-xs text-slate-500 font-medium hover:text-slate-900 hover:underline transition-colors">View all</Link>
       </div>
       {/* Mobile: compact cards */}
       <div className="block md:hidden divide-y divide-slate-100">
@@ -156,7 +156,7 @@ export default async function DashboardPage() {
               </div>
               <div className="flex flex-col items-end gap-1 shrink-0">
                 <span className="bg-red-50 text-red-700 font-bold text-sm px-2 py-0.5 rounded-full tabular-nums">₹{formatINR(due)}</span>
-                <Link href={`/invoices/${inv.id}`} className="text-xs font-semibold text-[#111827] underline">View</Link>
+                <Link href={`/invoices/${inv.id}`} className="text-xs font-semibold text-slate-900 underline">View</Link>
               </div>
             </div>
           )
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#111827] border-b border-[#111827]">
+            <tr className="bg-slate-900 border-b border-slate-900">
               <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Invoice</th>
               <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Customer</th>
               <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Date</th>
@@ -193,7 +193,7 @@ export default async function DashboardPage() {
                     <span className="bg-red-50 text-red-700 font-bold text-sm px-2 py-0.5 rounded-full">₹{formatINR(due)}</span>
                   </td>
                   <td className="px-5 py-3.5 text-right">
-                    <Link href={`/invoices/${inv.id}`} className="text-xs text-[#4B5563] hover:text-[#111827] hover:underline font-medium transition-colors">View</Link>
+                    <Link href={`/invoices/${inv.id}`} className="text-xs text-slate-500 hover:text-slate-900 hover:underline font-medium transition-colors">View</Link>
                   </td>
                 </tr>
               )
@@ -208,10 +208,10 @@ export default async function DashboardPage() {
     <div className="bg-white rounded-2xl ring-1 ring-slate-200 shadow-sm overflow-hidden card-hover">
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#111827] text-white text-xs font-bold">{supplierDueStats.dueCount}</span>
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-bold">{supplierDueStats.dueCount}</span>
           <h2 className="font-semibold text-slate-900">Pending Supplier Payments</h2>
         </div>
-        <Link href="/stock-in" className="text-xs text-[#4B5563] font-medium hover:text-[#111827] hover:underline transition-colors">View all</Link>
+        <Link href="/stock-in" className="text-xs text-slate-500 font-medium hover:text-slate-900 hover:underline transition-colors">View all</Link>
       </div>
       {dueSupplierInvoices.length === 0 ? (
         <div className="px-5 py-8 text-center">
@@ -233,7 +233,7 @@ export default async function DashboardPage() {
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <p className="font-bold text-sm text-slate-900 tabular-nums">₹{formatINR(Number(inv.total_amount))}</p>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${inv.payment_status === 'partial' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}>{inv.payment_status}</span>
-                  <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-[#111827] underline">Pay</Link>
+                  <Link href={`/stock-in/${inv.id}`} className="text-xs font-semibold text-slate-900 underline">Pay</Link>
                 </div>
               </div>
             ))}
@@ -242,7 +242,7 @@ export default async function DashboardPage() {
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#111827] border-b border-[#111827]">
+                <tr className="bg-slate-900 border-b border-slate-900">
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Invoice</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Supplier</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Date</th>
@@ -266,7 +266,7 @@ export default async function DashboardPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <Link href={`/stock-in/${inv.id}`} className="text-xs text-[#4B5563] hover:text-[#111827] hover:underline font-medium transition-colors">Pay</Link>
+                      <Link href={`/stock-in/${inv.id}`} className="text-xs text-slate-500 hover:text-slate-900 hover:underline font-medium transition-colors">Pay</Link>
                     </td>
                   </tr>
                 ))}
@@ -287,7 +287,7 @@ export default async function DashboardPage() {
           <p className="text-xs md:text-sm text-slate-500 mt-0.5 hidden sm:block">Welcome back — here&apos;s your business overview</p>
         </div>
         <Link href="/billing">
-          <button className="inline-flex items-center gap-1.5 md:gap-2 bg-[#111827] hover:bg-[#1F2937] active:scale-95 text-white text-xs md:text-sm font-semibold px-3 md:px-4 py-2 md:py-2.5 rounded-xl shadow-sm transition-all duration-150">
+          <button className="inline-flex items-center gap-1.5 md:gap-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white text-xs md:text-sm font-semibold px-3 md:px-4 py-2 md:py-2.5 rounded-xl shadow-sm transition-all duration-150">
             <ShoppingCart className="size-3.5 md:size-4" />
             New Sale
           </button>

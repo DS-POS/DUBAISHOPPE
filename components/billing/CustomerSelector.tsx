@@ -1,7 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo } from 'react'
-import { UserIcon, SearchIcon, XIcon, PlusIcon } from 'lucide-react'
+import { UserIcon, SearchIcon, XIcon, PlusIcon, CheckIcon } from 'lucide-react'
 import type { Customer } from '@/types/database'
 
 interface CustomerSelectorProps {
@@ -37,10 +37,13 @@ export function CustomerSelector({ customers, selected, onSelect, onAddNew }: Cu
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 h-11 text-sm hover:border-[#111827]/50 hover:bg-slate-50 shadow-sm transition-all"
+        className="w-full flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 h-11 text-sm hover:border-slate-900/50 hover:bg-slate-50 shadow-sm transition-all"
       >
-        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${selected ? 'bg-[#111827]/10' : 'bg-slate-100'}`}>
-          <UserIcon className={`size-4 ${selected ? 'text-[#4B5563]' : 'text-slate-400'}`} />
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${selected ? 'bg-emerald-100' : 'bg-slate-100'}`}>
+          {selected
+            ? <CheckIcon className="size-4 text-emerald-600" />
+            : <UserIcon className="size-4 text-slate-400" />
+          }
         </div>
         <span className={selected ? 'flex-1 text-left font-semibold text-slate-900 truncate' : 'flex-1 text-left text-slate-400'}>
           {selected ? `${selected.name}${selected.phone ? ` · ${selected.phone}` : ''}` : 'Walk-in customer'}
@@ -66,7 +69,7 @@ export function CustomerSelector({ customers, selected, onSelect, onAddNew }: Cu
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search customer…"
-              className="flex-1 text-sm bg-transparent outline-none placeholder:text-slate-400"
+              className="flex-1 text-sm bg-transparent outline-none placeholder:text-slate-400 focus:ring-0 focus:outline-none"
             />
           </div>
           <div className="max-h-52 overflow-y-auto">
@@ -96,7 +99,7 @@ export function CustomerSelector({ customers, selected, onSelect, onAddNew }: Cu
               <button
                 type="button"
                 onClick={() => { setOpen(false); onAddNew() }}
-                className="w-full px-4 py-2.5 text-sm text-left flex items-center gap-2 text-[#4B5563] hover:bg-[#F3F4F6] transition-colors font-semibold border-t border-slate-100"
+                className="w-full px-4 py-2.5 text-sm text-left flex items-center gap-2 text-slate-500 hover:bg-slate-100 transition-colors font-semibold border-t border-slate-100"
               >
                 <PlusIcon className="size-3.5" />
                 Add New Customer

@@ -1,4 +1,4 @@
-import { getStoreLoans } from '@/actions/store-loans'
+﻿import { getStoreLoans } from '@/actions/store-loans'
 import Link from 'next/link'
 import { PlusIcon, ArrowUpRightIcon, ArrowDownLeftIcon } from 'lucide-react'
 import type { StoreLoanDirection, StoreLoanStatus } from '@/types/database'
@@ -49,7 +49,7 @@ export default async function StoreLoansPage({
         </div>
         <Link
           href="/store-loans/new"
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#111827] text-white rounded-xl text-sm font-semibold hover:bg-[#1F2937] transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors"
         >
           <PlusIcon className="size-4" />
           Record Loan
@@ -70,7 +70,7 @@ export default async function StoreLoansPage({
             href={tab.href}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               tab.active
-                ? 'bg-[#111827] text-white'
+                ? 'bg-slate-900 text-white'
                 : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'
             }`}
           >
@@ -88,7 +88,7 @@ export default async function StoreLoansPage({
       ) : (
         <div className="bg-white rounded-2xl ring-1 ring-black/[0.06] shadow-sm overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-[#111827]">
+            <thead className="bg-slate-900">
               <tr>
                 <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
                 <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Direction</th>
@@ -131,7 +131,7 @@ export default async function StoreLoansPage({
                     </span>
                   </td>
                   <td className="px-4 py-3.5 text-right">
-                    <Link href={`/store-loans/${loan.id}`} className="text-xs text-[#4B5563] hover:text-[#111827] hover:underline font-medium transition-colors">
+                    <Link href={`/store-loans/${loan.id}`} className="text-xs text-slate-500 hover:text-slate-900 hover:underline font-medium transition-colors">
                       View
                     </Link>
                   </td>

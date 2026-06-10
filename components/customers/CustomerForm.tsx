@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useTransition } from 'react'
 import { useForm } from 'react-hook-form'
@@ -120,7 +120,7 @@ export default function CustomerForm({ customer }: Props) {
             step={500}
             {...register('credit_limit', { valueAsNumber: true })}
             placeholder="0 = cash only"
-            className="h-9 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-transparent"
+            className="h-9 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 bg-transparent"
           />
           {errors.credit_limit && <p className="text-xs text-destructive">{errors.credit_limit.message}</p>}
           <p className="text-xs text-slate-400">0 = no credit limit check</p>
@@ -132,7 +132,7 @@ export default function CustomerForm({ customer }: Props) {
             {...register('credit_days', { valueAsNumber: true })}
             min={0}
             placeholder="30"
-            className="h-9 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827] bg-transparent"
+            className="h-9 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 bg-transparent"
           />
           {errors.credit_days && <p className="text-xs text-destructive">{errors.credit_days.message}</p>}
           <p className="text-xs text-slate-400">Payment due within N days</p>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Trash2Icon } from 'lucide-react'
 import type { CartItem } from './types'
@@ -54,7 +54,7 @@ export function CartItemRow({
             min={1}
             onChange={e => onQtyChange(item._id, Math.max(1, parseInt(e.target.value) || 1))}
             onFocus={e => e.target.select()}
-            className="w-10 text-center text-sm font-semibold border border-slate-200 rounded-lg h-7 bg-white outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="w-10 text-center text-sm font-semibold border border-slate-200 rounded-lg h-7 bg-white outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
           />
           <button
             type="button"
@@ -73,7 +73,7 @@ export function CartItemRow({
             step={0.01}
             onChange={e => onRateChange(item._id, parseFloat(e.target.value) || 0)}
             onFocus={e => e.target.select()}
-            className="w-full pl-5 pr-2 py-1.5 text-sm font-medium border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+            className="w-full pl-5 pr-2 py-1.5 text-sm font-medium border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
           />
         </div>
       </td>
@@ -101,7 +101,7 @@ export function CartItemRow({
               max={item.discount_mode === 'percent' ? 100 : undefined}
               onChange={e => onDiscountChange(item._id, parseFloat(e.target.value) || 0)}
               onFocus={e => e.target.select()}
-              className="w-full px-2 py-1.5 text-sm font-medium border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-[#111827]"
+              className="w-full px-2 py-1.5 text-sm font-medium border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
             />
           </div>
         </div>

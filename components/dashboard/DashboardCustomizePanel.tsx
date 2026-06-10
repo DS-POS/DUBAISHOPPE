@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { X, LayoutGrid, RotateCcw } from 'lucide-react'
 import { WIDGET_DEFS, type WidgetId } from './useDashboardWidgets'
@@ -35,7 +35,7 @@ export function DashboardCustomizePanel({ visible, toggle, resetAll }: Props) {
       <div className="fixed right-0 top-0 bottom-0 w-80 bg-white shadow-2xl z-50 flex flex-col">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-[#111827]">
+        <div className="flex items-center justify-between px-5 py-4 bg-slate-900">
           <div className="flex items-center gap-2.5">
             <LayoutGrid className="size-4 text-white" />
             <h2 className="text-sm font-bold text-white">Customize Dashboard</h2>
