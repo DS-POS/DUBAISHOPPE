@@ -41,7 +41,7 @@ export default async function LoginPage() {
           <h1 className="text-4xl font-extrabold text-white tracking-tight" style={{ fontFamily: 'Rubik, sans-serif' }}>
             DS POS
           </h1>
-          <p className="text-slate-400 mt-1.5 text-sm font-medium tracking-wide">Dubai Shoppe — Camera Store</p>
+          <p className="text-slate-400 mt-1.5 text-sm font-medium tracking-wide">Finest Camera Store</p>
         </div>
 
         {/* Card */}

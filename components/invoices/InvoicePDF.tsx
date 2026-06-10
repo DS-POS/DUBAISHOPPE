@@ -167,7 +167,7 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling }:
           <View style={s.headerDividerV} />
           <View>
             <Text style={s.storeName}>{STORE.name}</Text>
-            <Text style={s.storeTagline}>A Professional Camera Store</Text>
+            <Text style={s.storeTagline}>Finest Camera Store</Text>
             <Text style={s.storeDetail}>{STORE.address}</Text>
             <Text style={s.storeDetail}>{STORE.city}</Text>
             <Text style={s.storeDetail}>Ph: {STORE.phone}</Text>
