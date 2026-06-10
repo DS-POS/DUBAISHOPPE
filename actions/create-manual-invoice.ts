@@ -7,7 +7,8 @@ import { redirect } from 'next/navigation'
 export interface ManualInvoiceItem {
   product_id: string
   quantity: number
-  cost_price: number
+  cost_price: number      // supplier price incl. GST (what we paid)
+  selling_price: number   // cost_price + profit (what we charge)
 }
 
 export interface CreateManualInvoicePayload {
@@ -60,6 +61,18 @@ export async function createManualInvoice(payload: CreateManualInvoicePayload): 
 
   const { error: stockError } = await supabase.from('stock_in').insert(stockInRows)
   if (stockError) throw new Error(stockError.message)
+
+  // Update each product's cost_price and selling_price
+  for (const item of payload.items) {
+    const { error: productError } = await supabase
+      .from('products')
+      .update({
+        cost_price: item.cost_price,
+        selling_price: item.selling_price,
+      })
+      .eq('id', item.product_id)
+    if (productError) throw new Error(productError.message)
+  }
 
   revalidatePath('/stock-in')
   revalidatePath('/products')

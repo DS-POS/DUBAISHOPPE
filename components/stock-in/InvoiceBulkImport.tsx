@@ -109,13 +109,16 @@ export function InvoiceBulkImport({ products, categories }: InvoiceBulkImportPro
           product_id: match?.id,
           new_product_name: item.description,
           new_product_category_id: categories[0]?.id,
-          new_product_gst_rate: 18,
-          selling_price_mode: 'percent',
-          selling_price_value: 20,
+          new_product_gst_rate: item.gst_rate ?? 18,
+          selling_price_mode: 'flat',
+          selling_price_value: 0,
         }
       })
 
-      const auto = items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0)
+      // Use invoice_total (grand total incl. GST) if extracted, else sum of line items
+      const auto = data.invoice_total
+        ? data.invoice_total
+        : items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0)
       setTotalAmount(auto.toFixed(2))
       setReviewItems(items)
 
@@ -306,7 +309,7 @@ export function InvoiceBulkImport({ products, categories }: InvoiceBulkImportPro
                     type="button"
                     onClick={() => updateItem(i, {
                       selling_price_mode: item.selling_price_mode === 'percent' ? 'flat' : 'percent',
-                      selling_price_value: item.selling_price_mode === 'percent' ? 0 : 20,
+                      selling_price_value: 0,
                     })}
                     className="px-2 py-0.5 text-xs rounded border border-input hover:bg-accent w-9 text-center shrink-0 font-mono"
                     title="Toggle markup mode"
@@ -315,8 +318,10 @@ export function InvoiceBulkImport({ products, categories }: InvoiceBulkImportPro
                   </button>
                   <Input
                     type="number"
-                    value={item.selling_price_value}
-                    onChange={e => updateItem(i, { selling_price_value: Number(e.target.value) })}
+                    value={item.selling_price_value === 0 ? '' : item.selling_price_value}
+                    onChange={e => updateItem(i, { selling_price_value: Number(e.target.value) || 0 })}
+                    onFocus={e => e.target.select()}
+                    placeholder="0"
                     className="h-7 text-xs w-20"
                     min={0}
                     step={item.selling_price_mode === 'percent' ? 1 : 100}

@@ -6,7 +6,8 @@ export interface ExtractedItem {
   description: string
   hsn_code?: string
   quantity: number
-  unit_price: number
+  unit_price: number       // per-unit price INCLUDING all taxes/GST (what we actually paid per unit)
+  gst_rate?: number        // total GST % on this item (CGST%+SGST% or IGST%). e.g. 12, 18, 5, 28
 }
 
 export interface ExtractedInvoiceData {
@@ -14,6 +15,7 @@ export interface ExtractedInvoiceData {
   supplier_gstin?: string
   purchase_invoice_no?: string
   purchase_date?: string  // YYYY-MM-DD
+  invoice_total?: number  // grand total amount on the invoice (incl. all taxes) — what we owe supplier
   items: ExtractedItem[]
 }
 
@@ -34,12 +36,14 @@ Return this exact structure:
   "supplier_gstin": "seller GSTIN/UIN",
   "purchase_invoice_no": "invoice number",
   "purchase_date": "YYYY-MM-DD format",
+  "invoice_total": 0.00,
   "items": [
     {
       "description": "product description as printed",
       "hsn_code": "HSN/SAC code if visible",
       "quantity": 1,
-      "unit_price": 0.00
+      "unit_price": 0.00,
+      "gst_rate": 18
     }
   ]
 }
@@ -47,8 +51,10 @@ Return this exact structure:
 Rules:
 - Return ONLY valid JSON, nothing else
 - purchase_date MUST be YYYY-MM-DD (convert "9-Jul-25" → "2025-07-09")
-- quantity and unit_price are numbers (not strings)
-- unit_price is the per-unit price BEFORE tax/GST
+- quantity, unit_price, and gst_rate are numbers (not strings)
+- unit_price is the per-unit price INCLUDING all taxes/GST (total line amount ÷ quantity). For example: if line amount is ₹6000 for qty 1, unit_price = 6000. If grand total is ₹24000 for 4 identical items, unit_price = 6000.
+- invoice_total is the GRAND TOTAL amount on the invoice (the final amount payable, including all taxes). This is NOT the taxable value — it is the total amount to pay the supplier.
+- gst_rate is the TOTAL GST percentage applied to this item. Add CGST% + SGST% together (e.g. CGST 6% + SGST 6% = 12). Or use IGST% directly. Valid values: 0, 5, 12, 18, 28. If not visible, use 18.
 - supplier_name is the SELLER, not the buyer
 - If a field is not found, omit it from JSON
 - Include ALL line items in the items array`
@@ -125,6 +131,7 @@ Rules:
       supplier_gstin: parsed.supplier_gstin,
       purchase_invoice_no: parsed.purchase_invoice_no,
       purchase_date: parsed.purchase_date,
+      invoice_total: typeof parsed.invoice_total === 'number' ? parsed.invoice_total : undefined,
       items: Array.isArray(parsed.items) ? parsed.items : [],
     }
   } catch {
