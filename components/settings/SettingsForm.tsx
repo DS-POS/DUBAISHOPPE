@@ -89,6 +89,10 @@ function BankAccountCard({
 }
 
 export default function SettingsForm({ initialSettings }: SettingsFormProps) {
+  const [openBank, setOpenBank] = useState(true)
+  const [openTerms, setOpenTerms] = useState(true)
+  const [openStamp, setOpenStamp] = useState(true)
+
   const [banks, setBanks] = useState<BankAccount[]>(
     initialSettings.bank_accounts.length > 0
       ? initialSettings.bank_accounts
@@ -171,18 +175,21 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
 
       {/* Bank Details */}
       <Card className="border border-slate-200 bg-slate-100">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 cursor-pointer select-none" onClick={() => setOpenBank(v => !v)}>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base font-semibold text-slate-900">
                 Bank Details
               </CardTitle>
-              <p className="text-xs text-slate-500 mt-0.5">Up to {MAX_BANK_ACCOUNTS} accounts — choose per quotation</p>
+              {openBank && <p className="text-xs text-slate-500 mt-0.5">Up to {MAX_BANK_ACCOUNTS} accounts — choose per quotation</p>}
             </div>
-            <span className="text-xs text-slate-500">{banks.length}/{MAX_BANK_ACCOUNTS}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500">{banks.length}/{MAX_BANK_ACCOUNTS}</span>
+              {openBank ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        {openBank && <CardContent className="space-y-3">
           {banks.map((b, i) => (
             <BankAccountCard
               key={i}
@@ -210,18 +217,23 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
               Save Bank Details
             </Button>
           </div>
-        </CardContent>
+        </CardContent>}
       </Card>
 
       {/* Terms & Conditions */}
       <Card className="border border-slate-200 bg-slate-100">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold text-slate-900">
-            Terms &amp; Conditions
-          </CardTitle>
-          <p className="text-xs text-slate-500">Shown on quotation PDFs as a bullet list</p>
+        <CardHeader className="pb-3 cursor-pointer select-none" onClick={() => setOpenTerms(v => !v)}>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold text-slate-900">
+                Terms &amp; Conditions
+              </CardTitle>
+              {openTerms && <p className="text-xs text-slate-500">Shown on quotation PDFs as a bullet list</p>}
+            </div>
+            {openTerms ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+          </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        {openTerms && <CardContent className="space-y-3">
           {terms.map((term, index) => (
             <div key={index} className="flex gap-2 items-center">
               <span className="text-slate-500 text-sm shrink-0">•</span>
@@ -249,18 +261,23 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
               Save Terms
             </Button>
           </div>
-        </CardContent>
+        </CardContent>}
       </Card>
 
       {/* Company Stamp */}
       <Card className="border border-slate-200 bg-slate-100">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold text-slate-900">
-            Company Stamp
-          </CardTitle>
-          <p className="text-xs text-slate-500">Stamp shown on quotation PDFs</p>
+        <CardHeader className="pb-3 cursor-pointer select-none" onClick={() => setOpenStamp(v => !v)}>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold text-slate-900">
+                Company Stamp
+              </CardTitle>
+              {openStamp && <p className="text-xs text-slate-500">Stamp shown on quotation PDFs</p>}
+            </div>
+            {openStamp ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+          </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        {openStamp && <CardContent className="space-y-3">
           {stampUrl && (
             <div className="border border-slate-200 rounded-md p-2 bg-white inline-block">
               <Image src={stampUrl} alt="Stamp" width={100} height={100} className="object-contain" unoptimized />
@@ -281,7 +298,7 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
               </Button>
             )}
           </div>
-        </CardContent>
+        </CardContent>}
       </Card>
 
     </div>
