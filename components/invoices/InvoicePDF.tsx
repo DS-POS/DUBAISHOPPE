@@ -469,9 +469,9 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
         </View>
       </View>
 
-      {/* Terms & Conditions — Tax Invoice only, inline */}
+      {/* Terms & Conditions — Tax Invoice only, never break mid-list */}
       {!isBOS && invoiceTerms && invoiceTerms.length > 0 && (
-        <View style={{ marginTop: 10 }}>
+        <View wrap={false} style={{ marginTop: 10 }}>
           <View style={s.greenDivider} />
           <Text style={s.tcTitle}>Terms &amp; Conditions</Text>
           {invoiceTerms.map((term, i) => (
