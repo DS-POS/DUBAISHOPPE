@@ -88,7 +88,7 @@ const s = StyleSheet.create({
   tableRow: { flexDirection: 'row', paddingVertical: 5, paddingHorizontal: 4, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   tableCell: { fontSize: 8 },
   col_no: { width: 20 },
-  col_desc: { flex: 1 },
+  col_desc: { flex: 1, paddingRight: 8 },
   col_hsn: { width: 52 },
   col_qty: { width: 28, textAlign: 'right' },
   col_rate: { width: 52, textAlign: 'right' },
@@ -122,8 +122,9 @@ const s = StyleSheet.create({
     backgroundColor: '#fef2f2', borderRadius: 4,
     borderWidth: 1, borderColor: '#fecaca', marginTop: 4,
   },
-  footer: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10 },
-  footerText: { fontSize: 7, color: '#94a3b8' },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, paddingBottom: 4 },
+  footerText: { fontSize: 7, color: '#475569' },
+  footerPageNum: { fontSize: 7, color: '#374151', fontFamily: 'SegoeUI', fontWeight: 'bold' },
   pageNumRow: { flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 4 },
   pageNumText: { fontSize: 6.5, color: '#94a3b8' },
   tcPage: { fontFamily: 'SegoeUI', fontSize: 9, color: '#1e293b', paddingHorizontal: 32, paddingTop: 0, paddingBottom: 0 },
@@ -485,6 +486,7 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
       {/* Footer */}
       <View style={s.footer}>
         <Text style={s.footerText}>This is a computer-generated invoice. No signature required.</Text>
+        <Text style={s.footerPageNum} render={({ pageNumber, totalPages }) => totalPages > 1 ? `Page ${pageNumber} of ${totalPages}` : ''} />
         <Text style={s.footerText}>{STORE.name} · GSTIN: {STORE.gstin} · {STORE.phone}</Text>
       </View>
 
@@ -501,63 +503,6 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
   )
 }
 
-function TermsPage({ terms, isBOS }: { terms: string[]; isBOS: boolean }) {
-  return (
-    <Page size="A4" style={s.tcPage}>
-      {/* Top border */}
-      <View style={[s.borderTop, isBOS ? { backgroundColor: '#94a3b8' } : {}]} />
-
-      {/* Header — same as invoice */}
-      <View style={s.header}>
-        <View style={s.logoBlock}>
-          <View style={s.logoClip}>
-            <Image src={LOGO_SRC} style={s.logoImg} />
-          </View>
-          <View style={s.headerDividerV} />
-          <View>
-            <Text style={s.storeName}>{STORE.name}</Text>
-            <Text style={s.storeTagline}>GEAR FOR PHOTO, VIDEO & CREATIVE PROFESSIONALS</Text>
-            <Text style={s.storeDetail}>{STORE.address}</Text>
-            <Text style={s.storeDetail}>{STORE.city}</Text>
-            <Text style={s.storeDetail}>Ph: {STORE.phone}</Text>
-            <Text style={s.storeDetail}>Email: {STORE.email}</Text>
-          </View>
-        </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={s.invoiceTitle}>{isBOS ? 'BILL OF SUPPLY' : 'TAX INVOICE'}</Text>
-        </View>
-      </View>
-
-      <View style={s.greenDivider} />
-
-      {/* Terms & Conditions */}
-      <View style={{ paddingTop: 10 }}>
-        <Text style={s.tcTitle}>Terms &amp; Conditions</Text>
-        {terms.map((term, i) => (
-          <View key={i} style={s.tcItem}>
-            <Text style={s.tcNum}>{i + 1}.</Text>
-            <Text style={s.tcText}>{term}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Footer */}
-      <View style={[s.footer, { marginTop: 'auto' }]}>
-        <Text style={s.footerText}>This is a computer-generated invoice. No signature required.</Text>
-        <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-      </View>
-
-      {/* Bottom border */}
-      <View style={s.borderBottom}>
-        <Text style={s.borderBottomText}>Dubaishoppe_hyd@yahoo.com</Text>
-        <Text style={s.borderBottomSep}>|</Text>
-        <Text style={s.borderBottomText}>+91 9885878645 / +91 9866141485</Text>
-        <Text style={s.borderBottomSep}>|</Text>
-        <Text style={s.borderBottomText}>DUBAI SHOPPE — GSTIN: 36ALBPM0907C1ZO</Text>
-      </View>
-    </Page>
-  )
-}
 
 interface InvoicePDFProps {
   invoice: Invoice
