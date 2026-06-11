@@ -46,7 +46,7 @@ function amountInWords(amount: number): string {
 }
 
 const s = StyleSheet.create({
-  page: { fontFamily: 'SegoeUI', fontSize: 9, color: '#1e293b', paddingHorizontal: 32, paddingTop: 0, paddingBottom: 0 },
+  page: { fontFamily: 'SegoeUI', fontSize: 9, color: '#1e293b', paddingHorizontal: 32, paddingTop: 0, paddingBottom: 58 },
   borderTop: { height: 6, backgroundColor: '#D1D5DB', marginBottom: 18 },
   borderBottom: {
     backgroundColor: '#F3F4F6',
@@ -483,15 +483,15 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
         </View>
       )}
 
-      {/* Footer */}
-      <View style={s.footer}>
+      {/* Footer — fixed so it appears on every page */}
+      <View fixed style={[s.footer, { position: 'absolute', bottom: 30, left: 32, right: 32 }]}>
         <Text style={s.footerText}>This is a computer-generated invoice. No signature required.</Text>
         <Text style={s.footerPageNum} render={({ pageNumber, totalPages }) => totalPages > 1 ? `Page ${pageNumber} of ${totalPages}` : ''} />
         <Text style={s.footerText}>{STORE.name} · GSTIN: {STORE.gstin} · {STORE.phone}</Text>
       </View>
 
-      {/* Bottom border */}
-      <View style={s.borderBottom}>
+      {/* Bottom border — fixed so it appears on every page */}
+      <View fixed style={[s.borderBottom, { position: 'absolute', bottom: 0, left: 0, right: 0, marginTop: 0 }]}>
         <Text style={s.borderBottomText}>Dubaishoppe_hyd@yahoo.com</Text>
         <Text style={s.borderBottomSep}>|</Text>
         <Text style={s.borderBottomText}>+91 9885878645 / +91 9866141485</Text>
