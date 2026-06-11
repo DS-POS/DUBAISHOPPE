@@ -46,18 +46,18 @@ export default function Sidebar({ userRole }: { userRole: string }) {
     return (
       <div className="flex flex-col h-full text-white" style={{ background: 'linear-gradient(180deg, #0f172a 0%, #111827 60%, #0f172a 100%)', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
         {/* Logo area */}
-        <div className="px-4 py-3 flex items-center gap-3 border-b border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.97)' }}>
-          <div className="w-14 overflow-hidden shrink-0" style={{ clipPath: 'inset(0 0 26% 0)' }}>
-            <img src="/DUBAI LOGO BR.png" alt="Dubai Shoppe" className="w-14 object-contain object-top" />
+        <div className="px-3 py-2 flex items-center gap-2.5 border-b border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.97)' }}>
+          <div className="w-11 overflow-hidden shrink-0" style={{ clipPath: 'inset(0 0 26% 0)' }}>
+            <img src="/DUBAI LOGO BR.png" alt="Dubai Shoppe" className="w-11 object-contain object-top" />
           </div>
           <div className="min-w-0">
-            <p className="text-slate-950 font-black text-sm leading-tight truncate" style={{ fontFamily: 'Rubik, sans-serif' }}>Dubai Shoppe</p>
-            <p className="text-slate-500 text-[10px] font-medium truncate">POS System</p>
+            <p className="text-slate-950 font-black text-xs leading-tight truncate" style={{ fontFamily: 'Rubik, sans-serif' }}>Dubai Shoppe</p>
+            <p className="text-slate-500 text-[9px] font-medium truncate">POS System</p>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
           {navItems.filter(item => !item.roles || item.roles.includes(userRole)).map(item => {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (
@@ -66,7 +66,7 @@ export default function Sidebar({ userRole }: { userRole: string }) {
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'relative rounded-xl px-3 py-2.5 flex items-center gap-3 text-sm font-medium transition-all duration-200 group',
+                  'relative rounded-lg px-2.5 py-1.5 flex items-center gap-2.5 text-xs font-medium transition-all duration-200 group',
                   isActive
                     ? 'text-white'
                     : 'text-slate-400 hover:bg-white/[0.06] hover:text-slate-100'

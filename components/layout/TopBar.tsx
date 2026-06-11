@@ -27,7 +27,7 @@ export default function TopBar({ user }: { user: User | null }) {
 
   return (
     <div
-      className="h-14 border-b flex items-center justify-between px-4 md:px-6 flex-shrink-0 gap-2"
+      className="h-12 border-b flex items-center justify-between px-4 md:px-5 flex-shrink-0 gap-2"
       style={{
         background: 'rgba(255,255,255,0.95)',
         backdropFilter: 'blur(16px)',

@@ -47,24 +47,24 @@ export default async function DashboardPage() {
   const statCards = (
     <div className={`grid gap-2 md:gap-4 ${isManager ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-5'}`}>
       {!isManager && (
-        <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-5 ring-1 ring-slate-200/80 shadow-sm card-hover">
+        <div className="bg-white rounded-xl md:rounded-xl p-3 md:p-4 ring-1 ring-slate-200/80 shadow-sm card-hover">
           <div className="inline-flex items-center justify-center icon-gradient-blue text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
             <ShoppingCart className="size-3.5 md:size-4" />
           </div>
           <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Today&apos;s Sales</p>
-          <p className="text-base md:text-2xl font-black text-slate-900 mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(stats.todayRevenue)}</p>
+          <p className="text-base md:text-xl font-black text-slate-900 mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(stats.todayRevenue)}</p>
           <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">{stats.todayCount} {stats.todayCount === 1 ? 'invoice' : 'invoices'}</p>
           <Link href="/invoices" className="text-[10px] md:text-xs font-semibold text-blue-600 hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
         </div>
       )}
 
       {!isManager && (
-        <div className="rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm card-hover" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)', boxShadow: '0 4px 16px -4px rgba(15,23,42,0.4)' }}>
+        <div className="rounded-xl md:rounded-xl p-3 md:p-4 shadow-sm card-hover" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)', boxShadow: '0 4px 16px -4px rgba(15,23,42,0.4)' }}>
           <div className="inline-flex items-center justify-center bg-white/10 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
             <TrendingUp className="size-3.5 md:size-4" />
           </div>
           <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</p>
-          <p className="text-base md:text-2xl font-black text-white mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(stats.totalRevenue)}</p>
+          <p className="text-base md:text-xl font-black text-white mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(stats.totalRevenue)}</p>
           <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1 truncate tabular-nums">₹{formatINR(stats.totalPaid)} paid</p>
           <Link href="/invoices" className="text-[10px] md:text-xs font-semibold text-slate-300 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">View →</Link>
         </div>
@@ -75,29 +75,29 @@ export default async function DashboardPage() {
           <AlertCircle className="size-3.5 md:size-4" />
         </div>
         <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Customer Dues</p>
-        <p className="text-base md:text-2xl font-black text-slate-900 mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(stats.totalDue)}</p>
+        <p className="text-base md:text-xl font-black text-slate-900 mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(stats.totalDue)}</p>
         <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">{stats.dueCount} pending</p>
         <Link href="/invoices?status=pending" className="text-[10px] md:text-xs font-semibold text-red-600 hover:underline mt-2 md:mt-3 inline-block transition-colors">Collect →</Link>
       </div>
 
       {!isManager && (
-        <div className="rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm card-hover" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', boxShadow: '0 4px 16px -4px rgba(30,41,59,0.35)' }}>
+        <div className="rounded-xl md:rounded-xl p-3 md:p-4 shadow-sm card-hover" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', boxShadow: '0 4px 16px -4px rgba(30,41,59,0.35)' }}>
           <div className="inline-flex items-center justify-center bg-white/10 text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
             <Truck className="size-3.5 md:size-4" />
           </div>
           <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Supplier Dues</p>
-          <p className="text-base md:text-2xl font-black text-white mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(supplierDueStats.totalDue)}</p>
+          <p className="text-base md:text-xl font-black text-white mt-1 md:mt-2 truncate tabular-nums">₹{formatINR(supplierDueStats.totalDue)}</p>
           <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1">{supplierDueStats.dueCount} unpaid</p>
           <Link href="/stock-in" className="text-[10px] md:text-xs font-semibold text-slate-300 hover:text-white hover:underline mt-2 md:mt-3 inline-block transition-colors">Pay →</Link>
         </div>
       )}
 
-      <div className={`bg-white rounded-xl md:rounded-2xl p-3 md:p-5 ring-1 ring-slate-200/80 shadow-sm card-hover ${isManager ? '' : 'col-span-2 lg:col-span-1'}`}>
+      <div className={`bg-white rounded-xl md:rounded-xl p-3 md:p-4 ring-1 ring-slate-200/80 shadow-sm card-hover ${isManager ? '' : 'col-span-2 lg:col-span-1'}`}>
         <div className="inline-flex items-center justify-center icon-gradient-dark text-white rounded-lg md:rounded-xl p-1.5 md:p-2 mb-2 md:mb-3">
           <FileText className="size-3.5 md:size-4" />
         </div>
         <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Invoices</p>
-        <p className="text-base md:text-2xl font-black text-slate-900 mt-1 md:mt-2 tabular-nums">{stats.totalInvoices}</p>
+        <p className="text-base md:text-xl font-black text-slate-900 mt-1 md:mt-2 tabular-nums">{stats.totalInvoices}</p>
         <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">All time</p>
         <Link href="/invoices" className="text-[10px] md:text-xs font-semibold text-slate-600 hover:text-slate-900 hover:underline mt-2 md:mt-3 inline-block transition-colors">View all →</Link>
       </div>
@@ -279,12 +279,12 @@ export default async function DashboardPage() {
   )
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-8">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg md:text-2xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
-          <p className="text-xs md:text-sm text-slate-500 mt-0.5 hidden sm:block">Welcome back — here&apos;s your business overview</p>
+          <h1 className="text-base md:text-xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+          <p className="text-xs text-slate-500 mt-0.5 hidden sm:block">Welcome back — here&apos;s your business overview</p>
         </div>
         <Link href="/billing">
           <button className="inline-flex items-center gap-1.5 md:gap-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white text-xs md:text-sm font-semibold px-3 md:px-4 py-2 md:py-2.5 rounded-xl shadow-sm transition-all duration-150">
