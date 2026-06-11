@@ -91,6 +91,7 @@ function BankAccountCard({
 export default function SettingsForm({ initialSettings }: SettingsFormProps) {
   const [openBank, setOpenBank] = useState(false)
   const [openTerms, setOpenTerms] = useState(false)
+  const [openInvoiceTerms, setOpenInvoiceTerms] = useState(false)
   const [openStamp, setOpenStamp] = useState(false)
 
   const [banks, setBanks] = useState<BankAccount[]>(
@@ -102,6 +103,9 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
 
   const [terms, setTerms] = useState<string[]>(initialSettings.terms_conditions)
   const [isSavingTerms, startSavingTerms] = useTransition()
+
+  const [invoiceTerms, setInvoiceTerms] = useState<string[]>(initialSettings.invoice_terms_conditions)
+  const [isSavingInvoiceTerms, startSavingInvoiceTerms] = useTransition()
 
   const [stampUrl, setStampUrl] = useState(initialSettings.stamp_image_url)
   const [isUploadingStamp, startUploadingStamp] = useTransition()
@@ -139,6 +143,19 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
         toast.success('Terms & Conditions saved')
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Failed to save terms')
+      }
+    })
+  }
+
+  function handleSaveInvoiceTerms() {
+    const filtered = invoiceTerms.filter(t => t.trim() !== '')
+    startSavingInvoiceTerms(async () => {
+      try {
+        await updateSettings({ invoice_terms_conditions: filtered })
+        setInvoiceTerms(filtered)
+        toast.success('Invoice Terms & Conditions saved')
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Failed to save invoice terms')
       }
     })
   }
@@ -259,6 +276,50 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
             <Button onClick={handleSaveTerms} disabled={isSavingTerms} className="bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white">
               {isSavingTerms && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Save Terms
+            </Button>
+          </div>
+        </CardContent>}
+      </Card>
+
+      {/* Invoice Terms & Conditions */}
+      <Card className="border border-slate-200 bg-slate-100">
+        <CardHeader className="pb-3 cursor-pointer select-none" onClick={() => setOpenInvoiceTerms(v => !v)}>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold text-slate-900">
+                Invoice Terms &amp; Conditions
+              </CardTitle>
+              {openInvoiceTerms && <p className="text-xs text-slate-500">Printed on invoice PDFs as a numbered list</p>}
+            </div>
+            {openInvoiceTerms ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+          </div>
+        </CardHeader>
+        {openInvoiceTerms && <CardContent className="space-y-3">
+          {invoiceTerms.map((term, index) => (
+            <div key={index} className="flex gap-2 items-start">
+              <span className="text-slate-500 text-sm shrink-0 mt-2">{index + 1}.</span>
+              <Input
+                value={term}
+                onChange={e => setInvoiceTerms(prev => prev.map((t, i) => i === index ? e.target.value : t))}
+                placeholder="Enter term..."
+                className="border-slate-200 bg-white focus-visible:ring-slate-900/20 flex-1"
+              />
+              <Button variant="ghost" size="icon"
+                onClick={() => setInvoiceTerms(prev => prev.filter((_, i) => i !== index))}
+                className="text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+          <Button variant="outline" size="sm" onClick={() => setInvoiceTerms(prev => [...prev, ''])}
+            className="border-slate-300 text-slate-900 hover:bg-slate-200">
+            <Plus className="w-4 h-4 mr-1" />Add Term
+          </Button>
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSaveInvoiceTerms} disabled={isSavingInvoiceTerms} className="bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all duration-200 text-white">
+              {isSavingInvoiceTerms && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Save Invoice Terms
             </Button>
           </div>
         </CardContent>}

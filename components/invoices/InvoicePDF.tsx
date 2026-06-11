@@ -124,15 +124,23 @@ const s = StyleSheet.create({
   },
   footer: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10 },
   footerText: { fontSize: 7, color: '#94a3b8' },
+  pageNumRow: { flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 4 },
+  pageNumText: { fontSize: 6.5, color: '#94a3b8' },
+  tcPage: { fontFamily: 'SegoeUI', fontSize: 9, color: '#1e293b', paddingHorizontal: 32, paddingTop: 0, paddingBottom: 0 },
+  tcTitle: { fontSize: 9, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#111827', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  tcItem: { flexDirection: 'row', gap: 6, marginBottom: 5 },
+  tcNum: { fontSize: 7.5, color: '#374151', fontFamily: 'SegoeUI', fontWeight: 'bold', width: 14 },
+  tcText: { fontSize: 7.5, color: '#374151', flex: 1, lineHeight: 1.5 },
   bosNote: { fontSize: 7.5, color: '#92400e', fontFamily: 'SegoeUI', fontWeight: 'bold', backgroundColor: '#fef3c7', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 3, marginBottom: 8, alignSelf: 'flex-start' },
 })
 
-function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling }: {
+function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, invoiceTerms }: {
   invoice: Invoice
   items: InvoiceItem[]
   customer: Customer | null
   returns?: (SalesReturn & { sales_return_items: SalesReturnItem[] })[]
   linkedSibling?: Invoice
+  invoiceTerms?: string[]
 }) {
   const isBOS = invoice.invoice_type === 'bill_of_supply'
   const isIGST = (invoice.igst ?? 0) > 0
@@ -466,6 +474,14 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling }:
         <Text style={s.footerText}>{STORE.name} · GSTIN: {STORE.gstin} · {STORE.phone}</Text>
       </View>
 
+      {/* Page number + continued note */}
+      {invoiceTerms && invoiceTerms.length > 0 && (
+        <View style={s.pageNumRow}>
+          <Text style={s.pageNumText}>Continued on next page →</Text>
+          <Text style={s.pageNumText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+        </View>
+      )}
+
       {/* Bottom border */}
       <View style={s.borderBottom}>
         <Text style={s.borderBottomText}>Dubaishoppe_hyd@yahoo.com</Text>
@@ -479,26 +495,89 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling }:
   )
 }
 
+function TermsPage({ terms, isBOS }: { terms: string[]; isBOS: boolean }) {
+  return (
+    <Page size="A4" style={s.tcPage}>
+      {/* Top border */}
+      <View style={[s.borderTop, isBOS ? { backgroundColor: '#94a3b8' } : {}]} />
+
+      {/* Header — same as invoice */}
+      <View style={s.header}>
+        <View style={s.logoBlock}>
+          <View style={s.logoClip}>
+            <Image src={LOGO_SRC} style={s.logoImg} />
+          </View>
+          <View style={s.headerDividerV} />
+          <View>
+            <Text style={s.storeName}>{STORE.name}</Text>
+            <Text style={s.storeTagline}>GEAR FOR PHOTO, VIDEO & CREATIVE PROFESSIONALS</Text>
+            <Text style={s.storeDetail}>{STORE.address}</Text>
+            <Text style={s.storeDetail}>{STORE.city}</Text>
+            <Text style={s.storeDetail}>Ph: {STORE.phone}</Text>
+            <Text style={s.storeDetail}>Email: {STORE.email}</Text>
+          </View>
+        </View>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={s.invoiceTitle}>{isBOS ? 'BILL OF SUPPLY' : 'TAX INVOICE'}</Text>
+        </View>
+      </View>
+
+      <View style={s.greenDivider} />
+
+      {/* Terms & Conditions */}
+      <View style={{ paddingTop: 10 }}>
+        <Text style={s.tcTitle}>Terms &amp; Conditions</Text>
+        {terms.map((term, i) => (
+          <View key={i} style={s.tcItem}>
+            <Text style={s.tcNum}>{i + 1}.</Text>
+            <Text style={s.tcText}>{term}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Footer */}
+      <View style={[s.footer, { marginTop: 'auto' }]}>
+        <Text style={s.footerText}>This is a computer-generated invoice. No signature required.</Text>
+        <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+      </View>
+
+      {/* Bottom border */}
+      <View style={s.borderBottom}>
+        <Text style={s.borderBottomText}>Dubaishoppe_hyd@yahoo.com</Text>
+        <Text style={s.borderBottomSep}>|</Text>
+        <Text style={s.borderBottomText}>+91 9885878645 / +91 9866141485</Text>
+        <Text style={s.borderBottomSep}>|</Text>
+        <Text style={s.borderBottomText}>DUBAI SHOPPE — GSTIN: 36ALBPM0907C1ZO</Text>
+      </View>
+    </Page>
+  )
+}
+
 interface InvoicePDFProps {
   invoice: Invoice
   items: InvoiceItem[]
   customer: Customer | null
   linkedInvoice?: (Invoice & { invoice_items: InvoiceItem[] }) | null
   returns?: (SalesReturn & { sales_return_items: SalesReturnItem[] })[]
+  invoiceTerms?: string[]
 }
 
-export function InvoicePDF({ invoice, items, customer, linkedInvoice, returns }: InvoicePDFProps) {
+export function InvoicePDF({ invoice, items, customer, linkedInvoice, returns, invoiceTerms }: InvoicePDFProps) {
+  const hasTerms = invoiceTerms && invoiceTerms.length > 0
+  const isBOS = invoice.invoice_type === 'bill_of_supply'
   return (
     <Document>
-      <InvoiceSinglePage invoice={invoice} items={items} customer={customer} returns={returns} linkedSibling={linkedInvoice ?? undefined} />
+      <InvoiceSinglePage invoice={invoice} items={items} customer={customer} returns={returns} linkedSibling={linkedInvoice ?? undefined} invoiceTerms={hasTerms ? invoiceTerms : undefined} />
       {linkedInvoice && (
         <InvoiceSinglePage
           invoice={linkedInvoice}
           items={linkedInvoice.invoice_items ?? []}
           customer={customer}
           linkedSibling={invoice}
+          invoiceTerms={hasTerms ? invoiceTerms : undefined}
         />
       )}
+      {hasTerms && <TermsPage terms={invoiceTerms} isBOS={isBOS} />}
     </Document>
   )
 }

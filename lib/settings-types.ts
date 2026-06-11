@@ -9,6 +9,7 @@ export interface BankAccount {
 export interface StoreSettings {
   bank_accounts: BankAccount[]
   terms_conditions: string[]
+  invoice_terms_conditions: string[]
   stamp_image_url: string
   signature_image_url: string
 }

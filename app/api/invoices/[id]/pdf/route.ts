@@ -4,6 +4,7 @@ import type { DocumentProps } from '@react-pdf/renderer'
 import type { ReactElement } from 'react'
 import { getInvoice, getLinkedInvoice } from '@/actions/invoices'
 import { getInvoiceReturnsWithItems } from '@/actions/sales-returns'
+import { getSettings } from '@/actions/settings'
 import { InvoicePDF } from '@/components/invoices/InvoicePDF'
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
@@ -12,11 +13,12 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     return new Response('Invoice not found', { status: 404 })
   }
 
-  const [linkedInvoice, returns] = await Promise.all([
+  const [linkedInvoice, returns, settings] = await Promise.all([
     invoice.order_group_id
       ? getLinkedInvoice(invoice.order_group_id, invoice.id)
       : Promise.resolve(null),
     getInvoiceReturnsWithItems(invoice.id),
+    getSettings(),
   ])
 
   const element = createElement(InvoicePDF, {
@@ -25,6 +27,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     customer: invoice.customers ?? null,
     linkedInvoice,
     returns: returns.length > 0 ? returns : undefined,
+    invoiceTerms: settings.invoice_terms_conditions,
   }) as ReactElement<DocumentProps>
 
   const buffer = await renderToBuffer(element)

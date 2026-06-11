@@ -13,6 +13,17 @@ const DEFAULT_TERMS: string[] = [
   'Subject to availability of stock.',
 ]
 
+const DEFAULT_INVOICE_TERMS: string[] = [
+  'Warranty to be claimed at authorised service centre only; not entertained by dealer. Terms as per manufacturer/importer policy.',
+  'Finance at sole discretion of funding institution. Card charges apply when price is discounted.',
+  'Cheques subject to realisation; goods delivered only after clearance.',
+  'Prices are inclusive of GST unless otherwise stated. Dubai Shoppe reserves the right to cancel orders in case of pricing or stock errors.',
+  'Advance payments are non-refundable for special orders, customised products, or items procured on customer request.',
+  'Goods once sold will not be taken back or exchanged unless found defective under manufacturer warranty.',
+  'Delivery timelines are approximate and subject to product availability and logistics conditions.',
+  'No Exchange. No Return. Please inspect and verify your product at the time of collection. Subject to local jurisdiction.',
+]
+
 export async function getSettings(): Promise<StoreSettings> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -23,6 +34,7 @@ export async function getSettings(): Promise<StoreSettings> {
       // legacy single-bank keys (for migration)
       'bank_name', 'bank_account_name', 'bank_account_number', 'bank_ifsc', 'bank_branch',
       'terms_conditions',
+      'invoice_terms_conditions',
       'stamp_image_url',
       'signature_image_url',
     ])
@@ -61,9 +73,18 @@ export async function getSettings(): Promise<StoreSettings> {
     } catch { terms = DEFAULT_TERMS }
   }
 
+  let invoiceTerms: string[] = DEFAULT_INVOICE_TERMS
+  if (map['invoice_terms_conditions']) {
+    try {
+      const parsed = JSON.parse(map['invoice_terms_conditions'])
+      if (Array.isArray(parsed)) invoiceTerms = parsed as string[]
+    } catch { invoiceTerms = DEFAULT_INVOICE_TERMS }
+  }
+
   return {
     bank_accounts: bankAccounts,
     terms_conditions: terms,
+    invoice_terms_conditions: invoiceTerms,
     stamp_image_url: map['stamp_image_url'] ?? '',
     signature_image_url: map['signature_image_url'] ?? '',
   }
@@ -80,6 +101,9 @@ export async function updateSettings(data: Partial<StoreSettings>): Promise<void
   if (data.terms_conditions !== undefined) {
     upserts.push({ key: 'terms_conditions', value: JSON.stringify(data.terms_conditions), updated_at: now })
   }
+  if (data.invoice_terms_conditions !== undefined) {
+    upserts.push({ key: 'invoice_terms_conditions', value: JSON.stringify(data.invoice_terms_conditions), updated_at: now })
+  }
   if (data.stamp_image_url !== undefined) {
     upserts.push({ key: 'stamp_image_url', value: data.stamp_image_url, updated_at: now })
   }
@@ -94,6 +118,7 @@ export async function updateSettings(data: Partial<StoreSettings>): Promise<void
 
   revalidatePath('/settings')
   revalidatePath('/quotations')
+  revalidatePath('/invoices')
 }
 
 export async function uploadStoreAsset(
