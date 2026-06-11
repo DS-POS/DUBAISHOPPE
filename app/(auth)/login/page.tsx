@@ -14,6 +14,10 @@ export default async function LoginPage() {
   const activeProfiles = (profiles ?? []) as { id: string; name: string; role: string }[]
 
   return (
+    <>
+    {/* Preload logo so it renders sharp on first paint, not blurry while loading */}
+    {/* eslint-disable-next-line @next/next/no-head-element */}
+    <link rel="preload" href="/DUBAI LOGO BR.png" as="image" />
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
       style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)' }}>
 
@@ -35,6 +39,8 @@ export default async function LoginPage() {
                 alt="Dubai Shoppe"
                 className="w-24 h-24 object-contain"
                 style={{ clipPath: 'inset(0 0 24% 0)' }}
+                fetchPriority="high"
+                loading="eager"
               />
             </div>
           </div>
@@ -59,5 +65,6 @@ export default async function LoginPage() {
         </p>
       </div>
     </div>
+    </>
   )
 }
