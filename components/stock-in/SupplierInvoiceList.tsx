@@ -31,6 +31,7 @@ export default function SupplierInvoiceList({ initialInvoices, userRole }: Props
 
   const filtered = useMemo(() => {
     return invoices.filter(inv => {
+      if (isManager && inv.payment_status === 'pending') return false
       if (search.trim()) {
         const q = search.trim().toLowerCase()
         const matchSupplier = (inv.supplier_name ?? '').toLowerCase().includes(q)
@@ -50,7 +51,7 @@ export default function SupplierInvoiceList({ initialInvoices, userRole }: Props
       }
       return true
     })
-  }, [invoices, search, fromDate, toDate])
+  }, [invoices, search, fromDate, toDate, isManager])
 
   const grouped = useMemo(() => {
     if (!groupBySupplier) return null
