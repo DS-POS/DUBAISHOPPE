@@ -30,6 +30,25 @@ export function PinLogin({ profiles, onAdminLogin }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pin])
 
+  // Keyboard input when PIN screen is active
+  useEffect(() => {
+    if (!selected) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (loading) return
+      if (e.key >= '0' && e.key <= '9') {
+        if (pin.length < 4) {
+          setError('')
+          setPin(p => p + e.key)
+        }
+      } else if (e.key === 'Backspace') {
+        setError('')
+        setPin(p => p.slice(0, -1))
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selected, loading, pin])
+
   function handleDigit(d: string) {
     if (loading || pin.length >= 4) return
     setError('')
