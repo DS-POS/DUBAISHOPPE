@@ -468,19 +468,25 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
         </View>
       </View>
 
+      {/* Terms & Conditions — Tax Invoice only, inline */}
+      {!isBOS && invoiceTerms && invoiceTerms.length > 0 && (
+        <View style={{ marginTop: 10 }}>
+          <View style={s.greenDivider} />
+          <Text style={s.tcTitle}>Terms &amp; Conditions</Text>
+          {invoiceTerms.map((term, i) => (
+            <View key={i} style={s.tcItem}>
+              <Text style={s.tcNum}>{i + 1}.</Text>
+              <Text style={s.tcText}>{term}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
       {/* Footer */}
       <View style={s.footer}>
         <Text style={s.footerText}>This is a computer-generated invoice. No signature required.</Text>
         <Text style={s.footerText}>{STORE.name} · GSTIN: {STORE.gstin} · {STORE.phone}</Text>
       </View>
-
-      {/* Page number + continued note */}
-      {invoiceTerms && invoiceTerms.length > 0 && (
-        <View style={s.pageNumRow}>
-          <Text style={s.pageNumText}>Continued on next page →</Text>
-          <Text style={s.pageNumText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-        </View>
-      )}
 
       {/* Bottom border */}
       <View style={s.borderBottom}>
@@ -564,7 +570,6 @@ interface InvoicePDFProps {
 
 export function InvoicePDF({ invoice, items, customer, linkedInvoice, returns, invoiceTerms }: InvoicePDFProps) {
   const hasTerms = invoiceTerms && invoiceTerms.length > 0
-  const isBOS = invoice.invoice_type === 'bill_of_supply'
   return (
     <Document>
       <InvoiceSinglePage invoice={invoice} items={items} customer={customer} returns={returns} linkedSibling={linkedInvoice ?? undefined} invoiceTerms={hasTerms ? invoiceTerms : undefined} />
@@ -577,7 +582,6 @@ export function InvoicePDF({ invoice, items, customer, linkedInvoice, returns, i
           invoiceTerms={hasTerms ? invoiceTerms : undefined}
         />
       )}
-      {hasTerms && <TermsPage terms={invoiceTerms} isBOS={isBOS} />}
     </Document>
   )
 }
