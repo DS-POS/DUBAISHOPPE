@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer'
 import { STORE } from '@/lib/store-constants'
 import type { Invoice, InvoiceItem, Customer, SalesReturn, SalesReturnItem } from '@/types/database'
+import type { BankAccount } from '@/actions/settings'
 import { round2 } from '@/lib/gst'
 import path from 'path'
 import fs from 'fs'
@@ -133,15 +134,28 @@ const s = StyleSheet.create({
   tcNum: { fontSize: 7.5, color: '#374151', fontFamily: 'SegoeUI', fontWeight: 'bold', width: 14 },
   tcText: { fontSize: 7.5, color: '#374151', flex: 1, lineHeight: 1.5 },
   bosNote: { fontSize: 7.5, color: '#92400e', fontFamily: 'SegoeUI', fontWeight: 'bold', backgroundColor: '#fef3c7', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 3, marginBottom: 8, alignSelf: 'flex-start' },
+  paymentSection: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  payBox: { flex: 1, borderWidth: 0.5, borderColor: '#D1D5DB', borderRadius: 3, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: '#F9FAFB' },
+  payBoxTitle: { fontSize: 7, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#374151', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 },
+  bankRow: { flexDirection: 'row', marginBottom: 3 },
+  bankLabel: { fontSize: 7.5, color: '#6B7280', width: 76 },
+  bankValue: { fontSize: 7.5, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#111827', flex: 1 },
+  upiBox: { width: 90, borderWidth: 0.5, borderColor: '#D1D5DB', borderRadius: 3, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: '#F9FAFB', alignItems: 'center' },
+  upiQr: { width: 64, height: 64, marginVertical: 4 },
+  upiLabel: { fontSize: 6.5, color: '#6B7280', textAlign: 'center', marginTop: 2 },
+  upiId: { fontSize: 7, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#111827', textAlign: 'center' },
+  tcBoxed: { flex: 1, borderWidth: 0.5, borderColor: '#D1D5DB', borderRadius: 3, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: '#F9FAFB' },
 })
 
-function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, invoiceTerms }: {
+function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, invoiceTerms, bankAccount, upiQrDataUrl }: {
   invoice: Invoice
   items: InvoiceItem[]
   customer: Customer | null
   returns?: (SalesReturn & { sales_return_items: SalesReturnItem[] })[]
   linkedSibling?: Invoice
   invoiceTerms?: string[]
+  bankAccount?: BankAccount | null
+  upiQrDataUrl?: string
 }) {
   const isBOS = invoice.invoice_type === 'bill_of_supply'
   const isIGST = (invoice.igst ?? 0) > 0
@@ -469,17 +483,48 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
         </View>
       </View>
 
-      {/* Terms & Conditions — Tax Invoice only, never break mid-list */}
-      {!isBOS && invoiceTerms && invoiceTerms.length > 0 && (
-        <View wrap={false} style={{ marginTop: 10 }}>
-          <View style={s.greenDivider} />
-          <Text style={s.tcTitle}>Terms &amp; Conditions</Text>
-          {invoiceTerms.map((term, i) => (
-            <View key={i} style={s.tcItem}>
-              <Text style={s.tcNum}>{i + 1}.</Text>
-              <Text style={s.tcText}>{term}</Text>
+      {/* Payment details + Terms — Tax Invoice only */}
+      {!isBOS && (bankAccount || upiQrDataUrl || (invoiceTerms && invoiceTerms.length > 0)) && (
+        <View wrap={false} style={s.paymentSection}>
+          {/* Bank Details */}
+          {bankAccount && (
+            <View style={s.payBox}>
+              <Text style={s.payBoxTitle}>Bank Transfer Details</Text>
+              {([
+                ['Bank Name', bankAccount.bank_name],
+                ['Account Name', bankAccount.account_name],
+                ['Account No.', bankAccount.account_number],
+                ['IFSC Code', bankAccount.ifsc],
+                ['Branch', bankAccount.branch],
+              ] as [string, string][]).filter(([, v]) => v).map(([label, value]) => (
+                <View key={label} style={s.bankRow}>
+                  <Text style={s.bankLabel}>{label}</Text>
+                  <Text style={s.bankValue}>{value}</Text>
+                </View>
+              ))}
             </View>
-          ))}
+          )}
+          {/* UPI QR */}
+          {upiQrDataUrl && (
+            <View style={s.upiBox}>
+              <Text style={s.payBoxTitle}>Pay via UPI</Text>
+              <Image src={upiQrDataUrl} style={s.upiQr} />
+              <Text style={s.upiId}>{STORE.upi_id}</Text>
+              <Text style={s.upiLabel}>Scan to pay</Text>
+            </View>
+          )}
+          {/* Terms & Conditions */}
+          {invoiceTerms && invoiceTerms.length > 0 && (
+            <View style={s.tcBoxed}>
+              <Text style={s.payBoxTitle}>Terms &amp; Conditions</Text>
+              {invoiceTerms.map((term, i) => (
+                <View key={i} style={s.tcItem}>
+                  <Text style={s.tcNum}>{i + 1}.</Text>
+                  <Text style={s.tcText}>{term}</Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       )}
 
@@ -517,13 +562,15 @@ interface InvoicePDFProps {
   linkedInvoice?: (Invoice & { invoice_items: InvoiceItem[] }) | null
   returns?: (SalesReturn & { sales_return_items: SalesReturnItem[] })[]
   invoiceTerms?: string[]
+  bankAccount?: BankAccount | null
+  upiQrDataUrl?: string
 }
 
-export function InvoicePDF({ invoice, items, customer, linkedInvoice, returns, invoiceTerms }: InvoicePDFProps) {
+export function InvoicePDF({ invoice, items, customer, linkedInvoice, returns, invoiceTerms, bankAccount, upiQrDataUrl }: InvoicePDFProps) {
   const hasTerms = invoiceTerms && invoiceTerms.length > 0
   return (
     <Document>
-      <InvoiceSinglePage invoice={invoice} items={items} customer={customer} returns={returns} linkedSibling={linkedInvoice ?? undefined} invoiceTerms={hasTerms ? invoiceTerms : undefined} />
+      <InvoiceSinglePage invoice={invoice} items={items} customer={customer} returns={returns} linkedSibling={linkedInvoice ?? undefined} invoiceTerms={hasTerms ? invoiceTerms : undefined} bankAccount={bankAccount} upiQrDataUrl={upiQrDataUrl} />
       {linkedInvoice && (
         <InvoiceSinglePage
           invoice={linkedInvoice}
@@ -531,6 +578,8 @@ export function InvoicePDF({ invoice, items, customer, linkedInvoice, returns, i
           customer={customer}
           linkedSibling={invoice}
           invoiceTerms={hasTerms ? invoiceTerms : undefined}
+          bankAccount={bankAccount}
+          upiQrDataUrl={upiQrDataUrl}
         />
       )}
     </Document>

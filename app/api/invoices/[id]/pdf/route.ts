@@ -2,9 +2,11 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import { createElement } from 'react'
 import type { DocumentProps } from '@react-pdf/renderer'
 import type { ReactElement } from 'react'
+import QRCode from 'qrcode'
 import { getInvoice, getLinkedInvoice } from '@/actions/invoices'
 import { getInvoiceReturnsWithItems } from '@/actions/sales-returns'
 import { getSettings } from '@/actions/settings'
+import { STORE } from '@/lib/store-constants'
 import { InvoicePDF } from '@/components/invoices/InvoicePDF'
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
@@ -21,6 +23,11 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     getSettings(),
   ])
 
+  const bankAccount = settings.bank_accounts[0] ?? null
+
+  const upiUrl = `upi://pay?pa=${STORE.upi_id}&pn=${encodeURIComponent(STORE.name)}&cu=INR`
+  const upiQrDataUrl = await QRCode.toDataURL(upiUrl, { width: 100, margin: 1, errorCorrectionLevel: 'M' })
+
   const element = createElement(InvoicePDF, {
     invoice,
     items: invoice.invoice_items ?? [],
@@ -28,6 +35,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     linkedInvoice,
     returns: returns.length > 0 ? returns : undefined,
     invoiceTerms: settings.invoice_terms_conditions,
+    bankAccount,
+    upiQrDataUrl,
   }) as ReactElement<DocumentProps>
 
   const buffer = await renderToBuffer(element)

@@ -7,4 +7,5 @@ export const STORE = {
   state_code: '36',
   phone: '+91 9885878645 / +91 9866141485',
   email: 'Dubaishoppe_hyd@yahoo.com',
+  upi_id: 'dubaishoppe@icici',
 } as const
