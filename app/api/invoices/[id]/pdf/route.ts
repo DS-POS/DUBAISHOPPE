@@ -25,7 +25,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 
   const bankAccount = settings.bank_accounts[0] ?? null
 
-  const upiUrl = `upi://pay?pa=${STORE.upi_id}&pn=${encodeURIComponent(STORE.name)}&cu=INR`
+  const balanceDue = Math.max(0, invoice.grand_total - (invoice.total_returns ?? 0) - invoice.amount_paid)
+  const upiUrl = balanceDue > 0
+    ? `upi://pay?pa=${STORE.upi_id}&pn=${encodeURIComponent(STORE.name)}&am=${balanceDue.toFixed(2)}&cu=INR&tn=${encodeURIComponent(invoice.invoice_no)}`
+    : `upi://pay?pa=${STORE.upi_id}&pn=${encodeURIComponent(STORE.name)}&cu=INR`
   const upiQrDataUrl = await QRCode.toDataURL(upiUrl, { width: 100, margin: 1, errorCorrectionLevel: 'M' })
 
   const element = createElement(InvoicePDF, {
