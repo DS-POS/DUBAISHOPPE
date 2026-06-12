@@ -120,6 +120,15 @@ export function ProductsTable({ products, categories, userRole }: ProductsTableP
                             <EditIcon className="size-3.5" />
                           </span>
                         </Link>
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleDelete(product.id, product.name)}
+                            disabled={deleting === product.id || product.status === 'inactive'}
+                            className="hover:bg-red-100 p-1 rounded-lg text-slate-400 hover:text-red-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <Trash2Icon className="size-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div className="min-w-0">

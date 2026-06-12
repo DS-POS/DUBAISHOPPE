@@ -107,6 +107,16 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
 
   const watchedBarcode = watch('barcode')
   const watchedSku = watch('sku')
+  const watchedSellingPrice = watch('selling_price')
+  const watchedGstRate = watch('gst_rate')
+  const watchedIsTaxable = watch('is_taxable')
+
+  const derivedCostFromSelling = React.useMemo(() => {
+    const sp = Number(watchedSellingPrice)
+    const gst = Number(watchedGstRate)
+    if (!watchedIsTaxable || sp <= 0 || gst <= 0) return null
+    return Number((sp / (1 + gst / 100)).toFixed(2))
+  }, [watchedSellingPrice, watchedGstRate, watchedIsTaxable])
 
   // Update barcode preview when barcode or SKU changes
   React.useEffect(() => {
@@ -419,6 +429,20 @@ export function ProductForm({ mode, product, categories: initialCategories }: Pr
             <Label htmlFor="selling_price">Selling Price (₹) <span className="text-destructive">*</span></Label>
             <Input id="selling_price" type="number" step="0.01" min="0" {...register('selling_price')} />
             {errors.selling_price && <p className="text-xs text-destructive">{errors.selling_price.message}</p>}
+            {derivedCostFromSelling !== null && (
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-slate-500">
+                  Ex-GST base ({watchedGstRate}%): <span className="font-semibold text-slate-700">₹{derivedCostFromSelling.toLocaleString('en-IN')}</span>
+                </span>
+                <button
+                  type="button"
+                  className="text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2 font-medium"
+                  onClick={() => setValue('cost_price', derivedCostFromSelling)}
+                >
+                  → Set as cost price
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2 md:col-span-2 lg:col-span-2">
