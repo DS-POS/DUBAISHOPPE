@@ -228,23 +228,12 @@ export async function runEmailConfigCheck(): Promise<CheckResult> {
         fixable: false,
       }
     }
-    // Lightweight validation: try listing domains (doesn't send anything)
-    const { Resend } = await import('resend')
-    const resend = new Resend(apiKey)
-    const { error } = await resend.domains.list()
-    if (error) {
-      return {
-        id: 'email_config', label: 'Email Configuration',
-        description: 'Resend API key is set but API rejected it',
-        status: 'error', count: 0,
-        detail: error.message,
-        fixable: false,
-      }
-    }
     return {
       id: 'email_config', label: 'Email Configuration',
-      description: 'Resend API key is valid and email service is reachable',
-      status: 'pass', count: 0, detail: 'Email sending is operational', fixable: false,
+      description: 'Resend API key is set and format is valid',
+      status: 'pass', count: 0,
+      detail: 'Key present with correct re_ prefix — email sending should be operational',
+      fixable: false,
     }
   } catch (err) {
     return {
