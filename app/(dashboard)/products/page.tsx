@@ -7,7 +7,7 @@ import { ProductsTable } from '@/components/products/ProductsTable'
 
 import { getProducts } from '@/actions/products'
 import { getCategories } from '@/actions/categories'
-import { createClient } from '@/lib/supabase/server'
+import { getUserRole } from '@/lib/get-user-role'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,16 +15,8 @@ export default async function ProductsPage({ searchParams }: { searchParams?: { 
   const products = await getProducts()
   const categories = await getCategories()
   const isLowStockFilter = searchParams?.filter === 'low-stock'
-  const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user!.id)
-    .single()
-
-  const userRole = profile?.role ?? 'staff'
+  const userRole = (await getUserRole()) ?? 'staff'
   const activeCount = products.filter(p => p.status === 'active').length
   const lowStockCount = products.filter(
     p => p.current_stock <= p.low_stock_alert && p.status === 'active' && p.low_stock_alert > 0
