@@ -205,13 +205,63 @@ export async function runNegativeStockCheck(): Promise<CheckResult> {
   }
 }
 
+// ─── Check 5: Email Configuration ────────────────────────────────────────
+export async function runEmailConfigCheck(): Promise<CheckResult> {
+  await assertAdmin()
+  try {
+    const apiKey = process.env.RESEND_API_KEY
+    if (!apiKey || apiKey.trim() === '') {
+      return {
+        id: 'email_config', label: 'Email Configuration',
+        description: 'RESEND_API_KEY is not set — invoice emails will fail',
+        status: 'error', count: 0,
+        detail: 'Set RESEND_API_KEY in environment variables to enable email sending',
+        fixable: false,
+      }
+    }
+    if (!apiKey.startsWith('re_')) {
+      return {
+        id: 'email_config', label: 'Email Configuration',
+        description: 'RESEND_API_KEY format looks invalid (should start with re_)',
+        status: 'issue', count: 0,
+        detail: 'Verify key at resend.com/api-keys',
+        fixable: false,
+      }
+    }
+    // Lightweight validation: try listing domains (doesn't send anything)
+    const { Resend } = await import('resend')
+    const resend = new Resend(apiKey)
+    const { error } = await resend.domains.list()
+    if (error) {
+      return {
+        id: 'email_config', label: 'Email Configuration',
+        description: 'Resend API key is set but API rejected it',
+        status: 'error', count: 0,
+        detail: error.message,
+        fixable: false,
+      }
+    }
+    return {
+      id: 'email_config', label: 'Email Configuration',
+      description: 'Resend API key is valid and email service is reachable',
+      status: 'pass', count: 0, detail: 'Email sending is operational', fixable: false,
+    }
+  } catch (err) {
+    return {
+      id: 'email_config', label: 'Email Configuration',
+      description: 'Check failed', status: 'error', count: 0, detail: String(err), fixable: false,
+    }
+  }
+}
+
 // ─── Run All ──────────────────────────────────────────────────────────────
 export async function runAllChecks(): Promise<CheckResult[]> {
-  const [db, authSync, orphaned, negStock] = await Promise.all([
+  const [db, authSync, orphaned, negStock, emailConfig] = await Promise.all([
     runDbConnectionCheck(),
     runAuthSyncCheck(),
     runOrphanedInvoicesCheck(),
     runNegativeStockCheck(),
+    runEmailConfigCheck(),
   ])
-  return [db, authSync, orphaned, negStock]
+  return [db, authSync, orphaned, negStock, emailConfig]
 }

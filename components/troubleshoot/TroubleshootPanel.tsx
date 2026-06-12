@@ -7,6 +7,7 @@ import {
   runAuthSyncCheck,
   runOrphanedInvoicesCheck,
   runNegativeStockCheck,
+  runEmailConfigCheck,
   fixAuthSync,
   fixOrphanedInvoices,
 } from '@/actions/troubleshoot'
@@ -28,6 +29,7 @@ const CHECKS_META = [
   { id: 'auth_sync',         label: 'Auth User Sync',             fn: runAuthSyncCheck },
   { id: 'orphaned_invoices', label: 'Supplier Invoice Integrity', fn: runOrphanedInvoicesCheck },
   { id: 'negative_stock',    label: 'Negative Stock',             fn: runNegativeStockCheck },
+  { id: 'email_config',      label: 'Email Configuration',        fn: runEmailConfigCheck },
 ]
 
 const INITIAL: CheckState[] = CHECKS_META.map(c => ({

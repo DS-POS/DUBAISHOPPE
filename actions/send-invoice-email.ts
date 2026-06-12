@@ -5,9 +5,11 @@ import { getInvoice } from './invoices'
 import { STORE } from '@/lib/store-constants'
 import { round2 } from '@/lib/gst'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function sendInvoiceEmail(invoiceId: string, toEmail: string): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) throw new Error('Email service not configured. RESEND_API_KEY is missing.')
+  const resend = new Resend(apiKey)
+
   const invoice = await getInvoice(invoiceId)
   if (!invoice) throw new Error('Invoice not found')
 
