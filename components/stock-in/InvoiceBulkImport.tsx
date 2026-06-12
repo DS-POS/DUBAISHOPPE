@@ -27,7 +27,7 @@ interface ReviewItem {
   new_product_name: string
   new_product_category_id?: string
   new_product_gst_rate: number
-  selling_price_mode: 'percent' | 'flat'
+  selling_price_mode: 'percent' | 'flat' | 'direct'
   selling_price_value: number
 }
 
@@ -35,7 +35,22 @@ function computeSellingPrice(item: ReviewItem): number {
   if (item.selling_price_mode === 'percent') {
     return Number((item.unit_price * (1 + item.selling_price_value / 100)).toFixed(2))
   }
+  if (item.selling_price_mode === 'direct') {
+    return item.selling_price_value
+  }
   return Number((item.unit_price + item.selling_price_value).toFixed(2))
+}
+
+function nextMode(mode: ReviewItem['selling_price_mode']): ReviewItem['selling_price_mode'] {
+  if (mode === 'percent') return 'flat'
+  if (mode === 'flat') return 'direct'
+  return 'percent'
+}
+
+function modeLabel(mode: ReviewItem['selling_price_mode']): string {
+  if (mode === 'percent') return '%'
+  if (mode === 'flat') return '+₹'
+  return '₹'
 }
 
 interface InvoiceBulkImportProps {
@@ -304,31 +319,40 @@ export function InvoiceBulkImport({ products, categories }: InvoiceBulkImportPro
               <div className="space-y-2">
                 {/* Selling Price */}
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground shrink-0">Selling Price:</span>
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {item.selling_price_mode === 'percent' ? 'Markup %:' : item.selling_price_mode === 'flat' ? 'Profit ₹:' : 'Sell Price:'}
+                  </span>
                   <button
                     type="button"
                     onClick={() => updateItem(i, {
-                      selling_price_mode: item.selling_price_mode === 'percent' ? 'flat' : 'percent',
+                      selling_price_mode: nextMode(item.selling_price_mode),
                       selling_price_value: 0,
                     })}
                     className="px-2 py-0.5 text-xs rounded border border-input hover:bg-accent w-9 text-center shrink-0 font-mono"
-                    title="Toggle markup mode"
+                    title="Toggle: % markup → +₹ profit → ₹ direct price"
                   >
-                    {item.selling_price_mode === 'percent' ? '%' : '+₹'}
+                    {modeLabel(item.selling_price_mode)}
                   </button>
                   <Input
                     type="number"
                     value={item.selling_price_value === 0 ? '' : item.selling_price_value}
                     onChange={e => updateItem(i, { selling_price_value: Number(e.target.value) || 0 })}
                     onFocus={e => e.target.select()}
-                    placeholder="0"
-                    className="h-7 text-xs w-20"
+                    placeholder={item.selling_price_mode === 'direct' ? String(item.unit_price) : '0'}
+                    className="h-7 text-xs w-24"
                     min={0}
                     step={item.selling_price_mode === 'percent' ? 1 : 100}
                   />
-                  <span className="text-xs font-medium text-emerald-600 shrink-0">
-                    = ₹{computeSellingPrice(item).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </span>
+                  {item.selling_price_mode !== 'direct' && (
+                    <span className="text-xs font-medium text-emerald-600 shrink-0">
+                      = ₹{computeSellingPrice(item).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
+                  )}
+                  {item.selling_price_mode === 'direct' && item.selling_price_value > 0 && (
+                    <span className="text-xs text-slate-400 shrink-0">
+                      (cost ₹{item.unit_price.toLocaleString('en-IN')})
+                    </span>
+                  )}
                 </div>
 
                 {/* Action selector */}
