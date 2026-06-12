@@ -27,8 +27,10 @@ export async function sendInvoiceEmail(invoiceId: string, toEmail: string): Prom
     </tr>
   `).join('')
 
-  const { error } = await resend.emails.send({
-    from: `${STORE.name} <invoices@resend.dev>`,
+  let sendResult: Awaited<ReturnType<typeof resend.emails.send>>
+  try {
+    sendResult = await resend.emails.send({
+    from: `${STORE.name} <onboarding@resend.dev>`,
     to: [toEmail],
     subject: `Invoice ${invoice.invoice_no} from ${STORE.name}`,
     html: `
@@ -70,7 +72,10 @@ export async function sendInvoiceEmail(invoiceId: string, toEmail: string): Prom
         </div>
       </div>
     `,
-  })
+    })
+  } catch (sendErr) {
+    throw new Error(sendErr instanceof Error ? sendErr.message : 'Failed to send email')
+  }
 
-  if (error) throw new Error(error.message)
+  if (sendResult.error) throw new Error(sendResult.error.message ?? 'Email delivery failed')
 }

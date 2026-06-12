@@ -3,8 +3,6 @@
 import { Resend } from 'resend'
 import { STORE } from '@/lib/store-constants'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function sendGSTR1Email(params: {
   to: string
   from_date: string
@@ -25,6 +23,10 @@ export async function sendGSTR1Email(params: {
   const yyyy     = toD.getFullYear()
   const fileSlug = `${mm}${yyyy}`
   const filename = `GSTR1_${fileSlug}.json`
+
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return { success: false, error: 'Email service not configured' }
+  const resend = new Resend(apiKey)
 
   const jsonBuffer = Buffer.from(JSON.stringify(gstr1Json, null, 2))
 
