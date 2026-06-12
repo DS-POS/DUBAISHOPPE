@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import type { Product, Customer } from '@/types/database'
@@ -90,9 +90,9 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
     setCart(prev => prev.map(i => i._id === id ? recalcItem({ ...i, discount_mode: mode }, customerState) : i))
   }
 
-  function removeItem(id: string) {
+  const removeItem = useCallback((id: string) => {
     setCart(prev => prev.filter(i => i._id !== id))
-  }
+  }, [])
 
   function pickSerial(id: string) {
     setSerialPickTarget(id)
@@ -115,7 +115,7 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
     }
   }, [])
 
-  function handleCheckout() {
+  const handleCheckout = useCallback(() => {
     if (creditStatus?.over_limit && customer?.credit_limit && customer.credit_limit > 0) {
       toast.error(`Credit limit exceeded. Outstanding: ₹${creditStatus.outstanding.toLocaleString('en-IN')}. Limit: ₹${customer.credit_limit.toLocaleString('en-IN')}`)
       return
@@ -132,7 +132,40 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
     sessionStorage.setItem('pos_checkout_cart', JSON.stringify(cart))
     sessionStorage.setItem('pos_checkout_customer', customer ? JSON.stringify(customer) : '')
     router.push('/billing/checkout')
-  }
+  }, [cart, creditStatus, customer, router])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const inInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)
+
+      // F2 → checkout (always, even from input)
+      if (e.key === 'F2') {
+        e.preventDefault()
+        handleCheckout()
+        return
+      }
+      // Escape → close serial picker
+      if (e.key === 'Escape' && serialPickTarget) {
+        setSerialPickTarget(null)
+        return
+      }
+      if (inInput) return
+      // F3 or / → focus search
+      if (e.key === 'F3' || e.key === '/') {
+        e.preventDefault()
+        document.getElementById('billing-search-input')?.focus()
+        return
+      }
+      // Delete → remove last cart item
+      if (e.key === 'Delete' && cart.length > 0) {
+        e.preventDefault()
+        removeItem(cart[cart.length - 1]._id)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [cart, serialPickTarget, handleCheckout, removeItem])
 
   const totals = cartTotals(cart)
   const sortedCart = [...cart].sort((a, b) => {
@@ -317,6 +350,18 @@ export default function BillingForm({ products, customers }: BillingFormProps) {
           Proceed to Checkout
           <ArrowRightIcon className="size-4" />
         </button>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 px-1">
+          {[
+            { key: 'F2', label: 'Checkout' },
+            { key: 'F3', label: 'Search' },
+            { key: 'Del', label: 'Remove last' },
+          ].map(({ key, label }) => (
+            <span key={key} className="flex items-center gap-1 text-[10px] text-slate-400">
+              <kbd className="px-1 py-0.5 rounded border border-slate-200 bg-slate-50 font-mono text-[10px] text-slate-500">{key}</kbd>
+              {label}
+            </span>
+          ))}
+        </div>
       </div>
 
       {serialPickTarget && (() => {
