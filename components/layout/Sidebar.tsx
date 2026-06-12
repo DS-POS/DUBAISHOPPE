@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Package, PackagePlus, ShoppingCart,
   FileText, Users, Tag, BarChart3, FileDown, Settings,
   ClipboardList, Truck, SlidersHorizontal, RotateCcw, ClipboardCheck, Receipt, ArrowLeftRight,
-  LayoutGrid,
+  LayoutGrid, Wrench,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -30,6 +30,7 @@ const navItems: NavItem[] = [
   { label: 'Reports', href: '/reports', icon: BarChart3, roles: ['admin'] },
   { label: 'Tally Export', href: '/reports/tally', icon: FileDown, roles: ['admin'] },
   { label: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
+  { label: 'Troubleshoot', href: '/troubleshoot', icon: Wrench, roles: ['admin'] },
 ]
 
 export default function Sidebar({ userRole }: { userRole: string }) {
