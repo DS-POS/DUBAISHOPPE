@@ -27,8 +27,9 @@ export interface ImportInvoicePayload {
 
 export async function importSupplierInvoice(payload: ImportInvoicePayload): Promise<string> {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const { data: authData, error: authError } = await supabase.auth.getUser()
+  if (authError || !authData.user) throw new Error('Unauthorized')
+  const user = authData.user
 
   const activeItems = payload.items.filter(i => i.action !== 'skip')
   if (activeItems.length === 0) throw new Error('No items to import.')
@@ -116,6 +117,17 @@ export async function importSupplierInvoice(payload: ImportInvoicePayload): Prom
     }
   }
 
+  // Collect newly created product IDs so we can roll back on failure
+  const createdProductIds = Array.from(productIdMap.entries())
+    .filter(([i]) => activeItems[i]?.action === 'create_new')
+    .map(([, id]) => id)
+
+  async function rollbackCreatedProducts() {
+    if (createdProductIds.length > 0) {
+      await supabase.from('products').delete().in('id', createdProductIds)
+    }
+  }
+
   // 2. Create supplier_invoices header
   const { data: supplierInvoice, error: invoiceError } = await supabase
     .from('supplier_invoices')
@@ -131,7 +143,10 @@ export async function importSupplierInvoice(payload: ImportInvoicePayload): Prom
     .select('id')
     .single()
 
-  if (invoiceError) throw new Error(invoiceError.message)
+  if (invoiceError) {
+    await rollbackCreatedProducts()
+    throw new Error(invoiceError.message)
+  }
   const supplierInvoiceId = supplierInvoice.id
 
   // 3. Bulk insert stock_in rows
@@ -156,7 +171,11 @@ export async function importSupplierInvoice(payload: ImportInvoicePayload): Prom
 
   if (stockInRows.length > 0) {
     const { error: stockError } = await supabase.from('stock_in').insert(stockInRows)
-    if (stockError) throw new Error(stockError.message)
+    if (stockError) {
+      await supabase.from('supplier_invoices').delete().eq('id', supplierInvoiceId)
+      await rollbackCreatedProducts()
+      throw new Error(stockError.message)
+    }
   }
 
   revalidatePath('/stock-in')

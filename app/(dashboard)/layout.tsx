@@ -8,14 +8,15 @@ export const dynamic = 'force-dynamic'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { data: authData, error: authError } = await supabase.auth.getUser()
+  if (authError || !authData.user) redirect('/login')
+  const user = authData.user
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
