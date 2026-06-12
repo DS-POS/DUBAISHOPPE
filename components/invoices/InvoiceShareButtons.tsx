@@ -39,8 +39,12 @@ export function InvoiceShareButtons({
     }
     setEmailSending(true)
     try {
-      await sendInvoiceEmail(invoiceId, customerEmail)
-      toast.success(`Invoice emailed to ${customerEmail}`)
+      const result = await sendInvoiceEmail(invoiceId, customerEmail)
+      if (result.success) {
+        toast.success(`Invoice emailed to ${customerEmail}`)
+      } else {
+        toast.error(result.error ?? 'Email failed.')
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Email failed.')
     } finally {

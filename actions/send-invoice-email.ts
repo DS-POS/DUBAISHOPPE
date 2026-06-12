@@ -5,13 +5,17 @@ import { getInvoice } from './invoices'
 import { STORE } from '@/lib/store-constants'
 import { round2 } from '@/lib/gst'
 
-export async function sendInvoiceEmail(invoiceId: string, toEmail: string): Promise<void> {
+export async function sendInvoiceEmail(
+  invoiceId: string,
+  toEmail: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
   const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) throw new Error('Email service not configured. RESEND_API_KEY is missing.')
+  if (!apiKey) return { success: false, error: 'Email service not configured. RESEND_API_KEY is missing.' }
   const resend = new Resend(apiKey)
 
   const invoice = await getInvoice(invoiceId)
-  if (!invoice) throw new Error('Invoice not found')
+  if (!invoice) return { success: false, error: 'Invoice not found' }
 
   const customer = invoice.customers
   const items = invoice.invoice_items ?? []
@@ -27,9 +31,7 @@ export async function sendInvoiceEmail(invoiceId: string, toEmail: string): Prom
     </tr>
   `).join('')
 
-  let sendResult: Awaited<ReturnType<typeof resend.emails.send>>
-  try {
-    sendResult = await resend.emails.send({
+  const { error: sendError } = await resend.emails.send({
     from: `${STORE.name} <onboarding@resend.dev>`,
     to: [toEmail],
     subject: `Invoice ${invoice.invoice_no} from ${STORE.name}`,
@@ -72,10 +74,11 @@ export async function sendInvoiceEmail(invoiceId: string, toEmail: string): Prom
         </div>
       </div>
     `,
-    })
-  } catch (sendErr) {
-    throw new Error(sendErr instanceof Error ? sendErr.message : 'Failed to send email')
-  }
+  })
 
-  if (sendResult.error) throw new Error(sendResult.error.message ?? 'Email delivery failed')
+  if (sendError) return { success: false, error: sendError.message ?? 'Email delivery failed' }
+  return { success: true }
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Unexpected error sending email' }
+  }
 }
