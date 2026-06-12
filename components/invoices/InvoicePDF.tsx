@@ -140,7 +140,7 @@ const s = StyleSheet.create({
   bankRow: { flexDirection: 'row', marginBottom: 3 },
   bankLabel: { fontSize: 7.5, color: '#6B7280', width: 76 },
   bankValue: { fontSize: 7.5, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#111827', flex: 1 },
-  upiSection: { marginTop: 6, borderTopWidth: 0.5, borderTopColor: '#D1D5DB', paddingTop: 6, backgroundColor: '#EFF6FF', borderRadius: 3, alignItems: 'center', paddingBottom: 6, paddingHorizontal: 6 },
+  upiSection: { marginTop: 6, borderTopWidth: 0.5, borderTopColor: '#D1D5DB', paddingTop: 6, borderRadius: 3, alignItems: 'center', paddingBottom: 6, paddingHorizontal: 6 },
   upiSectionTitle: { fontSize: 6.5, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 3 },
   upiQr: { width: 72, height: 72 },
   upiLabel: { fontSize: 6.5, color: '#3B82F6', textAlign: 'center', marginTop: 3 },
@@ -484,55 +484,6 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
         </View>
       </View>
 
-      {/* Payment details + Terms — Tax Invoice only */}
-      {!isBOS && (bankAccount || upiQrDataUrl || (invoiceTerms && invoiceTerms.length > 0)) && (
-        <View wrap={false} style={s.paymentSection}>
-          {/* Bank Details + UPI QR (stacked in one box) */}
-          {(bankAccount || upiQrDataUrl) && (
-            <View style={s.payBox}>
-              {bankAccount && (
-                <>
-                  <Text style={s.payBoxTitle}>Bank Transfer Details</Text>
-                  {([
-                    ['Bank Name', bankAccount.bank_name],
-                    ['Account Name', bankAccount.account_name],
-                    ['Account No.', bankAccount.account_number],
-                    ['IFSC Code', bankAccount.ifsc],
-                    ['Branch', bankAccount.branch],
-                  ] as [string, string][]).filter(([, v]) => v).map(([label, value]) => (
-                    <View key={label} style={s.bankRow}>
-                      <Text style={s.bankLabel}>{label}</Text>
-                      <Text style={s.bankValue}>{value}</Text>
-                    </View>
-                  ))}
-                </>
-              )}
-              {/* UPI QR — below bank details with divider + highlight */}
-              {upiQrDataUrl && (
-                <View style={s.upiSection}>
-                  <Text style={s.upiSectionTitle}>Pay via UPI</Text>
-                  <Image src={upiQrDataUrl} style={s.upiQr} />
-                  <Text style={s.upiId}>{STORE.upi_id}</Text>
-                  <Text style={s.upiLabel}>Scan to pay instantly</Text>
-                </View>
-              )}
-            </View>
-          )}
-          {/* Terms & Conditions */}
-          {invoiceTerms && invoiceTerms.length > 0 && (
-            <View style={s.tcBoxed}>
-              <Text style={s.payBoxTitle}>Terms &amp; Conditions</Text>
-              {invoiceTerms.map((term, i) => (
-                <View key={i} style={s.tcItem}>
-                  <Text style={s.tcNum}>{i + 1}.</Text>
-                  <Text style={s.tcText}>{term}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      )}
-
       {/* Page number — fixed tiny element on every page, hidden on single-page docs */}
       <Text
         fixed
@@ -540,19 +491,71 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
         render={({ pageNumber, totalPages }) => totalPages > 1 ? `Page ${pageNumber} of ${totalPages}` : ''}
       />
 
-      {/* Footer — normal flow, appears right after content with no blank gap */}
-      <View style={[s.footer, { marginTop: 10 }]}>
-        <Text style={s.footerText}>This is a computer-generated invoice. No signature required.</Text>
-        <Text style={s.footerText}>{STORE.name} · GSTIN: {STORE.gstin} · {STORE.phone}</Text>
-      </View>
+      {/* Payment + Footer + Bottom border — all wrapped together so they never split across pages */}
+      <View wrap={false}>
+        {/* Payment details + Terms — Tax Invoice only */}
+        {!isBOS && (bankAccount || upiQrDataUrl || (invoiceTerms && invoiceTerms.length > 0)) && (
+          <View style={s.paymentSection}>
+            {/* Bank Details + UPI QR (stacked in one box) */}
+            {(bankAccount || upiQrDataUrl) && (
+              <View style={s.payBox}>
+                {bankAccount && (
+                  <>
+                    <Text style={s.payBoxTitle}>Bank Transfer Details</Text>
+                    {([
+                      ['Bank Name', bankAccount.bank_name],
+                      ['Account Name', bankAccount.account_name],
+                      ['Account No.', bankAccount.account_number],
+                      ['IFSC Code', bankAccount.ifsc],
+                      ['Branch', bankAccount.branch],
+                    ] as [string, string][]).filter(([, v]) => v).map(([label, value]) => (
+                      <View key={label} style={s.bankRow}>
+                        <Text style={s.bankLabel}>{label}</Text>
+                        <Text style={s.bankValue}>{value}</Text>
+                      </View>
+                    ))}
+                  </>
+                )}
+                {/* UPI QR — below bank details with divider */}
+                {upiQrDataUrl && (
+                  <View style={s.upiSection}>
+                    <Text style={s.upiSectionTitle}>Pay via UPI</Text>
+                    <Image src={upiQrDataUrl} style={s.upiQr} />
+                    <Text style={s.upiId}>{STORE.upi_id}</Text>
+                    <Text style={s.upiLabel}>Scan to pay instantly</Text>
+                  </View>
+                )}
+              </View>
+            )}
+            {/* Terms & Conditions */}
+            {invoiceTerms && invoiceTerms.length > 0 && (
+              <View style={s.tcBoxed}>
+                <Text style={s.payBoxTitle}>Terms &amp; Conditions</Text>
+                {invoiceTerms.map((term, i) => (
+                  <View key={i} style={s.tcItem}>
+                    <Text style={s.tcNum}>{i + 1}.</Text>
+                    <Text style={s.tcText}>{term}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
-      {/* Bottom border — normal flow */}
-      <View style={[s.borderBottom, { marginTop: 0 }]}>
-        <Text style={s.borderBottomText}>Dubaishoppe_hyd@yahoo.com</Text>
-        <Text style={s.borderBottomSep}>|</Text>
-        <Text style={s.borderBottomText}>+91 9885878645 / +91 9866141485</Text>
-        <Text style={s.borderBottomSep}>|</Text>
-        <Text style={s.borderBottomText}>DUBAI SHOPPE — GSTIN: 36ALBPM0907C1ZO</Text>
+        {/* Footer */}
+        <View style={[s.footer, { marginTop: 10 }]}>
+          <Text style={s.footerText}>This is a computer-generated invoice. No signature required.</Text>
+          <Text style={s.footerText}>{STORE.name} · GSTIN: {STORE.gstin} · {STORE.phone}</Text>
+        </View>
+
+        {/* Bottom border */}
+        <View style={[s.borderBottom, { marginTop: 0 }]}>
+          <Text style={s.borderBottomText}>Dubaishoppe_hyd@yahoo.com</Text>
+          <Text style={s.borderBottomSep}>|</Text>
+          <Text style={s.borderBottomText}>+91 9885878645 / +91 9866141485</Text>
+          <Text style={s.borderBottomSep}>|</Text>
+          <Text style={s.borderBottomText}>DUBAI SHOPPE — GSTIN: 36ALBPM0907C1ZO</Text>
+        </View>
       </View>
 
     </Page>
