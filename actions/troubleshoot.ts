@@ -254,14 +254,57 @@ export async function runEmailConfigCheck(): Promise<CheckResult> {
   }
 }
 
+// ─── Check 6: Environment Variables ──────────────────────────────────────
+export async function runEnvVarsCheck(): Promise<CheckResult> {
+  await assertAdmin()
+  try {
+    const required: { key: string; label: string }[] = [
+      { key: 'NEXT_PUBLIC_SUPABASE_URL',      label: 'Supabase URL' },
+      { key: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', label: 'Supabase Anon Key' },
+      { key: 'SUPABASE_SERVICE_ROLE_KEY',     label: 'Supabase Service Role Key' },
+      { key: 'RESEND_API_KEY',                label: 'Resend Email Key' },
+      { key: 'NEXT_PUBLIC_APP_URL',           label: 'App URL' },
+    ]
+
+    const missing = required.filter(r => {
+      const val = process.env[r.key]
+      return !val || val.trim() === ''
+    })
+
+    if (missing.length === 0) {
+      return {
+        id: 'env_vars', label: 'Environment Variables',
+        description: 'All required environment variables are set',
+        status: 'pass', count: 0,
+        detail: `${required.length} variables verified — no missing config`,
+        fixable: false,
+      }
+    }
+
+    return {
+      id: 'env_vars', label: 'Environment Variables',
+      description: `${missing.length} required variable${missing.length > 1 ? 's' : ''} missing — causes "Server Components render error"`,
+      status: 'error', count: missing.length,
+      detail: `Missing: ${missing.map(m => m.label).join(', ')} — add to Vercel → Settings → Environment Variables`,
+      fixable: false,
+    }
+  } catch (err) {
+    return {
+      id: 'env_vars', label: 'Environment Variables',
+      description: 'Check failed', status: 'error', count: 0, detail: String(err), fixable: false,
+    }
+  }
+}
+
 // ─── Run All ──────────────────────────────────────────────────────────────
 export async function runAllChecks(): Promise<CheckResult[]> {
-  const [db, authSync, orphaned, negStock, emailConfig] = await Promise.all([
+  const [db, authSync, orphaned, negStock, emailConfig, envVars] = await Promise.all([
     runDbConnectionCheck(),
     runAuthSyncCheck(),
     runOrphanedInvoicesCheck(),
     runNegativeStockCheck(),
     runEmailConfigCheck(),
+    runEnvVarsCheck(),
   ])
-  return [db, authSync, orphaned, negStock, emailConfig]
+  return [db, authSync, orphaned, negStock, emailConfig, envVars]
 }

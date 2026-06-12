@@ -8,12 +8,13 @@ import {
   runOrphanedInvoicesCheck,
   runNegativeStockCheck,
   runEmailConfigCheck,
+  runEnvVarsCheck,
   fixAuthSync,
   fixOrphanedInvoices,
 } from '@/actions/troubleshoot'
 import {
   CheckCircle2, AlertTriangle, XCircle,
-  Loader2, Wrench, RefreshCw, ShieldCheck, Zap, Circle,
+  Loader2, Wrench, RefreshCw, ShieldCheck, Zap, Circle, ServerCrash,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -25,11 +26,12 @@ type CheckState = Omit<CheckResult, 'status'> & {
 }
 
 const CHECKS_META = [
+  { id: 'env_vars',          label: 'Environment Variables',      fn: runEnvVarsCheck },
   { id: 'db_connection',     label: 'Database Connection',        fn: runDbConnectionCheck },
   { id: 'auth_sync',         label: 'Auth User Sync',             fn: runAuthSyncCheck },
+  { id: 'email_config',      label: 'Email Configuration',        fn: runEmailConfigCheck },
   { id: 'orphaned_invoices', label: 'Supplier Invoice Integrity', fn: runOrphanedInvoicesCheck },
   { id: 'negative_stock',    label: 'Negative Stock',             fn: runNegativeStockCheck },
-  { id: 'email_config',      label: 'Email Configuration',        fn: runEmailConfigCheck },
 ]
 
 const INITIAL: CheckState[] = CHECKS_META.map(c => ({
@@ -114,6 +116,17 @@ export default function TroubleshootPanel() {
 
   return (
     <div className="space-y-5">
+      {/* "Server Components render error" tip */}
+      <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <ServerCrash className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-semibold text-red-700">Seeing &ldquo;Server Components render error&rdquo;?</p>
+          <p className="text-xs text-red-600 mt-0.5">
+            Run this scan — missing environment variables or a broken service config is the most common cause. Fix what&rsquo;s flagged below and reload the page.
+          </p>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
