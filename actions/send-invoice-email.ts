@@ -13,7 +13,8 @@ export async function sendInvoiceEmail(invoiceId: string, toEmail: string): Prom
 
   const customer = invoice.customers
   const items = invoice.invoice_items ?? []
-  const pdfUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/invoices/${invoiceId}/pdf`
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://pos.dubaishoppe.in'
+  const pdfUrl = `${appUrl}/api/invoices/${invoiceId}/pdf`
 
   const itemsHtml = items.map((item, i) => `
     <tr style="background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}">
