@@ -6,7 +6,7 @@ import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-
 import * as XLSX from 'xlsx'
 import {
   SearchIcon, DownloadIcon, XIcon, FileTextIcon,
-  UsersIcon, ListIcon,
+  UsersIcon, ListIcon, LinkIcon,
 } from 'lucide-react'
 import type { Invoice } from '@/types/database'
 
@@ -47,6 +47,15 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
+function combinedStatus(primary: InvoiceWithCustomer, secondary: InvoiceWithCustomer | undefined): string {
+  if (!secondary) return primary.status
+  const pDue = Math.max(0, primary.grand_total - (primary.total_returns ?? 0) - primary.amount_paid)
+  const sDue = Math.max(0, secondary.grand_total - (secondary.total_returns ?? 0) - secondary.amount_paid)
+  if (pDue + sDue > 0) return 'pending'
+  if (primary.status === 'cancelled' && secondary.status === 'cancelled') return 'cancelled'
+  return 'paid'
+}
+
 export default function InvoiceList({ initialInvoices }: Props) {
   const [search, setSearch] = useState('')
   const [fromDate, setFromDate] = useState('')
@@ -57,14 +66,46 @@ export default function InvoiceList({ initialInvoices }: Props) {
 
   const hasActiveFilters = search.trim() !== '' || fromDate !== '' || toDate !== ''
 
+  // Map: invoiceId → its linked partner invoice
+  const pairMap = useMemo(() => {
+    const byGroup = new Map<string, InvoiceWithCustomer[]>()
+    for (const inv of initialInvoices) {
+      if (!inv.order_group_id) continue
+      if (!byGroup.has(inv.order_group_id)) byGroup.set(inv.order_group_id, [])
+      byGroup.get(inv.order_group_id)!.push(inv)
+    }
+    const map = new Map<string, InvoiceWithCustomer>()
+    byGroup.forEach((pair) => {
+      if (pair.length === 2) {
+        map.set(pair[0].id, pair[1])
+        map.set(pair[1].id, pair[0])
+      }
+    })
+    return map
+  }, [initialInvoices])
+
+  // BOS IDs that have a linked tax invoice — hidden from list (merged into primary row)
+  const hiddenBosIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const inv of initialInvoices) {
+      if (inv.invoice_type === 'bill_of_supply' && pairMap.has(inv.id)) {
+        ids.add(inv.id)
+      }
+    }
+    return ids
+  }, [initialInvoices, pairMap])
+
   const filtered = useMemo(() => {
     return initialInvoices.filter(inv => {
+      if (hiddenBosIds.has(inv.id)) return false
       if (search.trim()) {
         const q = search.trim().toLowerCase()
+        const partner = pairMap.get(inv.id)
         const matchInvoice = inv.invoice_no.toLowerCase().includes(q)
+        const matchPartner = partner?.invoice_no.toLowerCase().includes(q) ?? false
         const matchCustomer = inv.customers?.name.toLowerCase().includes(q) ?? false
         const matchPhone = inv.customers?.phone?.toLowerCase().includes(q) ?? false
-        if (!matchInvoice && !matchCustomer && !matchPhone) return false
+        if (!matchInvoice && !matchPartner && !matchCustomer && !matchPhone) return false
       }
       if (fromDate) {
         const from = startOfDay(new Date(fromDate))
@@ -75,18 +116,24 @@ export default function InvoiceList({ initialInvoices }: Props) {
         if (isAfter(parseISO(inv.created_at), to)) return false
       }
       if (statusFilter !== 'all') {
-        if (inv.status !== statusFilter) return false
+        const partner = pairMap.get(inv.id)
+        const status = combinedStatus(inv, partner)
+        if (status !== statusFilter) return false
       }
       return true
     })
-  }, [initialInvoices, search, fromDate, toDate, statusFilter])
+  }, [initialInvoices, search, fromDate, toDate, statusFilter, hiddenBosIds, pairMap])
 
-  const counts = useMemo(() => ({
-    all: initialInvoices.length,
-    pending: initialInvoices.filter(i => i.status === 'pending').length,
-    paid: initialInvoices.filter(i => i.status === 'paid').length,
-    cancelled: initialInvoices.filter(i => i.status === 'cancelled').length,
-  }), [initialInvoices])
+  const counts = useMemo(() => {
+    // Count from initialInvoices excluding hidden BOS
+    const visible = initialInvoices.filter(inv => !hiddenBosIds.has(inv.id))
+    return {
+      all: visible.length,
+      pending: visible.filter(i => combinedStatus(i, pairMap.get(i.id)) === 'pending').length,
+      paid: visible.filter(i => combinedStatus(i, pairMap.get(i.id)) === 'paid').length,
+      cancelled: visible.filter(i => combinedStatus(i, pairMap.get(i.id)) === 'cancelled').length,
+    }
+  }, [initialInvoices, hiddenBosIds, pairMap])
 
   const grouped = useMemo(() => {
     if (!groupByCustomer) return null
@@ -112,20 +159,23 @@ export default function InvoiceList({ initialInvoices }: Props) {
   }
 
   function exportExcel() {
-    const rows = filtered.map(inv => ({
-      'Invoice No': inv.invoice_no,
-      'Customer': inv.customers?.name ?? 'Walk-in',
-      'Phone': inv.customers?.phone ?? '',
-      'Date': format(parseISO(inv.created_at), 'dd/MM/yyyy'),
-      'Payment Method': inv.payment_method ?? '',
-      'Subtotal': inv.subtotal,
-      'Discount': inv.discount,
-      'Total GST': inv.total_gst,
-      'Grand Total': inv.grand_total,
-      'Amount Paid': inv.amount_paid,
-      'Due': Math.max(0, inv.grand_total - (inv.total_returns ?? 0) - inv.amount_paid),
-      'Status': inv.status,
-    }))
+    const rows = filtered.map(inv => {
+      const partner = pairMap.get(inv.id)
+      const totalAmt = inv.grand_total + (partner?.grand_total ?? 0)
+      const totalPaid = inv.amount_paid + (partner?.amount_paid ?? 0)
+      const totalDue = Math.max(0, totalAmt - (inv.total_returns ?? 0) - (partner?.total_returns ?? 0) - totalPaid)
+      return {
+        'Invoice No': partner ? `${inv.invoice_no} + ${partner.invoice_no}` : inv.invoice_no,
+        'Customer': inv.customers?.name ?? 'Walk-in',
+        'Phone': inv.customers?.phone ?? '',
+        'Date': format(parseISO(inv.created_at), 'dd/MM/yyyy'),
+        'Payment Method': inv.payment_method ?? '',
+        'Grand Total': totalAmt,
+        'Amount Paid': totalPaid,
+        'Due': totalDue,
+        'Status': combinedStatus(inv, partner),
+      }
+    })
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Invoices')
@@ -133,17 +183,23 @@ export default function InvoiceList({ initialInvoices }: Props) {
   }
 
   function exportCSV() {
-    const rows = filtered.map(inv => ({
-      'Invoice No': inv.invoice_no,
-      'Customer': inv.customers?.name ?? 'Walk-in',
-      'Phone': inv.customers?.phone ?? '',
-      'Date': format(parseISO(inv.created_at), 'dd/MM/yyyy'),
-      'Payment Method': inv.payment_method ?? '',
-      'Grand Total': inv.grand_total,
-      'Amount Paid': inv.amount_paid,
-      'Due': Math.max(0, inv.grand_total - (inv.total_returns ?? 0) - inv.amount_paid),
-      'Status': inv.status,
-    }))
+    const rows = filtered.map(inv => {
+      const partner = pairMap.get(inv.id)
+      const totalAmt = inv.grand_total + (partner?.grand_total ?? 0)
+      const totalPaid = inv.amount_paid + (partner?.amount_paid ?? 0)
+      const totalDue = Math.max(0, totalAmt - (inv.total_returns ?? 0) - (partner?.total_returns ?? 0) - totalPaid)
+      return {
+        'Invoice No': partner ? `${inv.invoice_no} + ${partner.invoice_no}` : inv.invoice_no,
+        'Customer': inv.customers?.name ?? 'Walk-in',
+        'Phone': inv.customers?.phone ?? '',
+        'Date': format(parseISO(inv.created_at), 'dd/MM/yyyy'),
+        'Payment Method': inv.payment_method ?? '',
+        'Grand Total': totalAmt,
+        'Amount Paid': totalPaid,
+        'Due': totalDue,
+        'Status': combinedStatus(inv, partner),
+      }
+    })
     const ws = XLSX.utils.json_to_sheet(rows)
     const csv = XLSX.utils.sheet_to_csv(ws)
     const blob = new Blob([csv], { type: 'text/csv' })
@@ -156,17 +212,30 @@ export default function InvoiceList({ initialInvoices }: Props) {
   }
 
   function renderInvoiceRow(inv: InvoiceWithCustomer, rowNum?: number) {
-    const due = Math.max(0, inv.grand_total - (inv.total_returns ?? 0) - inv.amount_paid)
-    const isSplitOrder = !!inv.order_group_id
+    const partner = pairMap.get(inv.id)
+    const totalAmt = inv.grand_total + (partner?.grand_total ?? 0)
+    const totalPaid = inv.amount_paid + (partner?.amount_paid ?? 0)
+    const totalReturns = (inv.total_returns ?? 0) + (partner?.total_returns ?? 0)
+    const due = Math.max(0, totalAmt - totalReturns - totalPaid)
+    const status = combinedStatus(inv, partner)
+
     return (
       <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
         <td className="px-3 py-3.5 text-xs text-slate-300 text-center tabular-nums w-8">
           {rowNum !== undefined ? rowNum : ''}
         </td>
         <td className="px-5 py-3.5 text-sm whitespace-nowrap">
-          <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-semibold text-slate-500 hover:text-slate-900 hover:underline">
+          <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-semibold text-slate-700 hover:text-slate-900 hover:underline">
             {inv.invoice_no}
           </Link>
+          {partner && (
+            <div className="flex items-center gap-1 mt-0.5">
+              <LinkIcon className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
+              <Link href={`/invoices/${partner.id}`} className="font-mono text-[10px] font-medium text-amber-600 hover:text-amber-800 hover:underline">
+                {partner.invoice_no}
+              </Link>
+            </div>
+          )}
         </td>
         <td className="px-5 py-3.5 text-sm">
           <span className="font-semibold text-slate-900">{inv.customers?.name ?? 'Walk-in'}</span>
@@ -187,22 +256,20 @@ export default function InvoiceList({ initialInvoices }: Props) {
             </span>
           )}
         </td>
-        <td className="px-5 py-3.5 text-sm text-right font-semibold text-slate-900 whitespace-nowrap">
-          ₹{inv.grand_total.toFixed(2)}
+        <td className="px-5 py-3.5 text-sm text-right font-semibold text-slate-900 whitespace-nowrap tabular-nums">
+          ₹{totalAmt.toFixed(2)}
         </td>
-        <td className="px-5 py-3.5 text-sm text-right text-slate-500 whitespace-nowrap">
-          ₹{inv.amount_paid.toFixed(2)}
+        <td className="px-5 py-3.5 text-sm text-right text-slate-500 whitespace-nowrap tabular-nums">
+          ₹{totalPaid.toFixed(2)}
         </td>
-        <td className="px-5 py-3.5 text-sm text-right whitespace-nowrap">
-          {isSplitOrder
-            ? <span className="text-slate-300 text-xs">↑ group</span>
-            : due > 0
-              ? <span className="font-bold text-red-600">₹{due.toFixed(2)}</span>
-              : <span className="text-slate-400">—</span>
+        <td className="px-5 py-3.5 text-sm text-right whitespace-nowrap tabular-nums">
+          {due > 0
+            ? <span className="font-bold text-red-600">₹{due.toFixed(2)}</span>
+            : <span className="text-slate-400">—</span>
           }
         </td>
         <td className="px-5 py-3.5 text-sm text-center">
-          <StatusBadge status={inv.status} />
+          <StatusBadge status={status} />
         </td>
       </tr>
     )
@@ -217,9 +284,9 @@ export default function InvoiceList({ initialInvoices }: Props) {
             <div>
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Invoices</h1>
               <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
-                {filtered.length === initialInvoices.length
-                  ? `${initialInvoices.length} invoice${initialInvoices.length !== 1 ? 's' : ''}`
-                  : `${filtered.length} of ${initialInvoices.length} invoices`}
+                {filtered.length === counts.all
+                  ? `${counts.all} invoice${counts.all !== 1 ? 's' : ''}`
+                  : `${filtered.length} of ${counts.all} invoices`}
               </p>
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -352,9 +419,18 @@ export default function InvoiceList({ initialInvoices }: Props) {
             {groupByCustomer && grouped ? (
               grouped.map(group => {
                 const isOpen = expanded.has(group.name)
-                const groupTotal = group.invoices.reduce((s, i) => s + i.grand_total, 0)
-                const groupNet = Math.round(group.invoices.reduce((s, i) => s + i.grand_total - (i.total_returns ?? 0) - i.amount_paid, 0) * 100) / 100
-                const allPaid = group.invoices.every(i => i.status === 'paid')
+                const groupTotal = group.invoices.reduce((s, i) => {
+                  const p = pairMap.get(i.id)
+                  return s + i.grand_total + (p?.grand_total ?? 0)
+                }, 0)
+                const groupNet = Math.round(group.invoices.reduce((s, i) => {
+                  const p = pairMap.get(i.id)
+                  const totalAmt = i.grand_total + (p?.grand_total ?? 0)
+                  const totalPaid = i.amount_paid + (p?.amount_paid ?? 0)
+                  const totalReturns = (i.total_returns ?? 0) + (p?.total_returns ?? 0)
+                  return s + totalAmt - totalReturns - totalPaid
+                }, 0) * 100) / 100
+                const allPaid = group.invoices.every(i => combinedStatus(i, pairMap.get(i.id)) === 'paid')
                 const hasDue = groupNet > 0
                 return (
                   <Fragment key={`mgroup-${group.name}`}>
@@ -390,21 +466,32 @@ export default function InvoiceList({ initialInvoices }: Props) {
                       </div>
                     </div>
                     {isOpen && group.invoices.map(inv => {
-                      const due = Math.max(0, inv.grand_total - (inv.total_returns ?? 0) - inv.amount_paid)
+                      const partner = pairMap.get(inv.id)
+                      const totalAmt = inv.grand_total + (partner?.grand_total ?? 0)
+                      const totalPaid = inv.amount_paid + (partner?.amount_paid ?? 0)
+                      const totalReturns = (inv.total_returns ?? 0) + (partner?.total_returns ?? 0)
+                      const due = Math.max(0, totalAmt - totalReturns - totalPaid)
+                      const status = combinedStatus(inv, partner)
                       return (
                         <div key={inv.id} className="px-4 py-3 pl-11 bg-white border-l-2 border-blue-200">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-bold text-slate-900 hover:underline">{inv.invoice_no}</Link>
+                              {partner && (
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <LinkIcon className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
+                                  <Link href={`/invoices/${partner.id}`} className="font-mono text-[10px] font-medium text-amber-600 hover:underline">{partner.invoice_no}</Link>
+                                </div>
+                              )}
                               <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.created_at), 'dd MMM yyyy, hh:mm a')}</p>
                               {inv.payment_method && (
                                 <span className="text-xs text-slate-400 capitalize">{inv.payment_method}</span>
                               )}
                             </div>
                             <div className="flex flex-col items-end gap-1 shrink-0">
-                              <p className="font-bold text-sm text-slate-900 tabular-nums">₹{inv.grand_total.toFixed(2)}</p>
+                              <p className="font-bold text-sm text-slate-900 tabular-nums">₹{totalAmt.toFixed(2)}</p>
                               {due > 0 && <p className="text-xs font-bold text-red-600 tabular-nums">Due ₹{due.toFixed(2)}</p>}
-                              <StatusBadge status={inv.status} />
+                              <StatusBadge status={status} />
                             </div>
                           </div>
                         </div>
@@ -415,19 +502,30 @@ export default function InvoiceList({ initialInvoices }: Props) {
               })
             ) : (
               filtered.map(inv => {
-                const due = Math.max(0, inv.grand_total - (inv.total_returns ?? 0) - inv.amount_paid)
+                const partner = pairMap.get(inv.id)
+                const totalAmt = inv.grand_total + (partner?.grand_total ?? 0)
+                const totalPaid = inv.amount_paid + (partner?.amount_paid ?? 0)
+                const totalReturns = (inv.total_returns ?? 0) + (partner?.total_returns ?? 0)
+                const due = Math.max(0, totalAmt - totalReturns - totalPaid)
+                const status = combinedStatus(inv, partner)
                 return (
                   <div key={inv.id} className="px-4 py-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <Link href={`/invoices/${inv.id}`} className="font-mono text-xs font-bold text-slate-900 hover:underline">{inv.invoice_no}</Link>
+                        {partner && (
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <LinkIcon className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
+                            <Link href={`/invoices/${partner.id}`} className="font-mono text-[10px] font-medium text-amber-600 hover:underline">{partner.invoice_no}</Link>
+                          </div>
+                        )}
                         <p className="text-sm font-semibold text-slate-800 mt-0.5 truncate">{inv.customers?.name ?? 'Walk-in'}</p>
                         <p className="text-xs text-slate-400 mt-0.5">{format(parseISO(inv.created_at), 'dd MMM yyyy, hh:mm a')}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        <p className="font-bold text-sm text-slate-900 tabular-nums">₹{inv.grand_total.toFixed(2)}</p>
+                        <p className="font-bold text-sm text-slate-900 tabular-nums">₹{totalAmt.toFixed(2)}</p>
                         {due > 0 && <p className="text-xs font-bold text-red-600 tabular-nums">Due ₹{due.toFixed(2)}</p>}
-                        <StatusBadge status={inv.status} />
+                        <StatusBadge status={status} />
                       </div>
                     </div>
                   </div>
@@ -456,10 +554,22 @@ export default function InvoiceList({ initialInvoices }: Props) {
                 {groupByCustomer && grouped ? (
                   grouped.map((group, gi) => {
                     const isOpen = expanded.has(group.name)
-                    const groupTotal = group.invoices.reduce((s, i) => s + i.grand_total, 0)
-                    const groupPaid = group.invoices.reduce((s, i) => s + i.amount_paid, 0)
-                    const groupNet = Math.round((group.invoices.reduce((s, i) => s + i.grand_total - (i.total_returns ?? 0) - i.amount_paid, 0)) * 100) / 100
-                    const allPaid = group.invoices.every(i => i.status === 'paid')
+                    const groupTotal = group.invoices.reduce((s, i) => {
+                      const p = pairMap.get(i.id)
+                      return s + i.grand_total + (p?.grand_total ?? 0)
+                    }, 0)
+                    const groupPaid = group.invoices.reduce((s, i) => {
+                      const p = pairMap.get(i.id)
+                      return s + i.amount_paid + (p?.amount_paid ?? 0)
+                    }, 0)
+                    const groupNet = Math.round((group.invoices.reduce((s, i) => {
+                      const p = pairMap.get(i.id)
+                      const totalAmt = i.grand_total + (p?.grand_total ?? 0)
+                      const totalPaid = i.amount_paid + (p?.amount_paid ?? 0)
+                      const totalReturns = (i.total_returns ?? 0) + (p?.total_returns ?? 0)
+                      return s + totalAmt - totalReturns - totalPaid
+                    }, 0)) * 100) / 100
+                    const allPaid = group.invoices.every(i => combinedStatus(i, pairMap.get(i.id)) === 'paid')
                     const hasDue = groupNet > 0
                     return (
                     <Fragment key={`group-${group.name}`}>
