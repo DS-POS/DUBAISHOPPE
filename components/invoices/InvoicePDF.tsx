@@ -140,10 +140,11 @@ const s = StyleSheet.create({
   bankRow: { flexDirection: 'row', marginBottom: 3 },
   bankLabel: { fontSize: 7.5, color: '#6B7280', width: 76 },
   bankValue: { fontSize: 7.5, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#111827', flex: 1 },
-  upiBox: { width: 90, borderWidth: 0.5, borderColor: '#D1D5DB', borderRadius: 3, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: '#F9FAFB', alignItems: 'center' },
-  upiQr: { width: 64, height: 64, marginVertical: 4 },
-  upiLabel: { fontSize: 6.5, color: '#6B7280', textAlign: 'center', marginTop: 2 },
-  upiId: { fontSize: 7, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#111827', textAlign: 'center' },
+  upiSection: { marginTop: 6, borderTopWidth: 0.5, borderTopColor: '#D1D5DB', paddingTop: 6, backgroundColor: '#EFF6FF', borderRadius: 3, alignItems: 'center', paddingBottom: 6, paddingHorizontal: 6 },
+  upiSectionTitle: { fontSize: 6.5, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 3 },
+  upiQr: { width: 72, height: 72 },
+  upiLabel: { fontSize: 6.5, color: '#3B82F6', textAlign: 'center', marginTop: 3 },
+  upiId: { fontSize: 7.5, fontFamily: 'SegoeUI', fontWeight: 'bold', color: '#1D4ED8', textAlign: 'center', marginTop: 1 },
   tcBoxed: { flex: 1, borderWidth: 0.5, borderColor: '#D1D5DB', borderRadius: 3, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: '#F9FAFB' },
 })
 
@@ -486,31 +487,35 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
       {/* Payment details + Terms — Tax Invoice only */}
       {!isBOS && (bankAccount || upiQrDataUrl || (invoiceTerms && invoiceTerms.length > 0)) && (
         <View wrap={false} style={s.paymentSection}>
-          {/* Bank Details */}
-          {bankAccount && (
+          {/* Bank Details + UPI QR (stacked in one box) */}
+          {(bankAccount || upiQrDataUrl) && (
             <View style={s.payBox}>
-              <Text style={s.payBoxTitle}>Bank Transfer Details</Text>
-              {([
-                ['Bank Name', bankAccount.bank_name],
-                ['Account Name', bankAccount.account_name],
-                ['Account No.', bankAccount.account_number],
-                ['IFSC Code', bankAccount.ifsc],
-                ['Branch', bankAccount.branch],
-              ] as [string, string][]).filter(([, v]) => v).map(([label, value]) => (
-                <View key={label} style={s.bankRow}>
-                  <Text style={s.bankLabel}>{label}</Text>
-                  <Text style={s.bankValue}>{value}</Text>
+              {bankAccount && (
+                <>
+                  <Text style={s.payBoxTitle}>Bank Transfer Details</Text>
+                  {([
+                    ['Bank Name', bankAccount.bank_name],
+                    ['Account Name', bankAccount.account_name],
+                    ['Account No.', bankAccount.account_number],
+                    ['IFSC Code', bankAccount.ifsc],
+                    ['Branch', bankAccount.branch],
+                  ] as [string, string][]).filter(([, v]) => v).map(([label, value]) => (
+                    <View key={label} style={s.bankRow}>
+                      <Text style={s.bankLabel}>{label}</Text>
+                      <Text style={s.bankValue}>{value}</Text>
+                    </View>
+                  ))}
+                </>
+              )}
+              {/* UPI QR — below bank details with divider + highlight */}
+              {upiQrDataUrl && (
+                <View style={s.upiSection}>
+                  <Text style={s.upiSectionTitle}>Pay via UPI</Text>
+                  <Image src={upiQrDataUrl} style={s.upiQr} />
+                  <Text style={s.upiId}>{STORE.upi_id}</Text>
+                  <Text style={s.upiLabel}>Scan to pay instantly</Text>
                 </View>
-              ))}
-            </View>
-          )}
-          {/* UPI QR */}
-          {upiQrDataUrl && (
-            <View style={s.upiBox}>
-              <Text style={s.payBoxTitle}>Pay via UPI</Text>
-              <Image src={upiQrDataUrl} style={s.upiQr} />
-              <Text style={s.upiId}>{STORE.upi_id}</Text>
-              <Text style={s.upiLabel}>Scan to pay</Text>
+              )}
             </View>
           )}
           {/* Terms & Conditions */}
