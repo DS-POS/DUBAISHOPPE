@@ -32,7 +32,7 @@ export async function sendInvoiceEmail(
   `).join('')
 
   const { error: sendError } = await resend.emails.send({
-    from: `${STORE.name} <onboarding@resend.dev>`,
+    from: `${STORE.name} <invoices@dubaishoppe.in>`,
     to: [toEmail],
     subject: `Invoice ${invoice.invoice_no} from ${STORE.name}`,
     html: `
