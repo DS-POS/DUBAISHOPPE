@@ -162,9 +162,10 @@ function InvoiceSinglePage({ invoice, items, customer, returns, linkedSibling, i
   const isIGST = (invoice.igst ?? 0) > 0
   const isIntraState = !isIGST
   const taxableAmount = invoice.taxable_amount ?? 0
-  const balanceDue = round2(invoice.grand_total - (invoice.total_returns ?? 0) - invoice.amount_paid)
+  // Derive totalReturned from returns prop (same source as strikethrough) so balance is always in sync
+  const totalReturned = returns ? round2(returns.reduce((s, r) => s + (r.total_refund ?? 0), 0)) : (invoice.total_returns ?? 0)
+  const balanceDue = round2(invoice.grand_total - totalReturned - invoice.amount_paid)
   const invoiceTypeLabel = isBOS ? 'BILL OF SUPPLY' : 'TAX INVOICE'
-  const totalReturned = invoice.total_returns ?? 0
   const hasReturns = totalReturned > 0
   const netPayable = round2(invoice.grand_total - totalReturned)
   const returnedQtyMap = new Map<string, number>()
