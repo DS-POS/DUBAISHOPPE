@@ -69,8 +69,7 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
   const totalRefund = selectedItems.reduce((s, i) => {
     const qty = selected[i.invoice_item_id] ?? 0
     const net = i.rate * qty - (i.discount / i.original_qty) * qty
-    const gst = i.is_taxable ? net * (i.gst_rate / 100) : 0
-    return s + net + gst
+    return s + net
   }, 0)
 
   function handleSubmit() {
@@ -117,7 +116,7 @@ export function ReturnForm({ invoiceId, invoiceNo, customerState, items }: Props
             const isSelected = selected[item.invoice_item_id] !== undefined
             const qty = selected[item.invoice_item_id] ?? 1
             const unitNet = item.rate - item.discount / item.original_qty
-            const unitTotal = item.is_taxable ? unitNet * (1 + item.gst_rate / 100) : unitNet
+            const unitTotal = unitNet
             const lineTotal = unitTotal * qty
             return (
               <div
