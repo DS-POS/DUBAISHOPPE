@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createElement } from 'react'
 import type { DocumentProps } from '@react-pdf/renderer'
@@ -126,6 +128,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="${filename}"`,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
     },
   })
 }
