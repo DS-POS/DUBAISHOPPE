@@ -141,3 +141,16 @@ WHERE pu.id IS NULL ON CONFLICT (id) DO NOTHING;
 - Bug fixes and QA as discovered in real use
 - Any NEW features the user requests beyond original spec
 - Do NOT re-build anything listed above — it already exists
+
+## Lesson 12: Future Goal — SaaS Product
+**Date:** 2026-06-14
+**User intent:** Turn DS POS into a paid SaaS product sold online to multiple stores.
+**Phases to implement when user returns:**
+1. **Multi-tenancy** — add `store_id` to every table + RLS row-level isolation (BIGGEST task, do first)
+2. **Subscription billing** — Razorpay or Stripe, monthly/yearly plans, trial/active/expired states
+3. **Onboarding flow** — self-serve signup, store setup wizard (name, GSTIN, logo, bank)
+4. **Marketing** — landing page, pricing page, demo video, SEO ("POS software India GST")
+5. **Support & legal** — Privacy policy, ToS, WhatsApp support, GST for SaaS business
+6. **Scale infra** — upgrade Supabase + Vercel plans, add Sentry monitoring
+**Estimated effort:** ~2 months dev to launch MVP SaaS
+**Trigger phrase:** User will say "turn DS POS into SaaS" or "sell POS online" — start with Phase 1 (multi-tenancy).
